@@ -18,10 +18,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return string
  */
 function toykindangel_wishlist_url() {
-        $tka_id = (int) get_option( 'tka_wishlist_page_id' );
-        if ( $tka_id && 'publish' === get_post_status( $tka_id ) ) {
-                return (string) get_permalink( $tka_id );
-        }
+	static $tka_local = null;
+	if ( null !== $tka_local ) {
+		return $tka_local;
+	}
+
+	$tka_id = (int) get_option( 'tka_wishlist_page_id' );
+	if ( $tka_id && 'publish' === get_post_status( $tka_id ) ) {
+		$tka_local = (string) get_permalink( $tka_id );
+		return $tka_local;
+	}
 
         /* Fallback: any published page using the wishlist template. */
         $tka_pages = get_pages(
@@ -33,10 +39,12 @@ function toykindangel_wishlist_url() {
         );
         if ( $tka_pages ) {
                 update_option( 'tka_wishlist_page_id', (int) $tka_pages[0]->ID );
-                return (string) get_permalink( $tka_pages[0]->ID );
+                $tka_local = (string) get_permalink( $tka_pages[0]->ID );
+                return $tka_local;
         }
 
-        return '';
+        $tka_local = '';
+        return $tka_local;
 }
 
 /**

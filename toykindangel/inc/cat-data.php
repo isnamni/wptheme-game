@@ -103,9 +103,39 @@ function toykindangel_term_link( $term ) {
 /**
  * Build the full categories-browser dataset.
  *
+ * v0.19.0: cached wrapper. The uncached builder is N+1 by design
+ * (top terms → children → grandchildren, ~2+T+C queries) and used to run
+ * on every page render via the footer drawer (when no "cats" nav menu is
+ * assigned) and twice on the categories page itself. Now: one build per
+ * request at most, and the transient keeps it across requests until a
+ * product_cat/tka_brand/tka_store_cat term changes or the permalink
+ * structure is rebuilt (inc/cache.php owns the invalidation).
+ *
  * @return array|null Null when no terms exist (demo fallback keeps showing).
  */
 function toykindangel_cats_data() {
+	static $tka_local = null;
+	if ( null !== $tka_local ) {
+		return $tka_local;
+	}
+
+	$tka_local = toykindangel_cache_get( 'cats_tree' );
+	if ( null === $tka_local ) {
+		$tka_local = toykindangel_cats_data_uncached();
+		if ( null !== $tka_local ) {
+			toykindangel_cache_set( 'cats_tree', $tka_local, 12 * HOUR_IN_SECONDS );
+		}
+	}
+
+	return $tka_local;
+}
+
+/**
+ * Uncached categories-browser builder (see toykindangel_cats_data()).
+ *
+ * @return array|null
+ */
+function toykindangel_cats_data_uncached() {
         $tka_tax = toykindangel_shop_cat_tax();
         if ( ! taxonomy_exists( $tka_tax ) ) {
                 return null;

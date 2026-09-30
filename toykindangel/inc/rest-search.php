@@ -69,8 +69,12 @@ add_action( 'rest_api_init', 'toykindangel_register_rest_search' );
 /**
  * کال‌بک REST جستجوی زنده — همان payload هندلر admin-ajax.
  *
+ * v0.19.0: WP_Error (آستانهٔ throttle هر IP) به‌صورت استاندارد به پاسخ
+ * خطای REST (429) تبدیل می‌شود؛ کش/throttle داخل payload پیاده‌سازی شده
+ * و هر دو endpoint آن را به ارث می‌برند.
+ *
  * @param WP_REST_Request $request درخواست REST.
- * @return WP_REST_Response
+ * @return WP_REST_Response|WP_Error
  */
 function toykindangel_rest_search( WP_REST_Request $request ) {
 	$term = trim( (string) $request->get_param( 'q' ) );
@@ -81,5 +85,10 @@ function toykindangel_rest_search( WP_REST_Request $request ) {
 		$limit = 6;
 	}
 
-	return rest_ensure_response( toykindangel_live_search_payload( $term, $limit ) );
+	$tka_payload = toykindangel_live_search_payload( $term, $limit );
+	if ( is_wp_error( $tka_payload ) ) {
+		return $tka_payload;
+	}
+
+	return rest_ensure_response( $tka_payload );
 }

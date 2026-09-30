@@ -220,6 +220,33 @@ function toykindangel_ls_posts( $term, $limit = 3 ) {
 }
 
 /**
+ * Per-IP sliding throttle for the live-search endpoints.
+ *
+ * v0.19.0 — the endpoint is public (no nonce, like core search) and used
+ * to run two uncached LIKE queries per call. A sliding 15s window with a
+ * generous 60-call ceiling per IP keeps normal typing (300ms debounce,
+ * a handful of calls per interaction) untouched while flattening bot
+ * floods; CGNAT users behind one IP still have ~4 calls/second shared.
+ *
+ * @return bool True when the caller exceeded the ceiling.
+ */
+function toykindangel_ls_throttled() {
+	$tka_ip = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) $_SERVER['REMOTE_ADDR'] : '';
+	if ( '' === $tka_ip ) {
+		return false;
+	}
+
+	$tka_key  = 'tka_ls_rl_' . md5( $tka_ip );
+	$tka_hits = get_transient( $tka_key );
+	$tka_hits = ( false === $tka_hits ) ? 0 : (int) $tka_hits;
+	$tka_hits++;
+
+	set_transient( $tka_key, $tka_hits, 15 );
+
+	return $tka_hits > 60;
+}
+
+/**
  * ساخت payload جستجوی زنده — منبع یگانهٔ حقیقت برای هر دو endpoint
  * (admin-ajax قدیمی و REST جدید؛ بنگر inc/rest-search.php).
  *
@@ -227,9 +254,14 @@ function toykindangel_ls_posts( $term, $limit = 3 ) {
  * حفظ شود: محصولات با سقف $limit و وبلاگ با سقف ۳؛ کمتر از ۲ نویسه
  * یعنی بدون نتیجه.
  *
+ * v0.19.0: پاسخ هر عبارت ۳ دقیقه کش می‌شود (بازدیدهای همزمان با یک
+ * عبارت، هزینهٔ Query مشترک را share می‌کنند) و درخواست‌های فراتر از
+ * آستانهٔ هر IP با WP_Error (429) پاسخ می‌گیرند — هر دو endpoint همین
+ * قرارداد را از این تابع به ارث می‌برند.
+ *
  * @param string $term  واژهٔ جستجو (پاک‌سازی‌شده).
  * @param int    $limit سقف نتایج محصول (۱ تا ۸؛ بیرون بازه کلیپ می‌شود).
- * @return array { html, count, term, all_url }
+ * @return array { html, count, term, all_url } یا WP_Error در آستانهٔ throttle.
  */
 function toykindangel_live_search_payload( $term, $limit = 6 ) {
         $limit = (int) $limit;
@@ -246,6 +278,20 @@ function toykindangel_live_search_payload( $term, $limit = 6 ) {
                         'term'    => $term,
                         'all_url' => '',
                 );
+        }
+
+        if ( toykindangel_ls_throttled() ) {
+                return new WP_Error(
+                        'tka_ls_throttled',
+                        __( 'درخواست‌های جستجو بیش از حد مجاز است؛ لطفاً کمی بعد دوباره تلاش کنید.', 'toykindangel' ),
+                        array( 'status' => 429 )
+                );
+        }
+
+        $tka_cache_key = 'ls_' . md5( $term . '|' . $limit );
+        $tka_cached    = toykindangel_cache_get( $tka_cache_key );
+        if ( null !== $tka_cached ) {
+                return $tka_cached;
         }
 
         $products_html = toykindangel_ls_products( $term, $limit );
@@ -277,19 +323,26 @@ function toykindangel_live_search_payload( $term, $limit = 6 ) {
                 home_url( '/' )
         );
 
-        return array(
+        $tka_payload = array(
                 'html'    => $html,
                 'count'   => $count,
                 'term'    => $term,
                 'all_url' => $all_url,
         );
+        toykindangel_cache_set( $tka_cache_key, $tka_payload, 3 * MINUTE_IN_SECONDS );
+
+        return $tka_payload;
 }
 
 /**
  * هندلر AJAX جستجوی زنده (کاربران عادی و مهمان) — back-compat.
  */
 function toykindangel_live_search_handler() {
-        wp_send_json_success( toykindangel_live_search_payload( toykindangel_live_search_term() ) );
+        $tka_payload = toykindangel_live_search_payload( toykindangel_live_search_term() );
+        if ( is_wp_error( $tka_payload ) ) {
+                wp_send_json_error( array( 'message' => $tka_payload->get_error_message() ) );
+        }
+        wp_send_json_success( $tka_payload );
 }
 add_action( 'wp_ajax_tka_live_search', 'toykindangel_live_search_handler' );
 add_action( 'wp_ajax_nopriv_tka_live_search', 'toykindangel_live_search_handler' );

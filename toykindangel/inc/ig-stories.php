@@ -166,11 +166,16 @@ function toykindangel_ig_stories_active() {
 }
 
 /**
- * فهرست استوری‌ها از پست‌تایپ.
+ * فهرست استوری‌ها از پست‌تایپ (v0.19.0: static cache درون-Request).
  *
  * @return array[] {id,name,thumb,full}
  */
 function toykindangel_ig_stories_data() {
+	static $tka_local = null;
+	if ( null !== $tka_local ) {
+		return $tka_local;
+	}
+
 	$tka_posts = get_posts(
 		array(
 			'post_type'        => 'tka_story',
@@ -198,7 +203,8 @@ function toykindangel_ig_stories_data() {
 			'full'  => $tka_full,
 		);
 	}
-	return $tka_out;
+	$tka_local = $tka_out;
+	return $tka_local;
 }
 
 /**

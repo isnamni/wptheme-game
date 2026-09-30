@@ -295,6 +295,50 @@ function toykindangel_dashboard_widget() {
 add_action( 'wp_dashboard_setup', 'toykindangel_dashboard_widget' );
 
 /**
+ * Sum order totals for the given statuses since a timestamp — without
+ * hydrating full order objects (v0.19.0).
+ *
+ * Order IDs come from wc_get_orders('return' => 'ids') (storage-agnostic,
+ * no object hydration); the sum is one aggregate query on the active
+ * order storage: HPOS wc_orders.total_amount, or the CPT _order_total
+ * meta as fallback. Same numbers as the previous full-object loop.
+ *
+ * @param string[] $tka_statuses Order statuses (wc- prefixed).
+ * @param int      $tka_from_ts  Unix timestamp (range start).
+ * @return float
+ */
+function toykindangel_order_total_sum( array $tka_statuses, $tka_from_ts ) {
+	global $wpdb;
+
+	$tka_ids = wc_get_orders(
+		array(
+			'status'     => $tka_statuses,
+			'date_after' => gmdate( 'Y-m-d H:i:s', (int) $tka_from_ts ),
+			'limit'      => -1,
+			'return'     => 'ids',
+		)
+	);
+	$tka_ids = array_map( 'absint', (array) $tka_ids );
+	if ( empty( $tka_ids ) ) {
+		return 0.0;
+	}
+
+	$tka_in = implode( ',', $tka_ids );
+
+	if ( class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' )
+		&& method_exists( '\Automattic\WooCommerce\Utilities\OrderUtil', 'custom_orders_table_usage_is_enabled' )
+		&& \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+		return (float) $wpdb->get_var(
+			"SELECT SUM(total_amount) FROM {$wpdb->prefix}wc_orders WHERE id IN ({$tka_in})"
+		);
+	}
+
+	return (float) $wpdb->get_var(
+		"SELECT SUM(meta_value + 0) FROM {$wpdb->postmeta} WHERE meta_key = '_order_total' AND post_id IN ({$tka_in})"
+	);
+}
+
+/**
  * Widget markup.
  */
 function toykindangel_dashboard_widget_html() {
@@ -306,29 +350,16 @@ function toykindangel_dashboard_widget_html() {
         $tka_today_start  = strtotime( 'today' );
         $tka_month_start  = strtotime( gmdate( 'Y-m-01' ) );
 
-        $tka_today = wc_get_orders(
-                array(
-                        'status'     => array( 'wc-completed', 'wc-processing', 'wc-on-hold' ),
-                        'date_after' => gmdate( 'Y-m-d H:i:s', $tka_today_start ),
-                        'limit'      => -1,
-                )
-        );
-        $tka_month = wc_get_orders(
-                array(
-                        'status'     => array( 'wc-completed', 'wc-processing', 'wc-on-hold' ),
-                        'date_after' => gmdate( 'Y-m-d H:i:s', $tka_month_start ),
-                        'limit'      => -1,
-                )
-        );
-
-        $tka_today_sum = 0;
-        foreach ( $tka_today as $tka_o ) {
-                $tka_today_sum += (float) $tka_o->get_total();
-        }
-        $tka_month_sum = 0;
-        foreach ( $tka_month as $tka_o ) {
-                $tka_month_sum += (float) $tka_o->get_total();
-        }
+        /*
+         * v0.19.0 — the widget used to hydrate EVERY matching order object
+         * twice (limit => -1, return => objects) and sum in PHP. Order IDs
+         * are fetched without hydration and the totals come from one
+         * aggregate query per range (HPOS-aware, CPT fallback) — same
+         * numbers, a fraction of the memory/CPU on busy dashboards.
+         */
+        $tka_statuses  = array( 'wc-completed', 'wc-processing', 'wc-on-hold' );
+        $tka_today_sum = toykindangel_order_total_sum( $tka_statuses, $tka_today_start );
+        $tka_month_sum = toykindangel_order_total_sum( $tka_statuses, $tka_month_start );
 
         $tka_processing = (int) wp_count_posts( 'shop_order' )->{'wc-processing'};
         $tka_low_stock  = 0;
@@ -336,12 +367,11 @@ function toykindangel_dashboard_widget_html() {
                 /**
                  * Low-stock count (fixed in 0.17.0 — found by PHPStan, audit §8).
                  *
-                 * The previous code called wc_get_low_stock_amount() with no
-                 * argument (fatal ArgumentCountError with WooCommerce active)
-                 * and passed an unsupported 'stock' => array( min, max ) query
-                 * arg (silently ignored by WC_Product_Query). Rewritten with
-                 * supported args: manage_stock filter + the global threshold
-                 * option, filtered in PHP.
+                 * v0.19.0: IDs only from WC_Product_Query ('return' => 'ids')
+                 * and one batched _stock meta read via $wpdb — products are
+                 * always posts (HPOS affects orders only), so the meta table
+                 * is a safe source. Same counting semantics as the previous
+                 * 200-object hydration, without the hydration.
                  */
                 $tka_low_stock_threshold = (int) get_option( 'woocommerce_notify_low_stock_amount', 2 );
                 $tka_low_stock_candidates = wc_get_products(
@@ -349,13 +379,21 @@ function toykindangel_dashboard_widget_html() {
                                 'type'         => 'simple',
                                 'limit'        => 200,
                                 'manage_stock' => 'yes',
-                                'return'       => 'objects',
+                                'return'       => 'ids',
                         )
                 );
-                foreach ( $tka_low_stock_candidates as $tka_low_stock_product ) {
-                        $tka_low_stock_qty = (int) $tka_low_stock_product->get_stock_quantity();
-                        if ( $tka_low_stock_qty > 0 && $tka_low_stock_qty <= $tka_low_stock_threshold ) {
-                                $tka_low_stock++;
+                $tka_low_stock_candidates = array_map( 'absint', (array) $tka_low_stock_candidates );
+                if ( ! empty( $tka_low_stock_candidates ) ) {
+                        global $wpdb;
+                        $tka_in     = implode( ',', $tka_low_stock_candidates );
+                        $tka_stocks = $wpdb->get_results(
+                                "SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE meta_key = '_stock' AND post_id IN ({$tka_in})"
+                        );
+                        foreach ( (array) $tka_stocks as $tka_stock_row ) {
+                                $tka_low_stock_qty = (int) $tka_stock_row->meta_value;
+                                if ( $tka_low_stock_qty > 0 && $tka_low_stock_qty <= $tka_low_stock_threshold ) {
+                                        $tka_low_stock++;
+                                }
                         }
                 }
         }

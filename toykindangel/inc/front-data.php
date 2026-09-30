@@ -87,59 +87,75 @@ function toykindangel_map_products( $products ) {
 }
 
 /**
- * Product rails: amazing (on-sale) / newest / best-selling.
+ * Single source of truth for the three homepage product rails
+ * (amazing offers / newest / best sellers).
  *
- * @return array|null
+ * v0.19.0: both renderers consume this — the SSR markup
+ * (inc/front-ssr.php::toykindangel_ssr_products()) and the window.TKA_WP
+ * dataset (toykindangel_wc_rails()). Previously each pipeline ran its own
+ * WooCommerce queries, so every homepage view paid the full rail cost
+ * twice. Static-cached per request: the rails query exactly once.
+ *
+ * @return array<string, WC_Product[]> amazing/newest/best arrays (may be empty).
  */
-function toykindangel_wc_rails() {
+function toykindangel_home_rail_products() {
+        static $tka_cache = null;
+        if ( null !== $tka_cache ) {
+                return $tka_cache;
+        }
+
+        $tka_rails = array(
+                'amazing' => array(),
+                'newest'  => array(),
+                'best'    => array(),
+        );
+
         if ( ! function_exists( 'wc_get_products' ) ) {
-                return null;
+                return $tka_rails;
         }
 
-        $rails = array();
+        /* Amazing offers → products on sale (same price-diff fallback as the JS dataset). */
+        $tka_sale_ids = function_exists( 'wc_get_product_ids_on_sale' ) ? wc_get_product_ids_on_sale() : array();
 
-        // Amazing offers → products on sale. Some imports set _price below
-        // _regular_price without filling _sale_price, so WC's own on-sale
-        // index comes back empty — compute a price-diff fallback then.
-        $sale_ids = function_exists( 'wc_get_product_ids_on_sale' ) ? wc_get_product_ids_on_sale() : array();
-
-        if ( empty( $sale_ids ) ) {
-                foreach ( wc_get_products( array( 'limit' => 100, 'status' => 'publish' ) ) as $tka_p ) {
-                        $tka_reg = (float) $tka_p->get_regular_price();
-                        $tka_now = (float) $tka_p->get_price();
-                        if ( $tka_reg > 0 && $tka_now > 0 && $tka_now < $tka_reg ) {
-                                $sale_ids[] = $tka_p->get_id();
-                        }
+        /* TKA (18-e): «جشنواره» flagged products join the amazing-offer rail
+         * even when they carry no discount — the ribbon must always have a
+         * card to sit on. Merged locally (not into the WC transient) so the
+         * rail is correct immediately after the Customizer toggle flips. */
+        if ( function_exists( 'toykindangel_festival_active' ) && function_exists( 'toykindangel_festival_ids' ) && toykindangel_festival_active() ) {
+                $tka_festival_ids = toykindangel_festival_ids();
+                if ( ! empty( $tka_festival_ids ) ) {
+                        $tka_sale_ids = array_unique( array_merge( array_map( 'intval', (array) $tka_sale_ids ), $tka_festival_ids ) );
                 }
-                $sale_ids = array_slice( array_unique( $sale_ids ), 0, 10 );
         }
 
-        if ( ! empty( $sale_ids ) ) {
-                $rails['amazing'] = toykindangel_map_products(
-                        wc_get_products(
-                                array(
-                                        'include' => $sale_ids,
-                                        'limit'   => 10,
-                                        'orderby' => 'date',
-                                        'order'   => 'DESC',
-                                )
-                        )
-                );
+        if ( empty( $tka_sale_ids ) ) {
+                /* v0.19.0 — the old fallback hydrated 100 full WC_Product
+                 * objects just to read two price fields per product; a lean
+                 * meta_key-scoped SQL returns the same IDs directly. */
+                $tka_sale_ids = toykindangel_price_diff_sale_ids( 10 );
         }
-
-        // Newest products.
-        $rails['newest'] = toykindangel_map_products(
-                wc_get_products(
+        if ( ! empty( $tka_sale_ids ) ) {
+                $tka_rails['amazing'] = wc_get_products(
                         array(
+                                'include' => $tka_sale_ids,
                                 'limit'   => 10,
                                 'orderby' => 'date',
                                 'order'   => 'DESC',
                         )
+                );
+        }
+
+        /* Newest products. */
+        $tka_rails['newest'] = wc_get_products(
+                array(
+                        'limit'   => 10,
+                        'orderby' => 'date',
+                        'order'   => 'DESC',
                 )
         );
 
-        // Best sellers (by total_sales meta).
-        $best_query = new WP_Query(
+        /* Best sellers by total_sales meta. */
+        $tka_best_query = new WP_Query(
                 array(
                         'post_type'      => 'product',
                         'posts_per_page' => 10,
@@ -150,17 +166,83 @@ function toykindangel_wc_rails() {
                         'post_status'    => 'publish',
                 )
         );
-        if ( $best_query->have_posts() ) {
-                $best_products = array();
-                foreach ( $best_query->posts as $post ) {
-                        $product = wc_get_product( $post->ID );
-                        if ( $product ) {
-                                $best_products[] = $product;
-                        }
+        foreach ( $tka_best_query->posts as $tka_post ) {
+                $tka_product = wc_get_product( $tka_post->ID );
+                if ( $tka_product ) {
+                        $tka_rails['best'][] = $tka_product;
                 }
-                $rails['best'] = toykindangel_map_products( $best_products );
         }
         wp_reset_postdata();
+
+        $tka_cache = $tka_rails;
+        return $tka_cache;
+}
+
+/**
+ * Cheap ID-only scan for products whose active price is below the regular
+ * price (imports that set _price < _regular_price without filling
+ * _sale_price — invisible to wc_get_product_ids_on_sale()).
+ *
+ * Same matching semantics as the previous object-hydration loop
+ * (simple/external products only: variable parents carry an empty
+ * _regular_price and were skipped there too), but one meta_key-scoped
+ * SQL instead of 100 hydrated objects. Transient-cached and flushed by
+ * inc/cache.php whenever WooCommerce rebuilds its own product caches.
+ *
+ * @param int $limit Max IDs.
+ * @return int[]
+ */
+function toykindangel_price_diff_sale_ids( $limit = 10 ) {
+        global $wpdb;
+
+        $tka_ids = toykindangel_cache_get( 'price_diff_ids' );
+        if ( null === $tka_ids ) {
+                $tka_ids = $wpdb->get_col(
+                        "SELECT DISTINCT price_meta.post_id
+                         FROM {$wpdb->postmeta} AS price_meta
+                         INNER JOIN {$wpdb->postmeta} AS regular_meta
+                                 ON regular_meta.post_id = price_meta.post_id
+                                 AND regular_meta.meta_key = '_regular_price'
+                         INNER JOIN {$wpdb->posts} AS posts
+                                 ON posts.ID = price_meta.post_id
+                         WHERE price_meta.meta_key = '_price'
+                                AND posts.post_type = 'product'
+                                AND posts.post_status = 'publish'
+                                AND price_meta.meta_value + 0 > 0
+                                AND regular_meta.meta_value + 0 > 0
+                                AND price_meta.meta_value + 0 < regular_meta.meta_value + 0"
+                );
+                $tka_ids = array_map( 'intval', (array) $tka_ids );
+                toykindangel_cache_set( 'price_diff_ids', $tka_ids, 12 * HOUR_IN_SECONDS );
+        }
+
+        return array_slice( array_values( (array) $tka_ids ), 0, (int) $limit );
+}
+
+/**
+ * Product rails: amazing (on-sale) / newest / best-selling.
+ *
+ * v0.19.0: a thin mapper over toykindangel_home_rail_products() — the
+ * queries themselves live in the shared provider so the SSR renderer and
+ * this dataset builder never duplicate them again.
+ *
+ * @return array|null
+ */
+function toykindangel_wc_rails() {
+        if ( ! function_exists( 'wc_get_products' ) ) {
+                return null;
+        }
+
+        $tka_products = toykindangel_home_rail_products();
+
+        $rails = array();
+        if ( ! empty( $tka_products['amazing'] ) ) {
+                $rails['amazing'] = toykindangel_map_products( $tka_products['amazing'] );
+        }
+        $rails['newest'] = toykindangel_map_products( (array) $tka_products['newest'] );
+        if ( ! empty( $tka_products['best'] ) ) {
+                $rails['best'] = toykindangel_map_products( $tka_products['best'] );
+        }
 
         if ( empty( $rails['newest'] ) ) {
                 return empty( $rails ) ? null : $rails;
@@ -172,9 +254,36 @@ function toykindangel_wc_rails() {
 /**
  * First-level product categories for the stories row.
  *
+ * v0.19.0: cached (static per request + transient across requests, flushed
+ * by inc/cache.php on product_cat/product_brand term changes) — the SSR
+ * renderer and the TKA_WP dataset used to run this two/three times per
+ * homepage view.
+ *
  * @return array|null
  */
 function toykindangel_wc_stories() {
+	static $tka_local = null;
+	if ( null !== $tka_local ) {
+		return $tka_local;
+	}
+
+	$tka_local = toykindangel_cache_get( 'home_stories' );
+	if ( null === $tka_local ) {
+		$tka_local = toykindangel_wc_stories_uncached();
+		if ( null !== $tka_local ) {
+			toykindangel_cache_set( 'home_stories', $tka_local, 12 * HOUR_IN_SECONDS );
+		}
+	}
+
+	return $tka_local;
+}
+
+/**
+ * Uncached stories builder (see toykindangel_wc_stories()).
+ *
+ * @return array|null
+ */
+function toykindangel_wc_stories_uncached() {
         if ( ! taxonomy_exists( 'product_cat' ) ) {
                 return null;
         }
@@ -232,9 +341,34 @@ function toykindangel_wc_stories() {
 /**
  * Brands from the native product_brand taxonomy (fallback tka_brand).
  *
+ * v0.19.0: cached (static per request + transient across requests, flushed
+ * by inc/cache.php on term changes) — same rationale as the stories cache.
+ *
  * @return array|null
  */
 function toykindangel_wc_brands() {
+	static $tka_local = null;
+	if ( null !== $tka_local ) {
+		return $tka_local;
+	}
+
+	$tka_local = toykindangel_cache_get( 'home_brands' );
+	if ( null === $tka_local ) {
+		$tka_local = toykindangel_wc_brands_uncached();
+		if ( null !== $tka_local ) {
+			toykindangel_cache_set( 'home_brands', $tka_local, 12 * HOUR_IN_SECONDS );
+		}
+	}
+
+	return $tka_local;
+}
+
+/**
+ * Uncached brands builder (see toykindangel_wc_brands()).
+ *
+ * @return array|null
+ */
+function toykindangel_wc_brands_uncached() {
         $tka_brand_tax = taxonomy_exists( 'product_brand' ) ? 'product_brand' : 'tka_brand';
         if ( ! taxonomy_exists( $tka_brand_tax ) ) {
                 return null;

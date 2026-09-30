@@ -19,93 +19,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Real WooCommerce products for the three product rails (static-cached:
- * front-page.php calls this for each rail — queries must run once).
+ * Real WooCommerce products for the three product rails.
+ *
+ * v0.19.0: thin wrapper over toykindangel_home_rail_products()
+ * (inc/front-data.php) — the single query source shared with the
+ * TKA_WP dataset builder, so the rails run exactly once per request
+ * instead of once per renderer.
  *
  * @return array<string, WC_Product[]> amazing/newest/best arrays (may be empty).
  */
 function toykindangel_ssr_products() {
-        static $tka_cache = null;
-        if ( null !== $tka_cache ) {
-                return $tka_cache;
-        }
-
-        $tka_rails = array(
-                'amazing' => array(),
-                'newest'  => array(),
-                'best'    => array(),
-        );
-
         if ( ! function_exists( 'wc_get_products' ) ) {
-                return $tka_rails;
-        }
-
-        /* Amazing offers → products on sale (same price-diff fallback as the JS dataset). */
-        $tka_sale_ids = function_exists( 'wc_get_product_ids_on_sale' ) ? wc_get_product_ids_on_sale() : array();
-
-        /* TKA (18-e): «جشنواره» flagged products join the amazing-offer rail
-         * even when they carry no discount — the ribbon must always have a
-         * card to sit on. Merged locally (not into the WC transient) so the
-         * rail is correct immediately after the Customizer toggle flips. */
-        if ( function_exists( 'toykindangel_festival_active' ) && function_exists( 'toykindangel_festival_ids' ) && toykindangel_festival_active() ) {
-                $tka_festival_ids = toykindangel_festival_ids();
-                if ( ! empty( $tka_festival_ids ) ) {
-                        $tka_sale_ids = array_unique( array_merge( array_map( 'intval', (array) $tka_sale_ids ), $tka_festival_ids ) );
-                }
-        }
-
-        if ( empty( $tka_sale_ids ) ) {
-                foreach ( wc_get_products( array( 'limit' => 100, 'status' => 'publish' ) ) as $tka_p ) {
-                        $tka_reg = (float) $tka_p->get_regular_price();
-                        $tka_now = (float) $tka_p->get_price();
-                        if ( $tka_reg > 0 && $tka_now > 0 && $tka_now < $tka_reg ) {
-                                $tka_sale_ids[] = $tka_p->get_id();
-                        }
-                }
-                $tka_sale_ids = array_slice( array_unique( $tka_sale_ids ), 0, 10 );
-        }
-        if ( ! empty( $tka_sale_ids ) ) {
-                $tka_rails['amazing'] = wc_get_products(
-                        array(
-                                'include' => $tka_sale_ids,
-                                'limit'   => 10,
-                                'orderby' => 'date',
-                                'order'   => 'DESC',
-                        )
+                return array(
+                        'amazing' => array(),
+                        'newest'  => array(),
+                        'best'    => array(),
                 );
         }
 
-        /* Newest. */
-        $tka_rails['newest'] = wc_get_products(
-                array(
-                        'limit'   => 10,
-                        'orderby' => 'date',
-                        'order'   => 'DESC',
-                )
-        );
-
-        /* Best sellers by total_sales meta. */
-        $tka_best = new WP_Query(
-                array(
-                        'post_type'      => 'product',
-                        'posts_per_page' => 10,
-                        'meta_key'       => 'total_sales', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-                        'orderby'        => 'meta_value_num', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value_num
-                        'order'          => 'DESC',
-                        'no_found_rows'  => true,
-                        'post_status'    => 'publish',
-                )
-        );
-        foreach ( $tka_best->posts as $tka_post ) {
-                $tka_product = wc_get_product( $tka_post->ID );
-                if ( $tka_product ) {
-                        $tka_rails['best'][] = $tka_product;
-                }
-        }
-        wp_reset_postdata();
-
-        $tka_cache = $tka_rails;
-        return $tka_cache;
+        return toykindangel_home_rail_products();
 }
 
 /**

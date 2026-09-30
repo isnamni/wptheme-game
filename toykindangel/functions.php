@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
         exit;
 }
 
-define( 'TOYKINDANGEL_VERSION', '0.18.0' );
+define( 'TOYKINDANGEL_VERSION', '0.19.0' );
 define( 'TOYKINDANGEL_DIR', get_template_directory() );
 define( 'TOYKINDANGEL_URI', get_template_directory_uri() );
 
@@ -24,6 +24,7 @@ require_once TOYKINDANGEL_DIR . '/inc/customizer.php';
 require_once TOYKINDANGEL_DIR . '/inc/seo-schema.php';
 require_once TOYKINDANGEL_DIR . '/inc/seo-meta.php';
 require_once TOYKINDANGEL_DIR . '/inc/performance.php';
+require_once TOYKINDANGEL_DIR . '/inc/cache.php';
 require_once TOYKINDANGEL_DIR . '/inc/breadcrumbs.php';
 require_once TOYKINDANGEL_DIR . '/inc/product-card.php';
 require_once TOYKINDANGEL_DIR . '/inc/front-data.php';
