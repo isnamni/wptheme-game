@@ -216,7 +216,27 @@ if ( $product ) {
 }
 
 /* Related products rail (optional via Customizer). */
-$tka_related = ( $product && get_theme_mod( 'tka_pdp_related', true ) ) ? wc_get_related_products( $tka_id, 10 ) : array();
+/*
+ * v0.20.0 audit fix H3 — wc_get_related_products() returns IDs only (good),
+ * but the render loop below used to hydrate each ID with a separate
+ * wc_get_product() call. WC's object cache makes repeated calls on the same
+ * ID cheap, but on a PDP every related ID is distinct, so each call is one
+ * fresh hydration. Batch the hydration with wc_get_products(include=>IDs)
+ * instead — same WC CRUD path, one query family, same downstream pcard_wrap
+ * rendering. No change to the rendered markup or the related-IDs source.
+ */
+$tka_related_ids = ( $product && get_theme_mod( 'tka_pdp_related', true ) ) ? wc_get_related_products( $tka_id, 10 ) : array();
+$tka_related     = array();
+if ( ! empty( $tka_related_ids ) && function_exists( 'wc_get_products' ) ) {
+        $tka_related = wc_get_products(
+                array(
+                        'include' => $tka_related_ids,
+                        'limit'   => 10,
+                        'orderby' => 'post__in',
+                        'order'   => 'ASC',
+                )
+        );
+}
 
 /* Anchor tabs (18-f) — only for the sections that actually render. */
 $tka_has_desc = (bool) trim( get_the_content() );
@@ -538,11 +558,15 @@ continue; }
                 </div>
                 <div class="plist__track">
                         <?php
-                        foreach ( $tka_related as $tka_rel_id ) {
-                                $tka_rel = wc_get_product( $tka_rel_id );
-                                if ( $tka_rel ) {
-								// phpcs:ignore WordPress.Security.EscapeOutput -- theme-generated markup contains inline SVG (wp_kses_post would strip it).
-								echo toykindangel_pcard_wrap( $tka_rel );
+                        /*
+                         * v0.20.0 audit fix H3 — $tka_related now holds hydrated
+                         * WC_Product objects (batched via wc_get_products above),
+                         * so the per-item wc_get_product() call is gone. pcard_wrap
+                         * output is identical.
+                         */
+                        foreach ( $tka_related as $tka_rel ) {
+                                if ( $tka_rel instanceof WC_Product ) {
+								echo toykindangel_pcard_wrap( $tka_rel ); // phpcs:ignore WordPress.Security.EscapeOutput -- theme-generated markup contains inline SVG (wp_kses_post would strip it).
                                 }
                         }
                         ?>

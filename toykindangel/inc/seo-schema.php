@@ -209,6 +209,20 @@ function toykindangel_jsonld_product() {
                 return;
         }
 
+        /*
+         * v0.20.0 audit fix H4 — WooCommerce core's WC_Structured_Data also
+         * emits a Product JSON-LD in wp_footer (woocommerce_structured_data
+         * → WC()->structured_data->output_structured_data, hooked at
+         * priority 10 on wp_footer). Without an SEO plugin, Google would
+         * see TWO Product schemas on the PDP with different field sets,
+         * which Search Console flags as duplication. Unhook WC's output
+         * here so the theme is the single source of Product schema on the
+         * PDP (and only on the PDP — every other page keeps WC's schema).
+         */
+        if ( function_exists( 'WC' ) && WC()->structured_data ) {
+                remove_action( 'wp_footer', array( WC()->structured_data, 'output_structured_data' ), 10 );
+        }
+
         /* Images (featured + gallery). */
         $images = array();
         $ids    = array_filter( array_merge( array( (int) $product->get_image_id() ), $product->get_gallery_image_ids() ) );

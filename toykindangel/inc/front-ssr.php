@@ -192,3 +192,104 @@ function toykindangel_ssr_brands() {
         }
         return $tka_html;
 }
+
+/**
+ * Top-level product categories grid for the homepage «دسته‌بندی‌های فروشگاه»
+ * rail.
+ *
+ * v0.20.0 audit fix C1 — the previous inline block in front-page.php ran an
+ * UNBOUNDED get_terms(parent=0) and then a get_term_meta(thumbnail_id) +
+ * wp_get_attachment_image_url() per term inside the render loop, with no
+ * transient wrap. get_terms() does NOT prime term meta, so every term was
+ * a separate termmeta query + (on cache miss) a separate attachment lookup
+ * — a real N+1 on every homepage view.
+ *
+ * This helper:
+ *   - bounds the scan to 24 top-level terms (same as the visible grid),
+ *   - primes term meta in one shot via _prime_term_caches(),
+ *   - primes the attachment post+meta cache in one shot for the thumbnails
+ *     that actually exist,
+ *   - caches the built HTML array in the shared theme cache (transient +
+ *     per-request static), flushed by inc/cache.php on product_cat term
+ *     create/edit/delete — same invalidation contract as the stories/brands
+ *     caches that already live there.
+ *
+ * Output is identical markup to the previous inline block (1:1), so app.js
+ * and demo.css are untouched.
+ *
+ * @return array[] { name, href, img } — empty array when no terms.
+ */
+function toykindangel_ssr_catgrid() {
+        static $tka_local = null;
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = toykindangel_cache_get( 'home_catgrid' );
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = array();
+        if ( ! taxonomy_exists( 'product_cat' ) ) {
+                return $tka_local;
+        }
+
+        $tka_terms = get_terms(
+                array(
+                        'taxonomy'   => 'product_cat',
+                        'parent'     => 0,
+                        'hide_empty' => false,
+                        'number'     => 24,
+                        'exclude'    => array( (int) get_option( 'default_product_cat', 0 ) ),
+                )
+        );
+        if ( is_wp_error( $tka_terms ) || empty( $tka_terms ) ) {
+                toykindangel_cache_set( 'home_catgrid', $tka_local, 12 * HOUR_IN_SECONDS );
+                return $tka_local;
+        }
+
+        /*
+         * Prime term meta in one query (get_terms does not). Also primes
+         * term-link related caches via WP_Term instances already populated.
+         */
+        $tka_term_ids = array();
+        foreach ( $tka_terms as $tka_term ) {
+                $tka_term_ids[] = (int) $tka_term->term_id;
+        }
+        _prime_term_caches( $tka_term_ids, false );
+
+        /*
+         * Collect thumbnail attachment IDs and prime their post + postmeta
+         * cache in one shot, so wp_get_attachment_image_url() below is a
+         * cache hit instead of 2N queries.
+         */
+        $tka_thumb_ids = array();
+        foreach ( $tka_terms as $tka_term ) {
+                $tka_thumb = (int) get_term_meta( (int) $tka_term->term_id, 'thumbnail_id', true );
+                if ( $tka_thumb ) {
+                        $tka_thumb_ids[] = $tka_thumb;
+                }
+        }
+        if ( ! empty( $tka_thumb_ids ) ) {
+                _prime_post_caches( array(), $tka_thumb_ids, false, false );
+        }
+
+        foreach ( $tka_terms as $tka_term ) {
+                $tka_link = get_term_link( $tka_term );
+                if ( is_wp_error( $tka_link ) ) {
+                        continue;
+                }
+                $tka_thumb = (int) get_term_meta( (int) $tka_term->term_id, 'thumbnail_id', true );
+                $tka_img   = $tka_thumb ? wp_get_attachment_image_url( $tka_thumb, 'woocommerce_thumbnail' ) : '';
+
+                $tka_local[] = array(
+                        'name' => $tka_term->name,
+                        'href' => $tka_link,
+                        'img'  => $tka_img ? $tka_img : '',
+                );
+        }
+
+        toykindangel_cache_set( 'home_catgrid', $tka_local, 12 * HOUR_IN_SECONDS );
+        return $tka_local;
+}

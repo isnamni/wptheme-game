@@ -105,6 +105,17 @@ if ( ! array_key_exists( $tka_sort, $tka_sorts ) ) {
 					: array();
 			}
 			if ( ! is_wp_error( $tka_sub_terms ) && ! empty( $tka_sub_terms ) ) :
+				/*
+				 * v0.20.0 audit fix C4 — get_terms() does NOT prime term
+				 * meta, so the per-term get_term_meta(thumbnail_id) calls
+				 * below were a real N+1 (one termmeta query per subcat on
+				 * every category archive view). Prime them in one shot.
+				 */
+				$tka_sub_ids = array();
+				foreach ( $tka_sub_terms as $tka_sub ) {
+					$tka_sub_ids[] = (int) $tka_sub->term_id;
+				}
+				_prime_term_caches( $tka_sub_ids, false );
 				?>
 				<nav class="tka-subcats" aria-label="<?php esc_attr_e( 'دسته‌های مرتبط', 'toykindangel' ); ?>">
 					<?php

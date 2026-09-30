@@ -273,6 +273,209 @@ function toykindangel_cats_page_brand_count() {
 
         return 0;
 }
+
+/**
+ * Cached SSR grid dataset for the /categories/ page main grid.
+ *
+ * v0.20.0 audit fix C2 — the SSR grid used to call, per top-level term:
+ *   - toykindangel_cats_page_children()  -> 1 get_terms per top term
+ *   - toykindangel_cats_page_card_media() -> get_term_meta + (fallback) get_posts per top term
+ * None of these were transient-cached, so the /categories/ page paid
+ * ~120-200 queries on every load. The interactive tree browser on the
+ * same page (inc/cat-data.php) IS transient-cached, so the inconsistency
+ * was real.
+ *
+ * This builder produces the same dataset the template consumed via the
+ * per-term helpers, but in one pass with:
+ *   - term meta primed for all top + child terms,
+ *   - attachment post+meta caches primed for every thumbnail referenced,
+ *   - the final array cached in the shared theme cache (transient + static),
+ *     flushed by inc/cache.php on product_cat term changes.
+ *
+ * Output shape: [ { term, url, kids, media }, ... ]
+ *
+ * @return array[]
+ */
+function toykindangel_cats_page_grid_data() {
+        static $tka_local = null;
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = toykindangel_cache_get( 'cats_page_grid' );
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = toykindangel_cats_page_grid_data_uncached();
+        toykindangel_cache_set( 'cats_page_grid', $tka_local, 12 * HOUR_IN_SECONDS );
+        return $tka_local;
+}
+
+/**
+ * Uncached builder for toykindangel_cats_page_grid_data().
+ *
+ * @return array[]
+ */
+function toykindangel_cats_page_grid_data_uncached() {
+        $tka_top_terms = toykindangel_cats_page_top_terms();
+        if ( empty( $tka_top_terms ) ) {
+                return array();
+        }
+
+        // Prime term meta for top terms (get_terms does NOT prime meta).
+        $tka_top_ids = array();
+        foreach ( $tka_top_terms as $tka_term ) {
+                $tka_top_ids[] = (int) $tka_term->term_id;
+        }
+        _prime_term_caches( $tka_top_ids, false );
+
+        // Gather all child terms per top term in one get_terms per top term.
+        $tka_grid = array();
+        $tka_all_child_ids = array();
+        foreach ( $tka_top_terms as $tka_term ) {
+                $tka_kids      = toykindangel_cats_page_children( $tka_term, 4 );
+                $tka_grid[]    = array(
+                        'term'  => $tka_term,
+                        'url'   => toykindangel_term_link( $tka_term ),
+                        'kids'  => $tka_kids,
+                        'media' => '',
+                );
+                foreach ( $tka_kids as $tka_kid ) {
+                        $tka_all_child_ids[] = (int) $tka_kid->term_id;
+                }
+        }
+
+        // Prime term meta for child terms (used by get_term_link + count).
+        if ( ! empty( $tka_all_child_ids ) ) {
+                _prime_term_caches( $tka_all_child_ids, false );
+        }
+
+        // Collect every thumbnail attachment ID (top terms only) and prime once.
+        $tka_thumb_ids = array();
+        foreach ( $tka_top_terms as $tka_term ) {
+                $tka_thumb = (int) get_term_meta( (int) $tka_term->term_id, 'thumbnail_id', true );
+                if ( $tka_thumb ) {
+                        $tka_thumb_ids[] = $tka_thumb;
+                }
+        }
+        if ( ! empty( $tka_thumb_ids ) ) {
+                _prime_post_caches( array(), $tka_thumb_ids, false, false );
+        }
+
+        // Now compute media per top term (matches toykindangel_cats_page_card_media semantics).
+        foreach ( $tka_grid as $tka_i => $tka_row ) {
+                $tka_term           = $tka_row['term'];
+                $tka_img_args       = array(
+                        'class'    => 'cthub-card__img',
+                        'alt'      => $tka_term->name,
+                        'loading'  => 'lazy',
+                        'decoding' => 'async',
+                );
+                $tka_thumb          = (int) get_term_meta( (int) $tka_term->term_id, 'thumbnail_id', true );
+                $tka_media          = '';
+                if ( $tka_thumb ) {
+                        $tka_media = wp_get_attachment_image( $tka_thumb, 'medium', false, $tka_img_args );
+                } elseif ( $tka_term->count > 0 ) {
+                        $tka_ids = get_posts(
+                                array(
+                                        'post_type'        => 'product',
+                                        'post_status'      => 'publish',
+                                        'posts_per_page'   => 1,
+                                        'fields'           => 'ids',
+                                        'no_found_rows'    => true,
+                                        'suppress_filters' => true,
+                                        'tax_query'        => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+                                                array(
+                                                        'taxonomy'         => $tka_term->taxonomy,
+                                                        'field'            => 'term_id',
+                                                        'terms'            => (int) $tka_term->term_id,
+                                                        'include_children' => true,
+                                                ),
+                                        ),
+                                )
+                        );
+                        $tka_pid = ( $tka_ids && has_post_thumbnail( (int) reset( $tka_ids ) ) ) ? (int) get_post_thumbnail_id( (int) reset( $tka_ids ) ) : 0;
+                        if ( $tka_pid ) {
+                                $tka_media = wp_get_attachment_image( $tka_pid, 'medium', false, $tka_img_args );
+                        }
+                }
+                if ( '' === $tka_media ) {
+                        $tka_letter = function_exists( 'mb_substr' ) ? mb_substr( wp_strip_all_tags( $tka_term->name ), 0, 1, 'UTF-8' ) : substr( $tka_term->name, 0, 1 );
+                        $tka_media  = '<span class="cthub-card__mono" aria-hidden="true">' . esc_html( $tka_letter ) . '</span>';
+                }
+                $tka_grid[ $tka_i ]['media'] = $tka_media;
+        }
+
+        return $tka_grid;
+}
+
+/**
+ * Cached popular-subcategory rail dataset for /categories/.
+ *
+ * v0.20.0 audit fix C2 — same rationale as the grid builder: the previous
+ * toykindangel_cats_page_popular_terms() looped through get_terms results
+ * and called get_term($term->parent) per item, then pop_media() did
+ * get_term_meta + wp_get_attachment_image per item — uncached.
+ *
+ * @return array[] { term: WP_Term, url: string, media: string }
+ */
+function toykindangel_cats_page_popular_data() {
+        static $tka_local = null;
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = toykindangel_cache_get( 'cats_page_popular' );
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = toykindangel_cats_page_popular_data_uncached();
+        toykindangel_cache_set( 'cats_page_popular', $tka_local, 12 * HOUR_IN_SECONDS );
+        return $tka_local;
+}
+
+/**
+ * Uncached builder for toykindangel_cats_page_popular_data().
+ *
+ * @return array[]
+ */
+function toykindangel_cats_page_popular_data_uncached() {
+        $tka_terms = toykindangel_cats_page_popular_terms( 12 );
+        if ( empty( $tka_terms ) ) {
+                return array();
+        }
+
+        // Prime term meta for the selected terms.
+        $tka_ids = array();
+        foreach ( $tka_terms as $tka_term ) {
+                $tka_ids[] = (int) $tka_term->term_id;
+        }
+        _prime_term_caches( $tka_ids, false );
+
+        // Prime attachment caches for thumbnails that actually exist.
+        $tka_thumb_ids = array();
+        foreach ( $tka_terms as $tka_term ) {
+                $tka_thumb = (int) get_term_meta( (int) $tka_term->term_id, 'thumbnail_id', true );
+                if ( $tka_thumb ) {
+                        $tka_thumb_ids[] = $tka_thumb;
+                }
+        }
+        if ( ! empty( $tka_thumb_ids ) ) {
+                _prime_post_caches( array(), $tka_thumb_ids, false, false );
+        }
+
+        $tka_out = array();
+        foreach ( $tka_terms as $tka_term ) {
+                $tka_out[] = array(
+                        'term'  => $tka_term,
+                        'url'   => toykindangel_term_link( $tka_term ),
+                        'media' => toykindangel_cats_page_pop_media( $tka_term ),
+                );
+        }
+        return $tka_out;
+}
 ?>
 <div class="cthub">
 
@@ -346,15 +549,16 @@ function toykindangel_cats_page_brand_count() {
                                 </a>
                         </div>
                         <div class="cthub-grid">
-                                <?php foreach ( toykindangel_cats_page_top_terms() as $tka_term ) : ?>
-                                        <?php
-                                        $tka_url   = toykindangel_term_link( $tka_term );
-                                        $tka_kids  = toykindangel_cats_page_children( $tka_term, 4 );
+                                <?php foreach ( toykindangel_cats_page_grid_data() as $tka_row ) :
+                                        $tka_term  = $tka_row['term'];
+                                        $tka_url   = $tka_row['url'];
+                                        $tka_kids  = $tka_row['kids'];
+                                        $tka_media = $tka_row['media'];
                                         $tka_count = (int) $tka_term->count;
                                         ?>
                                         <article class="cthub-card">
                                                 <a class="cthub-card__link" href="<?php echo esc_url( $tka_url ); ?>">
-                                                        <figure class="cthub-card__media"><?php echo toykindangel_cats_page_card_media( $tka_term ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- img/span امن داخل تابع. ?></figure>
+                                                        <figure class="cthub-card__media"><?php echo $tka_media; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- img/span امن داخل تابع. ?></figure>
                                                         <h3 class="cthub-card__name"><?php echo esc_html( $tka_term->name ); ?></h3>
                                                         <?php if ( $tka_count > 0 ) : ?>
                                                                 <span class="cthub-card__count num"><?php echo esc_html( toykindangel_fa_num( number_format( $tka_count ) ) ); ?>&nbsp;<?php esc_html_e( 'کالا', 'toykindangel' ); ?></span>
@@ -377,7 +581,7 @@ function toykindangel_cats_page_brand_count() {
         </section>
 
         <!-- ۴) ریل زیردسته‌های پرطرفدار (اسکرول افقی در موبایل) -->
-        <?php $tka_popular = toykindangel_cats_page_popular_terms( 12 ); ?>
+        <?php $tka_popular = toykindangel_cats_page_popular_data(); ?>
         <?php if ( ! empty( $tka_popular ) ) : ?>
                 <section class="cthub-sec cthub-pop" aria-label="<?php esc_attr_e( 'زیردسته‌های پرطرفدار', 'toykindangel' ); ?>">
                         <div class="cthub-sec__in">
@@ -388,16 +592,16 @@ function toykindangel_cats_page_brand_count() {
                                         </h2>
                                 </div>
                                 <div class="cthub-pop__rail">
-                                        <?php foreach ( $tka_popular as $tka_term ) : ?>
-                                                <?php
-                                                $tka_url = toykindangel_term_link( $tka_term );
+                                        <?php foreach ( $tka_popular as $tka_row ) :
+                                                $tka_term  = $tka_row['term'];
+                                                $tka_url   = $tka_row['url'];
                                                 if ( ! $tka_url ) {
                                                         continue;
                                                 }
                                                 $tka_count = (int) $tka_term->count;
                                                 ?>
                                                 <a class="cthub-pop__item" href="<?php echo esc_url( $tka_url ); ?>">
-                                                        <span class="cthub-pop__img"><?php echo toykindangel_cats_page_pop_media( $tka_term ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- img/span امن داخل تابع. ?></span>
+                                                        <span class="cthub-pop__img"><?php echo $tka_row['media']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- img/span امن داخل تابع. ?></span>
                                                         <span class="cthub-pop__meta">
                                                                 <span class="cthub-pop__name"><?php echo esc_html( $tka_term->name ); ?></span>
                                                                 <span class="cthub-pop__count num"><?php echo esc_html( toykindangel_fa_num( number_format( $tka_count ) ) ); ?>&nbsp;<?php esc_html_e( 'کالا', 'toykindangel' ); ?></span>

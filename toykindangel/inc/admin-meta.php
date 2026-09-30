@@ -296,12 +296,17 @@ add_action( 'wp_dashboard_setup', 'toykindangel_dashboard_widget' );
 
 /**
  * Sum order totals for the given statuses since a timestamp — without
- * hydrating full order objects (v0.19.0).
+ * hydrating full order objects.
  *
- * Order IDs come from wc_get_orders('return' => 'ids') (storage-agnostic,
- * no object hydration); the sum is one aggregate query on the active
- * order storage: HPOS wc_orders.total_amount, or the CPT _order_total
- * meta as fallback. Same numbers as the previous full-object loop.
+ * v0.19.0: Order IDs were fetched via wc_get_orders('limit'=>-1,'return'=>'ids')
+ * and then summed with one aggregate SQL. v0.20.0 audit fix H1 — the
+ * 'limit'=>-1 still loaded every matching order ID into PHP memory and
+ * built an IN(...) clause that could exceed max_allowed_packet on a busy
+ * store (3000+ products, 4000+ visits/day => potentially tens of thousands
+ * of orders per month). The two-step pattern is replaced by a single
+ * aggregate SUM query filtered by date and status, run directly on the
+ * active order storage (HPOS wc_orders or CPT postmeta fallback). Same
+ * numbers, no ID materialization, no IN clause.
  *
  * @param string[] $tka_statuses Order statuses (wc- prefixed).
  * @param int      $tka_from_ts  Unix timestamp (range start).
@@ -310,32 +315,52 @@ add_action( 'wp_dashboard_setup', 'toykindangel_dashboard_widget' );
 function toykindangel_order_total_sum( array $tka_statuses, $tka_from_ts ) {
 	global $wpdb;
 
-	$tka_ids = wc_get_orders(
-		array(
-			'status'     => $tka_statuses,
-			'date_after' => gmdate( 'Y-m-d H:i:s', (int) $tka_from_ts ),
-			'limit'      => -1,
-			'return'     => 'ids',
-		)
-	);
-	$tka_ids = array_map( 'absint', (array) $tka_ids );
-	if ( empty( $tka_ids ) ) {
+	if ( empty( $tka_statuses ) ) {
 		return 0.0;
 	}
 
-	$tka_in = implode( ',', $tka_ids );
+	// Sanitize statuses into a SQL-safe IN list (each entry is 'wc-...').
+	$tka_in_statuses = array();
+	foreach ( $tka_statuses as $tka_status ) {
+		$tka_in_statuses[] = "'" . esc_sql( (string) $tka_status ) . "'";
+	}
+	$tka_status_list = implode( ',', $tka_in_statuses );
+	$tka_date        = gmdate( 'Y-m-d H:i:s', (int) $tka_from_ts );
 
+	/*
+	 * HPOS path — sum on the custom orders table directly. The status
+	 * column on wc_orders holds the 'wc-...' string, and date_created_gmt
+	 * is the indexed GMT timestamp column.
+	 */
 	if ( class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' )
 		&& method_exists( '\Automattic\WooCommerce\Utilities\OrderUtil', 'custom_orders_table_usage_is_enabled' )
 		&& \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
-		return (float) $wpdb->get_var(
-			"SELECT SUM(total_amount) FROM {$wpdb->prefix}wc_orders WHERE id IN ({$tka_in})"
+
+		$tka_sql = $wpdb->prepare(
+			"SELECT SUM(total_amount) FROM {$wpdb->prefix}wc_orders
+			 WHERE status IN (" . $tka_status_list . ")
+			 AND date_created_gmt >= %s",
+			$tka_date
 		);
+		return (float) $wpdb->get_var( $tka_sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- statuses esc_sql'd above, %s prepared.
 	}
 
-	return (float) $wpdb->get_var(
-		"SELECT SUM(meta_value + 0) FROM {$wpdb->postmeta} WHERE meta_key = '_order_total' AND post_id IN ({$tka_in})"
+	/*
+	 * CPT (legacy) fallback — orders live in wp_posts (post_type=shop_order,
+	 * post_status='wc-...') and the order total is in postmeta _order_total.
+	 * One JOIN, no ID materialization.
+	 */
+	$tka_sql = $wpdb->prepare(
+		"SELECT SUM(pm.meta_value + 0)
+		 FROM {$wpdb->postmeta} AS pm
+		 INNER JOIN {$wpdb->posts} AS p ON p.ID = pm.post_id
+		 WHERE pm.meta_key = '_order_total'
+		 AND p.post_type = 'shop_order'
+		 AND p.post_status IN (" . $tka_status_list . ")
+		 AND p.post_date_gmt >= %s",
+		$tka_date
 	);
+	return (float) $wpdb->get_var( $tka_sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- statuses esc_sql'd above, %s prepared.
 }
 
 /**
@@ -373,11 +398,21 @@ function toykindangel_dashboard_widget_html() {
                  * is a safe source. Same counting semantics as the previous
                  * 200-object hydration, without the hydration.
                  */
+                /*
+                 * v0.20.0 audit fix H2 — the previous code capped the candidate
+                 * scan at 200 products (limit => 200), so on a store with more
+                 * than 200 stock-managed simple products the count was silently
+                 * wrong (a correctness bug, not just a perf one). The cap is
+                 * removed: wc_get_products('limit' => -1, 'return' => 'ids')
+                 * returns IDs only (no object hydration), and the stock read
+                 * is one batched SQL — both are cheap even at 3000+ products
+                 * (IDs are ints; the IN clause stays well under max_allowed_packet).
+                 */
                 $tka_low_stock_threshold = (int) get_option( 'woocommerce_notify_low_stock_amount', 2 );
                 $tka_low_stock_candidates = wc_get_products(
                         array(
                                 'type'         => 'simple',
-                                'limit'        => 200,
+                                'limit'        => -1,
                                 'manage_stock' => 'yes',
                                 'return'       => 'ids',
                         )

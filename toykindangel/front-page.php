@@ -153,12 +153,16 @@ else :
 
         <!-- دسته‌بندی‌های اصلی فروشگاه (سبک اسنپ‌شاپ) — TKA 0.18.0 -->
         <?php
-        $tka_main_cats = get_terms( array(
-                'taxonomy'   => 'product_cat',
-                'parent'     => 0,
-                'hide_empty' => false,
-        ) );
-        if ( ! is_wp_error( $tka_main_cats ) && ! empty( $tka_main_cats ) ) :
+        /*
+         * v0.20.0 audit fix C1 — moved to toykindangel_ssr_catgrid() (inc/front-ssr.php).
+         * The inline block ran an unbounded get_terms(parent=0) + a per-term
+         * get_term_meta + wp_get_attachment_image_url on every homepage view
+         * with no transient wrap. The helper bounds the scan, primes term &
+         * attachment caches, and serves from the shared theme cache (12h TTL,
+         * event-driven invalidation via inc/cache.php).
+         */
+        $tka_catgrid_items = toykindangel_ssr_catgrid();
+        if ( ! empty( $tka_catgrid_items ) ) :
                 ?>
                 <section class="section tka-catgrid-sec" aria-label="<?php esc_attr_e( 'دسته‌بندی‌های فروشگاه', 'toykindangel' ); ?>">
                         <div class="section__head">
@@ -167,22 +171,16 @@ else :
                         </div>
                         <div class="tka-catgrid">
                                 <?php
-                                foreach ( $tka_main_cats as $tka_main_cat ) {
-                                        $tka_main_link = get_term_link( $tka_main_cat );
-                                        if ( is_wp_error( $tka_main_link ) ) {
-                                                continue;
-                                        }
-                                        $tka_main_thumb   = (int) get_term_meta( $tka_main_cat->term_id, 'thumbnail_id', true );
-                                        $tka_main_img_url = $tka_main_thumb ? wp_get_attachment_image_url( $tka_main_thumb, 'woocommerce_thumbnail' ) : '';
-                                        echo '<a class="tka-catgrid__item" href="' . esc_url( $tka_main_link ) . '">';
+                                foreach ( $tka_catgrid_items as $tka_cat ) {
+                                        echo '<a class="tka-catgrid__item" href="' . esc_url( $tka_cat['href'] ) . '">';
                                         echo '<span class="tka-catgrid__img">';
-                                        if ( $tka_main_img_url ) {
-                                                echo '<img src="' . esc_url( $tka_main_img_url ) . '" alt="' . esc_attr( $tka_main_cat->name ) . '" loading="lazy" decoding="async">';
+                                        if ( $tka_cat['img'] ) {
+                                                echo '<img src="' . esc_url( $tka_cat['img'] ) . '" alt="' . esc_attr( $tka_cat['name'] ) . '" loading="lazy" decoding="async">';
                                         } else {
                                                 echo '<svg class="ic" aria-hidden="true"><use href="#i-store"></use></svg>';
                                         }
                                         echo '</span>';
-                                        echo '<span class="tka-catgrid__label">' . esc_html( $tka_main_cat->name ) . '</span>';
+                                        echo '<span class="tka-catgrid__label">' . esc_html( $tka_cat['name'] ) . '</span>';
                                         echo '</a>';
                                 }
                                 ?>

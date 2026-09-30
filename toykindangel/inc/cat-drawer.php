@@ -78,9 +78,42 @@ function toykindangel_drawer_img_pools() {
 /**
  * Build the drawer categories from the "cats" nav menu.
  *
+ * v0.20.0 audit fix C3 — this helper is called from footer.php on every
+ * page load. The previous version ran toykindangel_term_img() (a
+ * get_term_meta + wp_get_attachment_image_url pair) per top-level taxonomy
+ * nav-menu item, with no cache and no term-meta priming — a real N+1 on
+ * every page of the site when the "cats" menu is assigned.
+ *
+ * The drawer markup itself is now produced from a cached dataset built
+ * here: term meta + attachment caches are primed in one shot, and the
+ * built data array is cached in the shared theme cache (transient +
+ * per-request static), flushed by inc/cache.php on product_cat term
+ * create/edit/delete.
+ *
  * @return array[] list of {name,img,url,groups[]}
  */
 function toykindangel_drawer_cats_from_menu() {
+        static $tka_local = null;
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = toykindangel_cache_get( 'drawer_menu' );
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = toykindangel_drawer_cats_from_menu_uncached();
+        toykindangel_cache_set( 'drawer_menu', $tka_local, 12 * HOUR_IN_SECONDS );
+        return $tka_local;
+}
+
+/**
+ * Uncached builder for toykindangel_drawer_cats_from_menu().
+ *
+ * @return array[]
+ */
+function toykindangel_drawer_cats_from_menu_uncached() {
         $tka_locs = get_nav_menu_locations();
         if ( empty( $tka_locs['cats'] ) ) {
                 return array();
@@ -95,6 +128,33 @@ function toykindangel_drawer_cats_from_menu() {
         $tka_tiles    = array(); // top index => tiles.
         $tka_item_top = array(); // menu-item ID => top index.
         $tka_tax      = toykindangel_shop_cat_tax();
+
+        /*
+         * First pass: collect the product_cat term IDs referenced by top-level
+         * menu items so we can prime term meta + attachment caches in one shot
+         * before the per-item image lookup below.
+         */
+        $tka_term_ids   = array();
+        $tka_thumb_ids  = array();
+        foreach ( $tka_items as $tka_item ) {
+                if ( 0 === (int) $tka_item->menu_item_parent
+                        && 'taxonomy' === $tka_item->type
+                        && $tka_tax === $tka_item->object ) {
+                        $tka_term_ids[] = (int) $tka_item->object_id;
+                }
+        }
+        if ( ! empty( $tka_term_ids ) ) {
+                _prime_term_caches( $tka_term_ids, false );
+                foreach ( $tka_term_ids as $tka_tid ) {
+                        $tka_thumb = (int) get_term_meta( $tka_tid, 'thumbnail_id', true );
+                        if ( $tka_thumb ) {
+                                $tka_thumb_ids[] = $tka_thumb;
+                        }
+                }
+                if ( ! empty( $tka_thumb_ids ) ) {
+                        _prime_post_caches( array(), $tka_thumb_ids, false, false );
+                }
+        }
 
         foreach ( $tka_items as $tka_item ) {
                 $tka_parent = (int) $tka_item->menu_item_parent;

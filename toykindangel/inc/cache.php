@@ -76,9 +76,17 @@ function toykindangel_cache_flush_term_data() {
 	delete_transient( 'tka_cache_cats_tree' );
 	delete_transient( 'tka_cache_home_stories' );
 	delete_transient( 'tka_cache_home_brands' );
+	delete_transient( 'tka_cache_home_catgrid' );
+	delete_transient( 'tka_cache_cats_page_grid' );
+	delete_transient( 'tka_cache_cats_page_popular' );
+	delete_transient( 'tka_cache_drawer_menu' );
 	unset( $GLOBALS['tka_cache_local']['tka_cache_cats_tree'] );
 	unset( $GLOBALS['tka_cache_local']['tka_cache_home_stories'] );
 	unset( $GLOBALS['tka_cache_local']['tka_cache_home_brands'] );
+	unset( $GLOBALS['tka_cache_local']['tka_cache_home_catgrid'] );
+	unset( $GLOBALS['tka_cache_local']['tka_cache_cats_page_grid'] );
+	unset( $GLOBALS['tka_cache_local']['tka_cache_cats_page_popular'] );
+	unset( $GLOBALS['tka_cache_local']['tka_cache_drawer_menu'] );
 }
 
 /**

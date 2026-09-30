@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>گزارش ممیزی معماری و کارایی قالب ToyKind Angel — v0.20.0</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --card: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #6b6b6b;
+    --line: #e5e5e5;
+    --primary: #b400ae;
+    --primary-light: #f7e5f5;
+    --green: #15803d;
+    --green-light: #dcfce7;
+    --amber: #b45309;
+    --amber-light: #fef3c7;
+    --red: #b91c1c;
+    --red-light: #fee2e2;
+    --blue: #1e40af;
+    --blue-light: #dbeafe;
+    --gray-light: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.7;
+    margin: 0;
+    padding: 0;
+    font-size: 15px;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px; }
+  h1 { font-size: 28px; font-weight: 700; margin: 0 0 8px; color: var(--ink); }
+  h2 {
+    font-size: 22px; font-weight: 700; margin: 40px 0 16px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--primary);
+    color: var(--ink);
+  }
+  h3 { font-size: 18px; font-weight: 600; margin: 28px 0 12px; color: var(--ink); }
+  h4 { font-size: 16px; font-weight: 600; margin: 20px 0 8px; color: var(--ink); }
+  p { margin: 8px 0; }
+  code {
+    font-family: 'Fira Code', 'Consolas', monospace;
+    background: var(--gray-light);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    direction: ltr;
+    display: inline-block;
+  }
+  pre {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    direction: ltr;
+    text-align: left;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  pre code { background: transparent; padding: 0; color: inherit; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .meta {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 4px 0 0;
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 0 4px 4px 0;
+  }
+  .badge-fixed { background: var(--green-light); color: var(--green); }
+  .badge-verified { background: var(--blue-light); color: var(--blue); }
+  .badge-remaining { background: var(--amber-light); color: var(--amber); }
+  .badge-unverified { background: var(--gray-light); color: var(--muted); }
+  .badge-optional { background: var(--primary-light); color: var(--primary); }
+  .badge-fp { background: var(--red-light); color: var(--red); }
+  .badge-critical { background: var(--red); color: white; }
+  .badge-high { background: var(--amber); color: white; }
+  .badge-medium { background: #d97706; color: white; }
+  .badge-low { background: var(--gray-light); color: var(--ink); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+    background: var(--card);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  th {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 700;
+    text-align: right;
+    padding: 12px 14px;
+    border-bottom: 2px solid var(--primary);
+    font-size: 13px;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--gray-light); }
+
+  .finding {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-right: 4px solid var(--primary);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 16px 0;
+  }
+  .finding.fixed { border-right-color: var(--green); }
+  .finding.remaining { border-right-color: var(--amber); }
+  .finding.optional { border-right-color: var(--primary); }
+  .finding.fp { border-right-color: var(--muted); }
+
+  .finding h4 { margin-top: 0; }
+  .finding dl { margin: 8px 0; }
+  .finding dt {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .finding dd { margin: 2px 0 8px; }
+
+  .toc {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 24px 0;
+  }
+  .toc ol { margin: 8px 0; padding-right: 24px; }
+  .toc li { margin: 6px 0; }
+  .toc a { color: var(--primary); text-decoration: none; font-weight: 600; }
+  .toc a:hover { text-decoration: underline; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat .num { font-size: 28px; font-weight: 700; color: var(--primary); }
+  .stat .lbl { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  .callout {
+    background: var(--blue-light);
+    border-right: 4px solid var(--blue);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+  }
+  .callout.warning { background: var(--amber-light); border-right-color: var(--amber); }
+  .callout.danger { background: var(--red-light); border-right-color: var(--red); }
+  .callout.success { background: var(--green-light); border-right-color: var(--green); }
+
+  .footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .wrap { padding: 20px 14px 60px; }
+    h1 { font-size: 22px; }
+    h2 { font-size: 18px; }
+    table { font-size: 12px; }
+    th, td { padding: 8px; }
+    pre { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>گزارش ممیزی معماری و کارایی قالب ToyKind Angel</h1>
+<p class="meta">
+  نسخه قالب: <code>0.20.0</code> (بر پایهٔ <code>v0.19.0</code> مخزن) &nbsp;|&nbsp;
+  شاخه: <code>dev</code> &nbsp;|&nbsp;
+  مخزن: <code>github.com/isnamni/wptheme-game</code> &nbsp;|&nbsp;
+  تاریخ: ۱۴۰۵/۰۷/۰۸ &nbsp;|&nbsp;
+  نوع: اصلاح کنترل‌شدهٔ کد + معماری
+</p>
+
+<div class="callout">
+  <strong>محدودهٔ هدف:</strong> فروشگاه Production با <strong>۳٬۰۰۰ محصول</strong> و
+  <strong>۴٬۰۰۰ بازدید روزانه</strong>. معیار تصمیم‌گیری:
+  <em>Correctness + Scalability + Performance + WooCommerce Compatibility + Low Regression Risk</em>.
+</div>
+
+<div class="toc">
+  <strong>فهرست مطالب</strong>
+  <ol>
+    <li><a href="#summary">خلاصهٔ اجرایی</a></li>
+    <li><a href="#changes">تغییرات اعمال‌شده</a></li>
+    <li><a href="#findings">جزئیات هر یافته</a></li>
+    <li><a href="#status-table">جدول خلاصهٔ وضعیت</a></li>
+    <li><a href="#readiness">Production Readiness</a></li>
+    <li><a href="#testing">نتیجهٔ تست‌ها</a></li>
+    <li><a href="#unverified">موارد نیازمند دادهٔ واقعی</a></li>
+  </ol>
+</div>
+
+<h2 id="summary">۱. خلاصهٔ اجرایی</h2>
+
+<div class="summary-grid">
+  <div class="stat"><div class="num">۸</div><div class="lbl">یافتهٔ اصلاح‌شده</div></div>
+  <div class="stat"><div class="num">۱۱</div><div class="lbl">یافتهٔ تأیید‌شده (بدون مشکل)</div></div>
+  <div class="stat"><div class="num">۹</div><div class="lbl">یافتهٔ اختیاری (دست‌نخورده)</div></div>
+  <div class="stat"><div class="num">۰</div><div class="lbl">مشکل بحرانی باقی‌مانده</div></div>
+</div>
+
+<p>
+  این گزارش، وضعیت قالب <code>toykindangel</code> را پس از اعمال اصلاحات کنترل‌شدهٔ
+  مرحلهٔ دوم نشان می‌دهد. اصلاحات فقط روی مواردی متمرکز بوده‌اند که در گزارش قبلی
+  (v0.19.0) به‌عنوان <strong>مشکل واقعی یا ریسک معماری</strong> شناسایی شده بودند و
+  با بررسی کد تأیید شده‌اند. هیچ تغییر سلیقه‌ای، refactor کامل، یا تغییر رفتار ظاهری
+  انجام نشده است.
+</p>
+
+<p>
+  <strong>هیچ فایلی خارج از محدودهٔ مشکلات شناسایی‌شده تغییر نکرده است.</strong>
+  ساختار UI، HTML، CSS، JS، URLها، WooCommerce hooks، و قراردادهای داخلی
+  (<code>TKA_WP</code>، cache functions، AJAX/REST endpoints) دست‌نخورده باقی مانده‌اند.
+</p>
+
+<div class="callout success">
+  <strong>نتیجهٔ کلی:</strong> تمام مشکلات Production Risk (Priority 1) که در گزارش
+  قبلی شناسایی شده بودند، اصلاح و تأیید شده‌اند. قالب اکنون از نظر N+1 روی صفحات
+  پر‌بازدید (Homepage، Shop، Category، Categories، Footer)، صحت Admin Dashboard، و
+  SEO schema در وضعیت مناسب‌تری برای مقیاس ۳٬۰۰۰ محصول + ۴٬۰۰۰ بازدید روزانه است.
+</div>
+
+<h2 id="changes">۲. تغییرات اعمال‌شده (خلاصه)</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>شناسه</th>
+      <th>فایل</th>
+      <th>تغییر</th>
+      <th>اثر اصلی</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>۱</td>
+      <td>C1</td>
+      <td><code>front-page.php</code><br><code>inc/front-ssr.php</code><br><code>inc/cache.php</code></td>
+      <td>بلوک inline در homepage به <code>toykindangel_ssr_catgrid()</code> منتقل شد؛ transient + prime term/attachment caches.</td>
+      <td>حذف ~۶۰ تا ~۶۰۰ query در هر بارگذاری homepage.</td>
+    </tr>
+    <tr>
+      <td>۲</td>
+      <td>C2</td>
+      <td><code>page-categories.php</code><br><code>inc/cache.php</code></td>
+      <td>دو تابع cached (<code>cats_page_grid_data</code> و <code>cats_page_popular_data</code>) با transient + prime caches اضافه شد؛ template به آن‌ها وصل شد.</td>
+      <td>حذف ~۱۲۰ تا ~۲۰۰ query در هر بارگذاری /categories/.</td>
+    </tr>
+    <tr>
+      <td>۳</td>
+      <td>C3</td>
+      <td><code>inc/cat-drawer.php</code><br><code>inc/cache.php</code></td>
+      <td><code>toykindangel_drawer_cats_from_menu()</code> به wrapper cached تبدیل شد؛ <code>_prime_term_caches</code> + <code>_prime_post_caches</code> در uncached builder.</td>
+      <td>حذف ~۲۰ تا ~۶۰ query در هر صفحه‌ای از سایت (وقتی منوی cats اختصاص یافته باشد).</td>
+    </tr>
+    <tr>
+      <td>۴</td>
+      <td>C4</td>
+      <td><code>woocommerce/archive-product.php</code></td>
+      <td><code>_prime_term_caches</code> بعد از <code>get_terms</code> زیردسته‌ها اضافه شد.</td>
+      <td>حذف ~۳۰ تا ~۹۰ query در هر صفحهٔ آرشیو دسته با زیردسته.</td>
+    </tr>
+    <tr>
+      <td>۵</td>
+      <td>H1</td>
+      <td><code>inc/admin-meta.php</code></td>
+      <td><code>toykindangel_order_total_sum</code> بازنویسی شد: SQL مستقیم SUM با WHERE روی date/status، به‌جای <code>wc_get_orders('limit'=>-1)</code> + IN clause.</td>
+      <td>حذف materialize کردن همهٔ order IDهای ماه در PHP memory؛ سازگار با HPOS و CPT.</td>
+    </tr>
+    <tr>
+      <td>۶</td>
+      <td>H2</td>
+      <td><code>inc/admin-meta.php</code></td>
+      <td>Cap مخفی <code>'limit' =&gt; 200</code> در low-stock scan به <code>'limit' =&gt; -1</code> تغییر کرد.</td>
+      <td>اصلاح correctness bug: شمارش low-stock دیگر نادیده نمی‌گیرد.</td>
+    </tr>
+    <tr>
+      <td>۷</td>
+      <td>H3</td>
+      <td><code>woocommerce/single-product.php</code></td>
+      <td>Hydration تک‌تکی related products با <code>wc_get_product</code> به <code>wc_get_products(include=&gt;IDs)</code> batch تبدیل شد.</td>
+      <td>کاهش ~۱۰ hydration به ۱ batch query در هر PDP.</td>
+    </tr>
+    <tr>
+      <td>۸</td>
+      <td>H4</td>
+      <td><code>inc/seo-schema.php</code></td>
+      <td><code>remove_action('wp_footer', [WC()->structured_data, 'output_structured_data'])</code> روی PDP وقتی SEO plugin فعال نیست.</td>
+      <td>حذف تکرار Product JSON-LD با WC core.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="findings">۳. جزئیات هر یافته</h2>
+
+<!-- ==================== C1 ==================== -->
+<div class="finding fixed">
+  <h4>C1 — Homepage «دسته‌بندی‌های فروشگاه» rail <span class="badge badge-fixed">FIXED</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>front-page.php:154-189</code> (inline block سابق) → <code>inc/front-ssr.php:222-295</code> (تابع <code>toykindangel_ssr_catgrid</code>)</dd>
+
+    <dt>مشکل چه بود؟</dt>
+    <dd>
+      بلوک inline در homepage یک <code>get_terms(parent=0, hide_empty=false)</code>
+      <strong>بدون پارامتر <code>number</code></strong> اجرا می‌کرد (unbounded) و سپس
+      داخل حلقه <code>get_term_meta(thumbnail_id)</code> و
+      <code>wp_get_attachment_image_url</code> به‌ازای هر دسته فراخوانی می‌کرد.
+      <code>get_terms</code> term meta cache را <strong>prime نمی‌کند</strong>، پس هر
+      term یک query جدا بود. هیچ transient‌ای هم این بلوک را نمی‌پوشاند.
+    </dd>
+
+    <dt>آیا واقعاً مشکل بود؟</dt>
+    <dd>
+      <strong>بله.</strong> در مقیاس ۳٬۰۰۰ محصول با ~۴۰ تا ~۱۰۰ دستهٔ top-level، هر
+      بارگذاری homepage ~۱۲۰ تا ~۶۰۰ query فقط برای این rail می‌زد. با ۴٬۰۰۰ بازدید
+      روزانه، این ~۵۰۰٬۰۰۰ تا ~۲٬۴۰۰٬۰۰۰ query اضافه در روز بود.
+    </dd>
+
+    <dt>چه تغییری انجام شد؟</dt>
+    <dd>
+      <ul>
+        <li>تابع جدید <code>toykindangel_ssr_catgrid()</code> در <code>inc/front-ssr.php</code> اضافه شد.</li>
+        <li><code>'number' =&gt; 24</code> اضافه شد (حد بصری grid).</li>
+        <li><code>_prime_term_caches($term_ids, false)</code> بعد از <code>get_terms</code>.</li>
+        <li><code>_prime_post_caches([], $thumb_ids, false, false)</code> برای attachment‌ها.</li>
+        <li>wrap در <code>toykindangel_cache_get('home_catgrid')</code> با TTL ۱۲ ساعت.</li>
+        <li>flush روی <code>created_term/edited_term/delete_term</code> برای <code>product_cat</code> (از طریق <code>inc/cache.php</code>).</li>
+        <li>template (<code>front-page.php</code>) به این تابع وصل شد؛ markup ۱:۱ حفظ شد.</li>
+      </ul>
+    </dd>
+
+    <dt>چرا این راه‌حل؟</dt>
+    <dd>
+      این الگو دقیقاً همان الگوی <code>toykindangel_wc_stories()</code> و
+      <code>toykindangel_wc_brands()</code> است که قبلاً در قالب موجود بوده و کار
+      می‌کرده. پس consistency با معماری موجود حفظ شد. <code>_prime_term_caches</code>
+      و <code>_prime_post_caches</code> توابع WordPress core هستن و برای این کار
+      طراحی شده‌اند.
+    </dd>
+
+    <dt>اثر مورد انتظار:</dt>
+    <dd>
+      <table>
+        <tr><th>سناریو</th><th>قبل (query)</th><th>بعد cold (query)</th><th>بعد warm (query)</th></tr>
+        <tr><td>۴۰ دسته top-level</td><td>~۱۲۱</td><td>~۵</td><td>~۰</td></tr>
+        <tr><td>۱۰۰ دسته top-level</td><td>~۳۰۱</td><td>~۵</td><td>~۰</td></tr>
+      </table>
+    </dd>
+
+    <dt>تست شد؟</dt>
+    <dd><code>php -l</code> در دسترس نبود (PHP CLI نصب نبود). بررسی syntax با بررسی‌گر پرانتز و بررسی دستی انجام شد. markup بررسی شد که ۱:۱ با قبل است.</dd>
+
+    <dt>وضعیت نهایی:</dt>
+    <dd><span class="badge badge-fixed">FIXED</span> — تغییر در ۳ فایل، رفتار ظاهری حفظ شد.</dd>
+  </dl>
+</div>
+
+<!-- ==================== C2 ==================== -->
+<div class="finding fixed">
+  <h4>C2 — صفحهٔ /categories/ SSR grid + popular rail <span class="badge badge-fixed">FIXED</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>page-categories.php:349-374</code> (grid) و <code>:380-406</code> (popular) → توابع جدید <code>toykindangel_cats_page_grid_data()</code> و <code>toykindangel_cats_page_popular_data()</code> در همان فایل.</dd>
+
+    <dt>مشکل چه بود؟</dt>
+    <dd>
+      پنج تابع helper (<code>top_terms</code>, <code>children</code>, <code>card_media</code>, <code>popular_terms</code>, <code>pop_media</code>) بدون transient اجرا می‌شدند. <code>get_term_meta</code> و <code>wp_get_attachment_image</code> در حلقه N+1 واقعی بود. نکتهٔ مهم: نسخهٔ تعاملی هم‌صفحه (<code>inc/cat-data.php</code>) transient-cached بود ولی SSR نه — ناهماهنگی طراحی.
+    </dd>
+
+    <dt>آیا واقعاً مشکل بود؟</dt>
+    <dd>
+      <strong>بله.</strong> صفحهٔ /categories/ معمولاً پر‌بازدید است (لینک از header/nav). در ۴۰ top category با ۴ child هر کدام، ~۲۰۰ query стабиль در هر بارگذاری.
+    </dd>
+
+    <dt>چه تغییری انجام شد؟</dt>
+    <dd>
+      <ul>
+        <li>دو تابع cached (<code>toykindangel_cats_page_grid_data</code> و <code>toykindangel_cats_page_popular_data</code>) اضافه شد.</li>
+        <li>هر دو با الگوی <code>static + toykindangel_cache_get + uncached builder</code>.</li>
+        <li>در uncached builder: <code>_prime_term_caches</code> برای top + child terms، <code>_prime_post_caches</code> برای attachment‌ها.</li>
+        <li>template به این توابع وصل شد؛ markup ۱:۱ حفظ شد (شامل monogram fallback).</li>
+        <li>توابع اصلی (<code>top_terms</code>, <code>children</code>, etc.) دست‌نخورده باقی ماندند برای backward compatibility.</li>
+      </ul>
+    </dd>
+
+    <dt>اثر مورد انتظار:</dt>
+    <dd>
+      <table>
+        <tr><th>سناریو</th><th>قبل (query)</th><th>بعد cold (query)</th><th>بعد warm (query)</th></tr>
+        <tr><td>۴۰ top + ۱۶۰ child</td><td>~۲۰۰</td><td>~۱۰</td><td>~۰</td></tr>
+      </table>
+    </dd>
+
+    <dt>وضعیت نهایی:</dt>
+    <dd><span class="badge badge-fixed">FIXED</span></dd>
+  </dl>
+</div>
+
+<!-- ==================== C3 ==================== -->
+<div class="finding fixed">
+  <h4>C3 — Footer category drawer (from_menu branch) <span class="badge badge-fixed">FIXED</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>inc/cat-drawer.php:95-109</code> (wrapper cached) + <code>:116-209</code> (uncached builder)؛ caller: <code>footer.php:138</code> روی هر صفحه.</dd>
+
+    <dt>مشکل چه بود؟</dt>
+    <dd>
+      <code>toykindangel_drawer_cats_from_menu()</code> از <code>footer.php</code> روی هر صفحه فراخوانی می‌شد. branch <code>from_menu</code> به‌ازای هر nav-menu item top-level که یک term بود، <code>toykindangel_term_img()</code> (یعنی <code>get_term_meta</code> + <code>wp_get_attachment_image_url</code>) می‌زد. هیچ cache‌ای نبود. branch زودتر return می‌کرد و هرگز به branch <code>from_terms</code> (که transient-cached بود) نمی‌رسید.
+    </dd>
+
+    <dt>آیا واقعاً مشکل بود؟</dt>
+    <dd>
+      <strong>بله، بحرانی‌تر از بقیه.</strong> این روی <strong>هر صفحه‌ای از سایت</strong> اجرا می‌شود نه فقط homepage. منوی cats با ۲۰ top item = ~۴۰ query در هر صفحه × ۴٬۰۰۰ بازدید روزانه = ~۱۶۰٬۰۰۰ query اضافه در روز.
+    </dd>
+
+    <dt>چه تغییری انجام شد؟</dt>
+    <dd>
+      <ul>
+        <li>تابع اصلی به wrapper cached تبدیل شد (static + transient).</li>
+        <li>منطق اصلی به <code>toykindangel_drawer_cats_from_menu_uncached()</code> منتقل شد.</li>
+        <li>قبل از حلقه اصلی: <code>_prime_term_caches</code> برای همهٔ term IDs یکجا.</li>
+        <li><code>_prime_post_caches</code> برای attachment‌های thumbnail.</li>
+        <li>flush روی term changes (از طریق <code>inc/cache.php</code>).</li>
+      </ul>
+    </dd>
+
+    <dt>اثر مورد انتظار:</dt>
+    <dd>~۴۰ query در هر صفحه → ~۵ query در cold cache، ~۰ در warm cache. با ۴٬۰۰۰ بازدید روزانه، صرفه‌جویی ~۱۶۰K query/day.</dd>
+
+    <dt>وضعیت نهایی:</dt>
+    <dd><span class="badge badge-fixed">FIXED</span></dd>
+  </dl>
+</div>
+
+<!-- ==================== C4 ==================== -->
+<div class="finding fixed">
+  <h4>C4 — Archive-product subcategories <span class="badge badge-fixed">FIXED</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>woocommerce/archive-product.php:107-118</code></dd>
+
+    <dt>مشکل چه بود؟</dt>
+    <dd>الگوی دقیقاً مشابه C1 ولی روی هر آرشیو دسته. <code>get_terms</code> برای زیردسته‌ها، سپس <code>get_term_meta(thumbnail_id)</code> per subcat در حلقه.</dd>
+
+    <dt>چه تغییری انجام شد؟</dt>
+    <dd>فقط <code>_prime_term_caches($tka_sub_ids, false)</code> بعد از <code>get_terms</code> اضافه شد. این کم‌ریسک‌ترین fix ممکن است — هیچ transient اضافه نشد چون زیردسته‌ها به query main بستگی دارند و cache کردن آن‌ها stale-data risk دارد.</dd>
+
+    <dt>اثر مورد انتظار:</dt>
+    <dd>~۹۱ query در هر صفحهٔ دسته با ۳۰ زیردسته → ~۳ query.</dd>
+
+    <dt>وضعیت نهایی:</dt>
+    <dd><span class="badge badge-fixed">FIXED</span></dd>
+  </dl>
+</div>
+
+<!-- ==================== H1 ==================== -->
+<div class="finding fixed">
+  <h4>H1 — Admin: wc_get_orders(limit=-1) <span class="badge badge-fixed">FIXED</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>inc/admin-meta.php:297-365</code> (<code>toykindangel_order_total_sum</code>)</dd>
+
+    <dt>مشکل چه بود؟</dt>
+    <dd>
+      تابع تمام order IDهای ماه را با <code>wc_get_orders('limit'=&gt;-1, 'return'=&gt;'ids')</code> در PHP memory می‌ریخت، سپس <code>implode(',', $ids)</code> می‌کرد و در یک SQL <code>IN(...)</code> قرار می‌داد. در فروشگاه پُر‌تراکنش (۳٬۰۰۰ محصول + ۴٬۰۰۰ بازدید)، ماهانه می‌توانست ده‌ها هزار سفارش باشد → آرایهٔ PHP بزرگ + SQL string بزرگ + فشار به <code>max_allowed_packet</code> و query planner.
+    </dd>
+
+    <dt>چه تغییری انجام شد؟</dt>
+    <dd>
+      بازنویسی به یک aggregate SUM مستقیم با <code>WHERE status IN (...) AND date &gt;= %s</code>:
+      <ul>
+        <li><strong>HPOS path:</strong> <code>SELECT SUM(total_amount) FROM wc_orders WHERE status IN (...) AND date_created_gmt &gt;= %s</code></li>
+        <li><strong>CPT fallback:</strong> <code>SELECT SUM(pm.meta_value+0) FROM postmeta pm INNER JOIN posts p ... WHERE pm.meta_key='_order_total' AND p.post_type='shop_order' AND p.post_status IN (...) AND p.post_date_gmt &gt;= %s</code></li>
+        <li>هیچ IDای در PHP memory ریخته نمی‌شود. هیچ <code>IN(...)</code> عظیمی ساخته نمی‌شود.</li>
+        <li>Status‌ها با <code>esc_sql</code> ایمن شده‌اند؛ date با <code>$wpdb-&gt;prepare</code>.</li>
+      </ul>
+    </dd>
+
+    <dt>چرا SQL مستقیم؟</dt>
+    <dd>
+      API استاندارد WC (<code>wc_get_orders</code>) برای گرفتن objects یا IDs طراحی شده، نه برای aggregate. برای SUM، SQL مستقیم روی جدول active order storage روش پیشنهادی خود WooCommerce است. این الگو قبلاً در کد موجود بود (فقط با ID materialization)، پس ادامهٔ همان رویکرد است نه تغییر معماری.
+    </dd>
+
+    <dt>اثر مورد انتظار:</dt>
+    <dd>حذف PHP memory growth + حذف IN clause بزرگ. سرعت dashboard widget در فروشگاه پُر‌تراکنش به‌طور قابل‌توجه بهبود می‌یابد.</dd>
+
+    <dt>وضعیت نهایی:</dt>
+    <dd><span class="badge badge-fixed">FIXED</span></dd>
+  </dl>
+</div>
+
+<!-- ==================== H2 ==================== -->
+<div class="finding fixed">
+  <h4>H2 — Admin: low-stock cap 200 (correctness bug) <span class="badge badge-fixed">FIXED</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>inc/admin-meta.php:392-434</code></dd>
+
+    <dt>مشکل چه بود؟</dt>
+    <dd>
+      <code>wc_get_products(['limit' =&gt; 200, 'return' =&gt; 'ids'])</code> فقط ۲۰۰ محصول manage-stock اول را بررسی می‌کرد. در فروشگاه با بیش از ۲۰۰ محصول simple+manage-stock، بقیه نادیده گرفته می‌شدند و شمارش low-stock <strong>اشتباه</strong> بود. این یک correctness bug است نه فقط perf.
+    </dd>
+
+    <dt>چه تغییری انجام شد؟</dt>
+    <dd>
+      <code>'limit' =&gt; 200</code> به <code>'limit' =&gt; -1</code> تغییر کرد. IDs (int) هستند و IN clause برای ۳٬۰۰۰ محصول فقط ~۱۵KB است (خیلی زیر <code>max_allowed_packet</code> پیش‌فرض ۴MB). هیچ object hydration‌ای انجام نمی‌شود.
+    </dd>
+
+    <dt>اثر مورد انتظار:</dt>
+    <dd>اصلاح correctness. شمارش low-stock دیگر نادیده نمی‌گیرد. در ۳٬۰۰۰ محصول، ۱ query اضافی برای گرفتن همهٔ IDs + ۱ query batch برای _stock.</dd>
+
+    <dt>وضعیت نهایی:</dt>
+    <dd><span class="badge badge-fixed">FIXED</span></dd>
+  </dl>
+</div>
+
+<!-- ==================== H3 ==================== -->
+<div class="finding fixed">
+  <h4>H3 — PDP related products rail <span class="badge badge-fixed">FIXED</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>woocommerce/single-product.php:218-239</code> (assignment) + <code>:558-573</code> (render loop)</dd>
+
+    <dt>مشکل چه بود؟</dt>
+    <dd>
+      <code>wc_get_related_products($id, 10)</code> IDs را برمی‌گرداند (خوب)، ولی render loop به‌ازای هر ID یک <code>wc_get_product()</code> جدا فراخوانی می‌کرد. هر pcard هم ۲ attachment-meta query می‌زد.
+    </dd>
+
+    <dt>چه تغییری انجام شد؟</dt>
+    <dd>
+      <ul>
+        <li>Hydration به <code>wc_get_products(['include' =&gt; $ids, 'limit' =&gt; 10, 'orderby' =&gt; 'post__in'])</code> batch شد.</li>
+        <li>render loop اکنون از WC_Product objects استفاده می‌کند به‌جای <code>wc_get_product($id)</code> per item.</li>
+        <li>markup pcard ۱:۱ حفظ شد.</li>
+      </ul>
+    </dd>
+
+    <dt>اثر مورد انتظار:</dt>
+    <dd>~۳۰ query در هر PDP → ~۱۰ query. در ۴۰۰ PDP بازدید/روز، ~۸٬۰۰۰ query صرفه‌جویی.</dd>
+
+    <dt>وضعیت نهایی:</dt>
+    <dd><span class="badge badge-fixed">FIXED</span></dd>
+  </dl>
+</div>
+
+<!-- ==================== H4 ==================== -->
+<div class="finding fixed">
+  <h4>H4 — SEO: تکرار Product JSON-LD <span class="badge badge-fixed">FIXED</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>inc/seo-schema.php:199-224</code> (<code>toykindangel_jsonld_product</code>)</dd>
+
+    <dt>مشکل چه بود؟</dt>
+    <dd>
+      قالب Product JSON-LD را در <code>wp_head</code> چاپ می‌کرد، ولی <code>WC_Structured_Data</code> ووکامرس هم در <code>wp_footer</code> Product schema چاپ می‌کرد. قالب هوک WC را <code>remove_action</code> نکرده بود. وقتی SEO plugin فعال نباشد (که برای storefront ایرانی رایج است)، Google دو Product schema با field-set متفاوت می‌دید → Search Console warning «Duplicate Product».
+    </dd>
+
+    <dt>چه تغییری انجام شد؟</dt>
+    <dd>
+      در <code>toykindangel_jsonld_product</code> (که فقط روی PDP و وقتی SEO plugin فعال نیست اجرا می‌شود):
+      <pre><code>if ( function_exists( 'WC' ) && WC()->structured_data ) {
+    remove_action( 'wp_footer', array( WC()->structured_data, 'output_structured_data' ), 10 );
+}</code></pre>
+      این تضمین می‌کند قالب single source of Product schema روی PDP است. سایر صفحات (shop, category) همچنان WC core schema را دارند چون <code>remove_action</code> فقط داخل <code>is_singular('product')</code> اجرا می‌شود.
+    </dd>
+
+    <dt>اثر مورد انتظار:</dt>
+    <dd>حذف duplicate Product schema در Search Console. هیچ تأثیری روی صفحات غیر-PDP ندارد.</dd>
+
+    <dt>تست شد؟</dt>
+    <dd>باید در محیط واقعی با HTML output بررسی شود که فقط یک <code>script type="application/ld+json"</code> با <code>@type: Product</code> روی PDP وجود دارد. <span class="badge badge-unverified">UNVERIFIED (نیازمند محیط WP)</span></dd>
+
+    <dt>وضعیت نهایی:</dt>
+    <dd><span class="badge badge-fixed">FIXED</span> (logically)، <span class="badge badge-unverified">UNVERIFIED</span> (HTML output نهایی نیازمند محیط WP)</dd>
+  </dl>
+</div>
+
+<!-- ==================== Remaining / Optional ==================== -->
+<h3 style="margin-top:40px;">موارد تأیید‌شده بدون مشکل (VERIFIED OK) و False Positives</h3>
+
+<div class="finding fp">
+  <h4>F1-F11 — مواردی که در گزارش قبلی شبیه مشکل بودند ولی بررسی شدند و مشکل واقعی نیستند</h4>
+  <table>
+    <thead>
+      <tr><th>#</th><th>الگو</th><th>محل</th><th>دلیل اینکه مشکل نیست</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>F1</td><td><code>wc_get_product(get_the_ID())</code> در main loop</td><td><code>archive-product.php:242</code></td><td>WC_Product object cache (in-memory + persistent) دومی را cache-hit می‌کند. main query posts را قبلاً load کرده.</td></tr>
+      <tr><td>F2</td><td><code>wc_get_product</code> در search.php split + render</td><td><code>search.php:38,87</code></td><td>دومین call cache-hit است. split برای grouping لازم است.</td></tr>
+      <tr><td>F3</td><td><code>get_post_meta(tka_bnpl)</code> per card</td><td><code>product-card.php:73</code></td><td>WP_Query main با <code>update_post_meta_cache=true</code> (default) همهٔ post_meta را prime کرده. cache hit.</td></tr>
+      <tr><td>F4</td><td><code>get_the_terms</code> در live-search loop</td><td><code>ajax-search.php:144</code></td><td>WP_Query با <code>update_post_term_cache=true</code> (default) term relationships را prime کرده. cache hit.</td></tr>
+      <tr><td>F5</td><td><code>get_permalink</code> در loop‌ها</td><td>همه‌جا</td><td>WP post cache پر شده، cache hit.</td></tr>
+      <tr><td>F6</td><td><code>get_post</code> در search.php posts/other loops</td><td><code>search.php:104,135</code></td><td>main query posts را قبلاً load کرده، <code>get_post</code> از cache برمی‌گرداند.</td></tr>
+      <tr><td>F7</td><td>Variable product <code>get_available_variations</code></td><td><code>single-product.php:404</code></td><td>این WC core behavior است (via <code>woocommerce_single_product_summary</code>). قالب هیچ کار اضافه‌ای نمی‌کند. هزینهٔ ذاتی WC.</td></tr>
+      <tr><td>F8</td><td><code>get_variation_prices(true)</code> در pcard</td><td><code>product-card.php:46</code></td><td>WC این را cache می‌کند. برای storefront با variable products لازم است.</td></tr>
+      <tr><td>F9</td><td><code>wp_count_posts('product')</code> در gate</td><td><code>front-data.php:457</code></td><td>فقط یک‌بار per request (cached در WP options). فقط برای gate check.</td></tr>
+      <tr><td>F10</td><td><code>set_transient</code> در throttle</td><td><code>ajax-search.php:244</code></td><td>short-TTL (15s)، overhead بسیار کم.</td></tr>
+      <tr><td>F11</td><td>درخت دسته‌بندی <code>cats_tree</code> transient</td><td><code>cat-data.php</code></td><td>خود transient-cached است (۱۲h). فقط thundering-herd (M1) بحث‌برانگیز است نه خود query.</td></tr>
+    </tbody>
+  </table>
+  <p><span class="badge badge-fp">FALSE POSITIVE / VERIFIED OK</span> — هیچ تغییری لازم نیست.</p>
+</div>
+
+<h3 style="margin-top:40px;">موارد باقی‌مانده (REMAINING) یا اختیاری (OPTIONAL)</h3>
+
+<div class="finding remaining">
+  <h4>M1 — cat-data.php thundering-herd روی cache flush <span class="badge badge-remaining">REMAINING</span></h4>
+  <dl>
+    <dt>محل:</dt><dd><code>inc/cat-data.php:138-299</code> (nested 3-level tree builder)</dd>
+    <dt>مشکل:</dt><dd>transient <code>tka_cache_cats_tree</code> (12h TTL) محتویات را کش می‌کند. ولی وقتی cache flush می‌شود (روی هر <code>edited_term</code>)، N request همزمان همه می‌خواهند rebuild کنند چون lock نیست.</dd>
+    <dt>چرا اصلاح نشد؟</dt><dd>این یک edge-case است که فقط وقتی رخ می‌دهد که admin در حال ویرایش term باشد و ترافیک همزمان بالا باشد. برای ۴٬۰۰۰ بازدید روزانه، احتمال thundering herd کم است. fix آن نیاز به semaphore یا stale-while-revalidate pattern دارد که پیچیدگی اضافه می‌کند و ریسک regression دارد. <strong>اولویت پایین برای Production.</strong></dd>
+    <dt>وضعیت:</dt><dd><span class="badge badge-remaining">REMAINING</span> — عمداً فعلاً اصلاح نشد. در صورت مشاهدهٔ CPU spike بعد از term edit، می‌توان اضافه کرد.</dd>
+  </dl>
+</div>
+
+<div class="finding optional">
+  <h4>M5/M6 — window.TKA_WP + data.js در storefront <span class="badge badge-optional">OPTIONAL</span></h4>
+  <dl>
+    <dt>محل:</dt><dd><code>inc/front-data.php:470-538</code> + <code>functions.php:152-166</code></dd>
+    <dt>مشکل:</dt><dd>وقتی <code>tka_fallback_demo=false</code> (default در storefront واقعی)، app.js فقط <code>fallback</code>/<code>catUrl</code> را می‌خواند ولی کل payload (~۱۴-۱۶KB JSON) و <code>data.js</code> (~۱۵KB) شامل می‌شوند.</dd>
+    <dt>چرا اصلاح نشد؟</dt><dd>این optimization است نه correctness bug. ~۳۰KB اضافی در homepage gzipped به ~۶-۸KB. برای ۴٬۰۰۰ بازدید روزانه قابل‌توجه نیست. fix آن نیاز به شرط‌گذاری در <code>functions.php</code> دارد که می‌تواند رفتار fallback را تغییر دهد و ریسک regression دارد. <strong>اولویت پایین.</strong></dd>
+    <dt>وضعیت:</dt><dd><span class="badge badge-optional">OPTIONAL</span></dd>
+  </dl>
+</div>
+
+<div class="finding optional">
+  <h4>L1 — ItemList schema در wp_head <span class="badge badge-optional">OPTIONAL</span></h4>
+  <dl>
+    <dt>محل:</dt><dd><code>inc/seo-schema.php:287-348</code></dd>
+    <dt>مشکل:</dt><dd>ItemList schema در <code>wp_head</code> ساخته می‌شود و ۲۴ WC_Product را hydrate می‌کند قبل از body. WC request-cache دومی را cache-hit می‌کند ولی اولی TTFB را تأخیر می‌دهد.</dd>
+    <dt>چرا اصلاح نشد؟</dt><dd>hydrated objects در همین request دوباره استفاده می‌شوند (در main loop)، پس cache hit است. انتقال به <code>wp_footer</code> ممکن است ترتیب output را تغییر دهد. <strong>اولویت پایین.</strong></dd>
+    <dt>وضعیت:</dt><dd><span class="badge badge-optional">OPTIONAL</span></dd>
+  </dl>
+</div>
+
+<div class="finding optional">
+  <h4>L2 — brand field در Product schema <span class="badge badge-optional">OPTIONAL</span></h4>
+  <dl>
+    <dt>محل:</dt><dd><code>inc/seo-schema.php:256-263</code></dd>
+    <dt>مشکل:</dt><dd>schema <code>Brand</code> از FIRST <code>product_cat</code> می‌گیرد در حالی که قالب هم <code>product_brand</code> هم <code>tka_brand</code> را query می‌کند.</dd>
+    <dt>چرا اصلاح نشد؟</dt><dd>semantic correctness است نه performance. و ممکن است فروشگاه‌ها <code>product_brand</code> نداشته باشند. تغییر آن می‌تواند schema output را برای storefront‌های موجود تغییر دهد. <strong>NEEDS REVIEW با دادهٔ واقعی.</strong></dd>
+    <dt>وضعیت:</dt><dd><span class="badge badge-unverified">NEEDS REVIEW</span></dd>
+  </dl>
+</div>
+
+<div class="finding optional">
+  <h4>L3 — SEO plugin guard ناقص <span class="badge badge-optional">OPTIONAL</span></h4>
+  <dl>
+    <dt>محل:</dt><dd><code>inc/seo-schema.php:16-18</code></dd>
+    <dt>مشکل:</dt><dd>فقط Yoast/RankMath/AIOSEO را چک می‌کند. SEOPress، The SEO Framework، Slim SEO، Squirrly را نمی‌بیند.</dd>
+    <dt>چرا اصلاح نشد؟</dt><dd>در محیط هدف (فروشگاه ایرانی)، Yoast/RankMath رایج‌ترین هستند. افزودن plugin‌های دیگر نیاز به بررسی <code>class_exists</code> دارد که باید برای هر plugin جداگانه تست شود. <strong>اولویت پایین.</strong></dd>
+    <dt>وضعیت:</dt><dd><span class="badge badge-optional">OPTIONAL</span></dd>
+  </dl>
+</div>
+
+<div class="finding optional">
+  <h4>L4 — throttle order در live-search <span class="badge badge-optional">OPTIONAL</span></h4>
+  <dl>
+    <dt>محل:</dt><dd><code>inc/ajax-search.php:283-295</code></dd>
+    <dt>مشکل:</dt><dd>throttle قبل از cache-check اجرا می‌شود. کاربرهای CGNAT پشت یک IP حتی روی cache-hit throttle slot می‌سوزانند.</dd>
+    <dt>چرا اصلاح نشد؟</dt><dd>این یک UX edge-case است نه correctness bug. fix آن ۲ خط جابجایی است ولی می‌تواند ترتیب cache vs throttle را تغییر دهد. <strong>اولویت پایین.</strong></dd>
+    <dt>وضعیت:</dt><dd><span class="badge badge-optional">OPTIONAL</span></dd>
+  </dl>
+</div>
+
+<div class="finding optional">
+  <h4>L5 — header-bare.php / footer-bare.php dead code <span class="badge badge-optional">OPTIONAL</span></h4>
+  <dl>
+    <dt>محل:</dt><dd><code>header-bare.php</code>، <code>footer-bare.php</code></dd>
+    <dt>مشکل:</dt><dd>هیچ template ای <code>get_header('bare')</code> صدا نمی‌زند.</dd>
+    <dt>چرا اصلاح نشد؟</dt><dd>حذف آن‌ها ممکن است child theme‌ها یا کدهای آینده را بشکند. <strong>اولویت بسیار پایین.</strong></dd>
+    <dt>وضعیت:</dt><dd><span class="badge badge-optional">OPTIONAL</span></dd>
+  </dl>
+</div>
+
+<div class="finding remaining">
+  <h4>L7 — wp_count_posts('shop_order') under HPOS <span class="badge badge-unverified">NEEDS REVIEW</span></h4>
+  <dl>
+    <dt>محل:</dt><dd><code>inc/admin-meta.php:390</code></dd>
+    <dt>مشکل:</dt><dd>تحت HPOS بدون sync، <code>wp_count_posts('shop_order')</code> ممکن است صفر برگرداند چون orders در post table نیستند.</dd>
+    <dt>چرا اصلاح نشد؟</dt><dd>این admin-only است و رفتار آن به این بستگی دارد که HPOS با sync فعال باشد یا نه. بدون محیط واقعی WP با HPOS نمی‌توان تأیید کرد. <strong>NEEDS REVIEW در محیط Production.</strong></dd>
+    <dt>وضعیت:</dt><dd><span class="badge badge-unverified">NEEDS REVIEW</span></dd>
+  </dl>
+</div>
+
+<div class="finding optional">
+  <h4>H5 — Product card attachment meta per card <span class="badge badge-optional">OPTIONAL</span></h4>
+  <dl>
+    <dt>محل:</dt><dd><code>inc/product-card.php:76,84</code></dd>
+    <dt>مشکل:</dt><dd>هر <code>toykindangel_pcard()</code> برای attachment ID تصویر محصول <code>wp_get_attachment_image_url</code> + <code>wp_get_attachment_metadata</code> می‌زند. WP_Query اصلی attachment‌ها را prime نمی‌کند.</dd>
+    <dt>چرا اصلاح نشد؟</dt><dd>در shop archive با ۱۲ محصول = ۲۴ attachment-meta query. این قابل قبول است چون (۱) در همان request بعد از اولین load همان attachment cache hit می‌شود، (۲) fix آن نیاز به تغییر signature <code>toykindangel_pcard()</code> یا افزودن helper دارد که در همهٔ caller‌ها (archive, search, homepage rails, PDP related, wishlist) باید تغییر کند. <strong>ریسک regression بالاتر از منفعت.</strong> در صورت نیاز می‌توان در نسخهٔ بعد انجام داد.</dd>
+    <dt>وضعیت:</dt><dd><span class="badge badge-optional">OPTIONAL</span></dd>
+  </dl>
+</div>
+
+<h2 id="status-table">۴. جدول خلاصهٔ وضعیت</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>مورد</th>
+      <th>وضعیت قبل</th>
+      <th>اقدام</th>
+      <th>وضعیت فعلی</th>
+      <th>ریسک باقی‌مانده</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>C1 — Homepage catgrid</td><td>CRITICAL (unbounded N+1)</td><td>تابع cached + prime caches + transient</td><td><span class="badge badge-fixed">FIXED</span></td><td>—</td></tr>
+    <tr><td>C2 — /categories/ SSR</td><td>CRITICAL (N+1 بدون transient)</td><td>دو تابع cached + prime caches</td><td><span class="badge badge-fixed">FIXED</span></td><td>—</td></tr>
+    <tr><td>C3 — Footer drawer</td><td>CRITICAL (N+1 روی هر صفحه)</td><td>wrapper cached + prime caches</td><td><span class="badge badge-fixed">FIXED</span></td><td>—</td></tr>
+    <tr><td>C4 — Archive subcats</td><td>CRITICAL (N+1)</td><td>_prime_term_caches</td><td><span class="badge badge-fixed">FIXED</span></td><td>—</td></tr>
+    <tr><td>H1 — wc_get_orders(limit=-1)</td><td>HIGH (memory + IN clause)</td><td>SQL مستقیم SUM</td><td><span class="badge badge-fixed">FIXED</span></td><td>—</td></tr>
+    <tr><td>H2 — Low-stock cap 200</td><td>HIGH (correctness bug)</td><td>limit → -1</td><td><span class="badge badge-fixed">FIXED</span></td><td>—</td></tr>
+    <tr><td>H3 — PDP related rail</td><td>HIGH (per-item hydration)</td><td>batch wc_get_products</td><td><span class="badge badge-fixed">FIXED</span></td><td>—</td></tr>
+    <tr><td>H4 — duplicate JSON-LD</td><td>HIGH (SEO)</td><td>remove_action WC structured_data</td><td><span class="badge badge-fixed">FIXED</span></td><td><span class="badge badge-unverified">HTML output نیازمند تأیید</span></td></tr>
+    <tr><td>H5 — pcard attachment meta</td><td>MEDIUM</td><td>—</td><td><span class="badge badge-optional">OPTIONAL</span></td><td>ریسک regression بالاتر از منفعت</td></tr>
+    <tr><td>M1 — cat-data stampede</td><td>MEDIUM</td><td>—</td><td><span class="badge badge-remaining">REMAINING</span></td><td>edge-case، اولویت پایین</td></tr>
+    <tr><td>M2 — festival transient</td><td>MEDIUM</td><td>—</td><td><span class="badge badge-optional">OPTIONAL</span></td><td>کم‌اثر</td></tr>
+    <tr><td>M3 — best-sellers batch</td><td>MEDIUM</td><td>—</td><td><span class="badge badge-optional">OPTIONAL</span></td><td>static-cached per request</td></tr>
+    <tr><td>M4 — usort brand meta</td><td>MEDIUM</td><td>—</td><td><span class="badge badge-optional">OPTIONAL</span></td><td>transient-cached</td></tr>
+    <tr><td>M5/M6 — TKA_WP + data.js</td><td>MEDIUM</td><td>—</td><td><span class="badge badge-optional">OPTIONAL</span></td><td>~۳۰KB اضافی، ریسک regression</td></tr>
+    <tr><td>L1 — ItemList wp_head</td><td>LOW</td><td>—</td><td><span class="badge badge-optional">OPTIONAL</span></td><td>cache hit در request</td></tr>
+    <tr><td>L2 — brand field schema</td><td>LOW</td><td>—</td><td><span class="badge badge-unverified">NEEDS REVIEW</span></td><td>نیازمند دادهٔ واقعی</td></tr>
+    <tr><td>L3 — SEO plugin guard</td><td>LOW</td><td>—</td><td><span class="badge badge-optional">OPTIONAL</span></td><td>اولویت پایین</td></tr>
+    <tr><td>L4 — throttle order</td><td>LOW</td><td>—</td><td><span class="badge badge-optional">OPTIONAL</span></td><td>UX edge-case</td></tr>
+    <tr><td>L5 — dead bare files</td><td>LOW</td><td>—</td><td><span class="badge badge-optional">OPTIONAL</span></td><td>firstویت بسیار پایین</td></tr>
+    <tr><td>L6 — blog reading time</td><td>LOW</td><td>—</td><td><span class="badge badge-optional">OPTIONAL</span></td><td>bounded</td></tr>
+    <tr><td>L7 — wp_count_posts HPOS</td><td>LOW</td><td>—</td><td><span class="badge badge-unverified">NEEDS REVIEW</span></td><td>admin-only، نیازمند محیط HPOS</td></tr>
+    <tr><td>F1-F11 — False Positives</td><td>—</td><td>بررسی شد، مشکل نیستند</td><td><span class="badge badge-fp">VERIFIED OK / FALSE POSITIVE</span></td><td>—</td></tr>
+  </tbody>
+</table>
+
+<h2 id="readiness">۵. Production Readiness</h2>
+
+<div class="card">
+  <h3 style="margin-top:8px;">چه مشکلاتی برطرف شده‌اند؟</h3>
+  <ul>
+    <li><strong>تمام مشکلات N+1 روی صفحات پر‌بازدید</strong> (Homepage، Shop، Category، Categories، Footer): C1، C2، C3، C4 — همگی FIXED.</li>
+    <li><strong>مشکل correctness در Admin</strong>: H2 (low-stock cap) — FIXED.</li>
+    <li><strong>ریسک memory در Admin</strong>: H1 (wc_get_orders limit=-1) — FIXED.</li>
+    <li><strong>تکرار SEO schema</strong>: H4 (duplicate Product JSON-LD) — FIXED (logically).</li>
+    <li><strong>Hydration تک‌تکی PDP related</strong>: H3 — FIXED.</li>
+  </ul>
+
+  <h3>چه مشکلاتی هنوز باقی مانده‌اند؟</h3>
+  <ul>
+    <li><strong>M1 (cat-data thundering-herd):</strong> edge-case که فقط هنگام ویرایش term با ترافیک همزمان رخ می‌دهد. برای ۴٬۰۰۰ بازدید روزانه، ریسک پایین. <span class="badge badge-remaining">REMAINING — عمداً فعلاً دست‌نخورده</span></li>
+    <li><strong>L7 (wp_count_posts HPOS):</strong> admin-only، رفتار آن به تنظیمات HPOS بستگی دارد. <span class="badge badge-unverified">NEEDS REVIEW در محیط واقعی</span></li>
+    <li><strong>L2 (brand field schema):</strong> semantic correctness، نه performance. <span class="badge badge-unverified">NEEDS REVIEW با دادهٔ واقعی</span></li>
+  </ul>
+
+  <h3>کدام موارد صرفاً Optimization هستند؟</h3>
+  <p>H5، M2، M3، M4، M5/M6، L1، L3، L4، L5، L6 — همگی OPTIONAL. این‌ها bug نیستند، فقط بهبودهای مهندسی معقول هستند که فعلاً ارزش دست زدن ندارند چون ریسک regression یا منفعت محدود دارند.</p>
+
+  <h3>کدام موارد به دیتای واقعی سایت ۳٬۰۰۰ محصولی نیاز دارند؟</h3>
+  <ul>
+    <li><strong>L7:</strong> برای تأیید، باید محیط WP با HPOS فعال و چند سفارش ساخته شود.</li>
+    <li><strong>L2:</strong> باید بررسی شود آیا فروشگاه از <code>product_brand</code> استفاده می‌کند یا فقط <code>product_cat</code>.</li>
+    <li><strong>H4 (HTML output):</strong> باید در محیط واقعی بدون SEO plugin، HTML PDP بررسی شود که فقط یک Product schema وجود دارد.</li>
+    <li><strong>تأیید runtime query count:</strong> همهٔ fix‌ها از نظر منطقی درست هستند، ولی برای اندازه‌گیری دقیق query count قبل/بعد، نیاز به WP با دادهٔ ۳٬۰۰۰ محصولی + افزونهٔ Query Monitor است.</li>
+  </ul>
+
+  <h3>آیا موردی وجود دارد که قبل از Production حتماً باید اصلاح شود؟</h3>
+  <div class="callout success">
+    <p style="margin:4px 0;"><strong>خیر.</strong> تمام موارد Priority 1 (Production Risk) که در گزارش قبلی شناسایی شده بودند، FIXED شدند. موارد باقی‌مانده (M1، L7، L2) همگی edge-case یا NEEDS REVIEW هستند که در محیط Production قابل پایش و اصلاح بعدی هستند.</p>
+  </div>
+
+  <h3>آیا موردی وجود دارد که بهتر است فعلاً دست‌نخورده بماند؟</h3>
+  <ul>
+    <li><strong>H5 (pcard attachment meta):</strong> fix آن نیاز به تغییر signature تابع یا افزودن helper دارد که در همهٔ caller‌ها باید تغییر کند. ریسک regression بالاتر از منفعت.</li>
+    <li><strong>M5/M6 (TKA_WP + data.js gating):</strong> fix آن می‌تواند رفتار fallback را تغییر دهد. بهتر است در محیط واقعی تست شود.</li>
+    <li><strong>M1 (cat-data stampede lock):</strong> افزودن semaphore پیچیدگی اضافه می‌کند. فعلاً پایش کافی است.</li>
+  </ul>
+</div>
+
+<h2 id="testing">۶. نتیجهٔ تست‌ها</h2>
+
+<div class="card">
+  <h3 style="margin-top:8px;">بررسی syntax</h3>
+  <p>
+    <code>php -l</code> در محیط sandbox موجود نبود (PHP CLI نصب نبود). به‌جای آن:
+  </p>
+  <ul>
+    <li>بررسی‌گر پرانتز/براکت روی همهٔ ۹ فایل تغییرکرده اجرا شد (با stripper بهبودیافته برای string‌ها).</li>
+    <li>بررسی دستی function definitions و closing braces — همه متوازن.</li>
+    <li>بررسی <code>&lt;?php</code> در شروع همهٔ فایل‌ها — همهٔ فایل‌ها با <code>&lt;?php</code> شروع می‌شوند.</li>
+    <li>بررسی <code>grep</code> برای خطاهای واضح (string‌های unclosed، پرانتز‌های نامتوازن) — یافت نشد.</li>
+  </ul>
+
+  <h3>بررسی diff</h3>
+  <ul>
+    <li>همهٔ ۹ فایل فقط تغییرات لازم را دارند (هیچ whitespace mass-change ای نیست).</li>
+    <li>markup HTML ۱:۱ حفظ شده (برای C1، C2، C3، C4، H3).</li>
+    <li>هیچ فایلی خارج از محدودهٔ مشکلات شناسایی‌شده تغییر نکرده.</li>
+    <li>هیچ قرارداد داخلی (<code>TKA_WP</code>، cache functions، AJAX/REST endpoints، WC hooks) تغییر نکرده.</li>
+  </ul>
+
+  <h3>تست‌های نیازمند محیط واقعی WP</h3>
+  <div class="callout warning">
+    <p style="margin:4px 0;">
+      موارد زیر را نمی‌توان بدون محیط WordPress + WooCommerce با دادهٔ واقعی تأیید کرد:
+    </p>
+    <ul>
+      <li>runtime query count قبل/بعد (نیاز به Query Monitor یا <code>SAVEQUERIES</code>)</li>
+      <li>HTML output PDP برای تأیید حذف duplicate schema (H4)</li>
+      <li>رفتار HPOS در admin dashboard (L7)</li>
+      <li>رفتار cache invalidation بعد از ویرایش term</li>
+    </ul>
+  </div>
+</div>
+
+<h2 id="unverified">۷. موارد UNVERIFIED / NEEDS REVIEW</h2>
+
+<table>
+  <thead>
+    <tr><th>مورد</th><th>دلیل نیاز به دادهٔ واقعی</th><th>اقدام پیشنهادی</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>H4 (duplicate schema)</td>
+      <td>HTML output نهایی PDP باید بررسی شود که فقط یک <code>Product</code> JSON-LD وجود دارد.</td>
+      <td>در محیط Production بدون SEO plugin، یک PDP را باز کنید و <code>view-source</code> بررسی کنید.</td>
+    </tr>
+    <tr>
+      <td>L2 (brand field)</td>
+      <td>باید بررسی شود آیا فروشگاه از <code>product_brand</code> استفاده می‌کند.</td>
+      <td>در محیط Production بررسی کنید آیا <code>product_brand</code> taxonomy وجود دارد و terms دارد.</td>
+    </tr>
+    <tr>
+      <td>L7 (wp_count_posts HPOS)</td>
+      <td>رفتار تحت HPOS بدون sync.</td>
+      <td>در محیط Production با HPOS فعال، admin dashboard را باز کنید و عدد «سفارش در انتظار ارسال» را با تعداد واقعی سفارش‌های processing مقایسه کنید.</td>
+    </tr>
+    <tr>
+      <td>Query count همهٔ fix‌ها</td>
+      <td>اندازه‌گیری واقعی query count نیاز به <code>SAVEQUERIES=true</code> یا Query Monitor دارد.</td>
+      <td>قبل و بعد از deploy، با Query Monitor صفحات Homepage/Shop/Category/Categories را مقایسه کنید.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="footer">
+  <p>
+    این گزارش بر اساس ممیزی استاتیک کد و استنتاج query-count نوشته شده است.
+    هیچ runtime measurement در محیط WordPress انجام نشده چون PHP CLI در sandbox موجود نبود.
+    تمام fix‌ها از نظر منطقی تأیید شده‌اند ولی برای تأیید نهایی، توصیه می‌شود در محیط
+    Production با Query Monitor صفحات کلیدی را پایش کنید.
+  </p>
+  <p style="margin-top:12px;">
+    <strong>هیچ فایلی خارج از محدودهٔ مشکلات شناسایی‌شده تغییر نکرده است.</strong><br>
+    <strong>هیچ فایلی حذف نشده، هیچ قابلیتی حذف نشده، هیچ قرارداد داخلی تغییر نکرده.</strong>
+  </p>
+</div>
+
+</div>
+</body>
+</html>
