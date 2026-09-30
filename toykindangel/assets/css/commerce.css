@@ -1,0 +1,43 @@
+@charset "utf-8";
+/* =========================================================
+   TKA commerce layer (Task 18-e) — festival / campaign badges.
+   Loaded after main.css (dep: toykindangel-main) so the new
+   classes always win. Existing demo markup is untouched.
+   ========================================================= */
+
+/* ---------- «جشنواره» ribbon on product cards ---------- */
+/* Mirrors .pcard__off (red, top-left) but sits on the RTL start
+   corner (top-right) with an amber→purple gradient so the two
+   badges never collide. */
+.pcard__festival{
+  position:absolute;top:0;right:0;z-index:2;
+  display:inline-flex;align-items:center;gap:2px;
+  background:linear-gradient(135deg,var(--warning) 0%,var(--primary-medium) 100%);
+  color:#fff;font-size:10px;font-weight:800;line-height:1;
+  padding:3px 6px;border-radius:0 var(--r-md) 0 var(--r-md);
+  box-shadow:0 1px 3px rgba(147,0,162,.25);
+}
+.pcard__festival .ic{font-size:11px}
+.pcard__festival::selection{background:var(--primary-dark)}
+
+/* Slightly stronger presence inside the amazing-offer rail. */
+.offer .pcard__festival{font-size:var(--fs-2xs);padding:3px 7px}
+
+/* ---------- PDP pill (near the price box) ---------- */
+/* Printed on woocommerce_single_product_summary (priority 2) →
+   lands at the top of .pricebox, above the add-to-cart region. */
+.tka-festival{
+  display:inline-flex;align-items:center;gap:5px;
+  width:fit-content;
+  background:linear-gradient(135deg,var(--warning) 0%,var(--primary-medium) 100%);
+  color:#fff;font-size:var(--fs-xs);font-weight:800;line-height:1;
+  padding:5px 12px;border-radius:99px;
+  box-shadow:0 1px 4px rgba(147,0,162,.28);
+}
+.tka-festival .ic{font-size:var(--fs-md)}
+
+/* PDP variant: a touch bigger + bottom margin inside the pricebox. */
+.tka-festival--pdp{font-size:12.5px;padding:6px 14px;margin-bottom:10px}
+
+/* Pricebox stacks the pill above the rest of its content. */
+.pricebox .tka-festival--pdp{display:inline-flex}

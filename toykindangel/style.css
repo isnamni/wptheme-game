@@ -1,0 +1,31 @@
+/*
+Theme Name: ToyKind Angel
+Theme URI: https://toykindangel.com
+Author: ToyKind Angel Dev Team
+Author URI: https://toykindangel.com
+Description: قالب فروشگاهی وردپرس/ووکامرس فارسی اسباب‌بازی «فرشته مهربون» — تبدیل ۱۰۰٪ مطابق دمو، RTL کامل، فونت وزیرمتن، سئو و سرعت بهینه. Persian toy-shop WooCommerce theme converted 1:1 from the ToyKind Angel mobile demo.
+Version: 0.18.0
+Requires at least: 6.4
+Tested up to: 6.9
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: toykindangel
+Tags: e-commerce, rtl-language-support, custom-menu, custom-logo, featured-images, threaded-comments, translation-ready
+WC requires at least: 7.0
+WC tested up to: 11.2
+*/
+
+/*
+ * استپ ۲: این فایل فقط هدر استاندارد وردپرس است.
+ *  - assets/css/demo.css        → CSS کامل و دست‌نخوردهٔ دمو (توکن‌ها، همهٔ کامپوننت‌ها)
+ *  - assets/css/main.css        → لایهٔ سازگاری وردپرس (ادمین‌بار، breadcrumb، صفحه‌بندی، دیدگاه‌ها و…)
+ *  - assets/css/responsive.css  → لایهٔ تبلت/دسکتاپ (≥768px قاب باز، ≥1024px دسکتاپ کامل) — موبایل ۱:۱ دمو
+ *  - assets/css/custom.css      → سفارشی‌سازی‌های اختصاصی پروژه (لایهٔ آخر — همهٔ بازطراحی‌های درخواستی)
+ * مسیرهای تصاویر/فونت‌های محلی دمو از طریق window.TKA_BASE در functions.php به URI قالب
+ * نگاشت می‌شوند؛ خودِ فایل‌های دمو ۱۰۰٪ دست‌نخورده باقی مانده‌اند.
+ *
+ * توجه: سفارشی‌سازی‌هایی که قبلاً دستی به انتهای همین فایل اضافه شده بود، در نسخهٔ
+ * 0.18.0 به «assets/css/custom.css» منتقل شدند. برای ویرایش بعدی در پیشخوان،
+ * ویرایشگر قالب ← پوشهٔ assets/css ← فایل custom.css را باز کنید.
+ */

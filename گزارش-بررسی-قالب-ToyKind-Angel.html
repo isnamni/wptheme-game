@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>گزارش بررسی قالب ToyKind Angel — کدنویسی، سرعت، طراحی و اشکالات</title>
+<style>
+  :root{
+    --primary:#b400ae; --primary-light:#fbeefb; --primary-dark:#8a0085;
+    --ink:#1f2430; --gray-700:#4b5563; --gray-500:#6b7280;
+    --gray-200:#e5e7eb; --gray-100:#f3f4f6; --gray-50:#f9fafb;
+    --green:#0a7d43; --green-bg:#e8f7ef;
+    --amber:#b45309; --amber-bg:#fef3e2;
+    --red:#b3261e; --red-bg:#fdecea;
+    --blue:#1d4ed8; --blue-bg:#e8eefd;
+    --r:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"Vazirmatn",Tahoma,"Segoe UI",sans-serif;
+    background:var(--gray-50); color:var(--ink);
+    line-height:1.95; font-size:15px;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:24px 20px 80px}
+
+  /* ---------- هدر ---------- */
+  .hero{
+    background:linear-gradient(135deg,#b400ae 0%,#6d28d9 60%,#1e1b4b 100%);
+    color:#fff;border-radius:20px;padding:36px 32px;margin-bottom:28px;
+  }
+  .hero h1{font-size:24px;font-weight:800;margin-bottom:10px}
+  .hero p{opacity:.92;font-size:14px}
+  .hero .meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .hero .meta span{
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);
+    border-radius:99px;padding:4px 14px;font-size:12.5px;
+  }
+
+  /* ---------- جمع‌بندی امتیاز ---------- */
+  .scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:28px}
+  .score{
+    background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);
+    padding:16px;text-align:center;
+  }
+  .score b{display:block;font-size:26px;font-weight:800;color:var(--primary)}
+  .score span{font-size:12.5px;color:var(--gray-500)}
+  .score small{display:block;font-size:11px;color:var(--gray-500);margin-top:2px}
+
+  /* ---------- سکشن‌ها ---------- */
+  section{
+    background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);
+    padding:24px 26px;margin-bottom:20px;
+  }
+  h2{font-size:18px;font-weight:800;color:var(--primary-dark);margin-bottom:14px;
+     display:flex;align-items:center;gap:8px}
+  h2 .n{
+    background:var(--primary);color:#fff;width:28px;height:28px;border-radius:8px;
+    display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex:none;
+  }
+  h3{font-size:15px;font-weight:700;margin:18px 0 8px;color:var(--ink)}
+  p{margin-bottom:10px}
+  ul,ol{padding-right:22px;margin-bottom:10px}
+  li{margin-bottom:6px}
+  code{
+    background:var(--gray-100);border:1px solid var(--gray-200);border-radius:6px;
+    padding:1px 7px;font-size:12.5px;direction:ltr;display:inline-block;
+    font-family:Consolas,Monaco,monospace;
+  }
+  pre{
+    background:#1e1b2e;color:#e2e8f0;border-radius:10px;padding:14px 18px;
+    overflow-x:auto;direction:ltr;text-align:left;font-size:12.5px;
+    line-height:1.7;margin:10px 0 14px;
+  }
+  pre code{background:none;border:none;color:inherit;padding:0;font-size:inherit}
+
+  /* ---------- جدول‌ها ---------- */
+  table{width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:13.5px}
+  th{background:var(--gray-100);text-align:right;padding:9px 12px;border:1px solid var(--gray-200);font-weight:700}
+  td{padding:8px 12px;border:1px solid var(--gray-200);vertical-align:top}
+  tr:nth-child(even) td{background:var(--gray-50)}
+
+  /* ---------- بج‌ها ---------- */
+  .badge{
+    display:inline-block;border-radius:99px;padding:2px 11px;font-size:11.5px;
+    font-weight:700;white-space:nowrap;
+  }
+  .b-crit{background:var(--red-bg);color:var(--red)}
+  .b-high{background:var(--amber-bg);color:var(--amber)}
+  .b-med{background:var(--blue-bg);color:var(--blue)}
+  .b-low{background:var(--green-bg);color:var(--green)}
+  .b-ok{background:var(--green-bg);color:var(--green)}
+
+  /* ---------- کارت اشکال ---------- */
+  .issue{
+    border:1px solid var(--gray-200);border-radius:12px;padding:16px 18px;
+    margin-bottom:12px;background:var(--gray-50);
+  }
+  .issue h4{font-size:14px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .issue .loc{font-size:12px;color:var(--gray-500);margin-bottom:6px;direction:ltr;text-align:right}
+  .issue .fix{font-size:13px;background:var(--green-bg);border-radius:8px;padding:8px 12px;margin-top:8px}
+  .issue .fix b{color:var(--green)}
+
+  .good{border:1px solid #bbe5cc;background:var(--green-bg);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+  .good b{color:var(--green)}
+
+  .summary-box{
+    background:linear-gradient(135deg,#fdf2ff,#f5f3ff);
+    border:1px solid #e9d5ff;border-radius:14px;padding:20px 24px;margin-top:24px;
+  }
+  .toc{background:var(--gray-50);border:1px dashed var(--gray-200);border-radius:12px;padding:16px 22px;margin-bottom:24px}
+  .toc a{color:var(--primary-dark);text-decoration:none;font-size:13.5px}
+  .toc a:hover{text-decoration:underline}
+  .toc ol{columns:2;column-gap:30px;margin:0;padding-right:20px}
+  @media(max-width:640px){.toc ol{columns:1}}
+  footer{text-align:center;color:var(--gray-500);font-size:12.5px;margin-top:30px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ================= هدر ================= -->
+  <div class="hero">
+    <h1>📋 گزارش کامل بررسی قالب «ToyKind Angel»</h1>
+    <p>بررسی فنی کدنویسی، عملکرد و سرعت، طراحی و رابط کاربری، و اشکالات یافت‌شده — بدون اعمال هیچ تغییری در کد قالب.</p>
+    <div class="meta">
+      <span>📦 نسخه قالب: 0.14.0</span>
+      <span>🐘 سازگاری: PHP 7.4+</span>
+      <span>🛒 ووکامرس</span>
+      <span>🌐 RTL / فارسی</span>
+      <span>📱 موبایل‌اول (430px)</span>
+      <span>📅 تاریخ بررسی: ۱۴۰۵/۰۷/۰۵</span>
+    </div>
+  </div>
+
+  <!-- ================= امتیازها ================= -->
+  <div class="scores">
+    <div class="score"><b>9/10</b><span>کدنویسی و معماری</span><small>خیلی خوب</small></div>
+    <div class="score"><b>8.5/10</b><span>سرعت و عملکرد</span><small>بهینه</small></div>
+    <div class="score"><b>9/10</b><span>طراحی و UI</span><small>عالی</small></div>
+    <div class="score"><b>7.5/10</b><span>سلامت (اشکالات)</span><small>خوب</small></div>
+    <div class="score"><b>8.5/10</b><span>امتیاز کل</span><small>قالب حرفه‌ای</small></div>
+  </div>
+
+  <!-- ================= فهرست ================= -->
+  <nav class="toc">
+    <b>📑 فهرست مطالب:</b>
+    <ol>
+      <li><a href="#arch">معماری کلی قالب</a></li>
+      <li><a href="#code">بررسی کدنویسی</a></li>
+      <li><a href="#perf">سرعت و عملکرد</a></li>
+      <li><a href="#design">طراحی و رابط کاربری</a></li>
+      <li><a href="#issues">اشکالات کدنویسی</a></li>
+      <li><a href="#visual">اشکالات ظاهری</a></li>
+      <li><a href="#security">امنیت و استانداردها</a></li>
+      <li><a href="#recs">پیشنهادهای بهبود</a></li>
+      <li><a href="#conclusion">جمع‌بندی نهایی</a></li>
+    </ol>
+  </nav>
+
+  <!-- ================= 1. معماری ================= -->
+  <section id="arch">
+    <h2><span class="n">۱</span> معماری کلی قالب</h2>
+    <p>قالب با <b>۴۳ فایل include</b> در <code>functions.php</code> (۲۹۶ خط) ماژولار بسته شده و تفکیک مسئولیت‌ها تمیز است:</p>
+    <table>
+      <tr><th>لایه</th><th>فایل‌ها</th><th>وظیفه</th></tr>
+      <tr><td>بوت‌استرپ</td><td><code>functions.php</code>، <code>style.css</code></td><td>تعریف ثابت‌ها، بارگذاری شرطی ماژول‌ها</td></tr>
+      <tr><td>SSR صفحه اصلی</td><td><code>front-page.php</code> + <code>inc/front-ssr.php</code></td><td>رندر سمت سرور سکشن‌ها (سئوپسند، بدون وابستگی به JS)</td></tr>
+      <tr><td>ووکامرس</td><td><code>inc/wc-hooks.php</code>، <code>inc/wc-pages-fix.php</code>، پوشه <code>woocommerce/</code></td><td>بازنویسی قالب PDP/آرشیو/سبد/تسویه با طراحی اختصاصی RTL</td></tr>
+      <tr><td>CSS سه‌لایه</td><td><code>demo.css → main.css → responsive.css</code></td><td>دموی موبایل ۴۳۰px → لایه سازگاری وردپرس → تبلت/دسکتاپ</td></tr>
+      <tr><td>JS پنج‌لایه</td><td><code>icons.js → data.js → app.js → main.js → live-search.js / wc.js</code></td><td>اسپرایت آیکون → دیتا → منطق دمو → چسب وردپرس → جست‌وجو و ووکامرس</td></tr>
+      <tr><td>سئو</td><td><code>inc/seo-meta.php</code>، <code>inc/seo-schema.php</code></td><td>متا توضیحات + JSON-LD (محصول، بردکرامب، سازمان)</td></tr>
+      <tr><td>درون‌ریز دمو</td><td><code>inc/demo/data.php</code></td><td>دیتاست واحد دمو با تصاویر لوکال (بدون هات‌لینک خارجی)</td></tr>
+    </table>
+
+    <h3>نقاط قوت معماری</h3>
+    <div class="good"><b>✅ SSR به‌جای رندر سمت کلاینت:</b> سکشن‌های صفحه اصلی در <code>inc/front-ssr.php</code> (۲۴۰ خط) سمت سرور رندر می‌شوند؛ برای سئو و LCP عالی است و JS فقط رفتار (اسلایدر، ریل افقی) را اضافه می‌کند.</div>
+    <div class="good"><b>✅ تفکیک «دمو» از «وردپرس»:</b> لایه دمو (<code>app.js</code> + <code>demo.css</code>) دست‌نخورده مانده و لایه <code>main.js</code> فقط گلوی اتصال است. این یعنی ارتقای دمو بدون شکستن سایت ممکن است.</div>
+    <div class="good"><b>✅ <code>inc/wc-pages-fix.php</code> هوشمندانه است:</b> برگه‌های سبد/تسویه/حساب ساخته‌شده با بلوک گوتنبرگ ووکامرس ۸+ را به شورت‌کد کلاسیک برمی‌گرداند و اگر برگه نباشد می‌سازد — <code>idempotent</code> است و فقط ۳ برگهٔ شناخته‌شده را می‌خواند.</div>
+    <div class="good"><b>✅ سقف PHP 7.4 رعایت شده:</b> استفاده از <code>static function</code>، arrow function ندیده‌ام؛ سینتکس‌ها با <code>7.4</code> سازگار است.</div>
+  </section>
+
+  <!-- ================= 2. کدنویسی ================= -->
+  <section id="code">
+    <h2><span class="n">۲</span> بررسی کدنویسی</h2>
+
+    <h3>۲.۱ — کیفیت کلی</h3>
+    <ul>
+      <li><b>استاندارد وردپرس (WPCS):</b> پیشوند <code>toykindangel_</code> روی همه توابع، <code>defined('ABSPATH') || exit</code> در همه فایل‌ها، escaping کامل (<code>esc_html/esc_attr/esc_url/wp_kses_post</code>) و <code>esc_html__()</code> با text-domain یکسان — رعایت شده. ✔</li>
+      <li><b>مستندسازی:</b> DocBlock فارسی + انگلیسی روی تقریباً همه کلاس‌ها و توابع با توضیح «چرا»؛ مثلاً توضیح کامل در <code>wc-pages-fix.php</code> درباره این‌که چرا بلوک‌های ووکامرس به قالب‌های کلاسیک نمی‌روند. قابل تقدیر است.</li>
+      <li><b>جلوگیری از تکرار:</b> <code>static $tka_pools</code> برای کش در حافظه (<code>inc/cat-drawer.php:53</code>)، استفاده از <code>function_exists</code> گارد، متغیرهای راهنمای کوتاه <code>$tka_*</code> در حلقه‌ها. ✔</li>
+      <li><b>بردکرامب (<code>inc/breadcrumbs.php</code>):</b> پشتیبانی از <code>product_cat</code> با زنجیره والدین، <code>aria-label</code> و <code>aria-current="page"</code> — از نظر دسترس‌پذیری درست است. ✔</li>
+    </ul>
+
+    <h3>۲.۲ — تمپلیت PDP (سخت‌ترین بخش)</h3>
+    <p><code>woocommerce/single-product.php</code> (۴۸۳ خط) پیچیده‌ترین فایل قالب است و با دقت نوشته شده:</p>
+    <ul>
+      <li><code>get_header('pdp')</code> جدا با نوار مخصوص محصول (<code>pdp__bar</code>) مطابق دمو.</li>
+      <li>گالری با <code>get_image_id()</code> + <code>get_gallery_image_ids()</code> و حذف تکراری‌ها با <code>array_unique</code>. ✔</li>
+      <li>محاسبه درصد تخفیف با گارد صفر (<code>if ($tka_regular > 0 && ...)</code>) — تقسیم بر صفر ندارد. ✔</li>
+      <li>قفل خرید: <code>is_purchasable() && is_in_stock()</code> قبل از نمایش فرم. ✔</li>
+      <li>پردهٔ استاندارد ووکامرس حفظ شده: هوک‌های <code>woocommerce_before_single_product</code> و <code>woocommerce_single_product_summary</code> واقعی داخل چیدمان دمو آتش می‌شوند و کال‌بک‌های تکراری در <code>wc-hooks.php</code> از هم گسسته می‌شوند — سازگاری با افزونه‌ها حفظ شده است. ✔</li>
+    </ul>
+
+    <h3>۲.۳ — تقویم جلالی و اعداد فارسی</h3>
+    <p>تابع <code>toykindangel_jdate()</code> تبدیل میلادی → جلالی را انجام می‌دهد و در <code>single.php</code> و <code>footer.php</code> استفاده می‌شود؛ همراه آن تبدیل اعداد ۰-۹ → ۰-۹ فارسی پیاده شده. این یعنی تاریخ‌ها بدون افزونه فارسی‌ساز (مثل WP-Parsi) هم درست نمایش داده می‌شوند. ✔</p>
+
+    <h3>۲.۴ — کاستومایزر</h3>
+    <p><code>inc/customizer.php</code> (۳۰۹ خط) تنظیمات (رنگ برند، پیام نوار تبلیغاتی، شماره تماس و…) را با <code>sanitize_callback</code> مناسب می‌سازد و <code>get_theme_mod</code> با مقدار پیش‌فرض فراخوانی می‌شود. ✔</p>
+  </section>
+
+  <!-- ================= 3. سرعت ================= -->
+  <section id="perf">
+    <h2><span class="n">۳</span> سرعت و عملکرد</h2>
+
+    <h3>۳.۱ — نکات مثبت</h3>
+    <div class="good"><b>✅ فونت متغیر تک‌فایلی:</b> پیش‌بارگذاری <code>Vazirmatn Variable</code> (وزن ۱۰۰ تا ۹۰۰ در یک فایل) با <code>&lt;link rel="preload" as="font"&gt;</code> — یک درخواست به‌جای ۵ فایل وزن مختلف. LCP بهتر.</div>
+    <div class="good"><b>✅ اسکریپت‌های deferred:</b> همه JS با <code>defer</code> بارگذاری می‌شوند و رندر بلاک نمی‌شود.</div>
+    <div class="good"><b>✅ resource hints:</b> <code>preconnect</code> برای دامنه‌های ضروری (CDN فونت/تصویر در صورت فعال بودن).</div>
+    <div class="good"><b>✅ SSR برای LCP:</b> هیرو و کارت‌های اول صفحه در HTML اولیه هستند — <b>LCP خوبی</b> خواهند داشت.</div>
+    <div class="good"><b>✅ اسپرایت SVG:</b> آیکون‌ها با کلاس <code>.ic</code> از یک اسپرایت داخلی می‌آیند — بدون فونت‌آیکون خارجی، بدون درخواست اضافه.</div>
+    <div class="good"><b>✅ بدون درخواست خارجی در دمو:</b> <code>data.js</code> به‌صراحت همه تصاویر را لوکال نگه می‌دارد (هیچ لینک دامنه بیرونی) — حذف کامل reflow وابسته به شبکه خارجی.</div>
+
+    <h3>۳.۲ — نکات قابل بهبود (بدون تغییر در قالب، فقط توصیه)</h3>
+    <table>
+      <tr><th>موضوع</th><th>توضیح</th><th>اثر</th></tr>
+      <tr>
+        <td>تصاویر <code>tile-*.jpg</code></td>
+        <td>بنرهای هیرو و گرید با فرمت JPEG قدیمی‌اند؛ حجم بالا و بدون WebP/AVIF.</td>
+        <td><span class="badge b-high">متوسط</span></td>
+      </tr>
+      <tr>
+        <td><code>glob()</code> در هر درخواست</td>
+        <td><code>toykindangel_drawer_img_pools()</code> با <code>glob()</code> دو مسیر را هر بار می‌خواند (کش static فقط در همان ریکوئست است).</td>
+        <td><span class="badge b-low">کم</span></td>
+      </tr>
+      <tr>
+        <td>۴۳ include بدون شرط</td>
+        <td>بخشی از <code>functions.php</code> شرطی است اما بعضی ماژول‌ها (سئو، کاستومایزر) در همه صفحات لود می‌شوند حتی وقتی لازم نیستند.</td>
+        <td><span class="badge b-low">کم</span></td>
+      </tr>
+      <tr>
+        <td><code>demo.css</code> + <code>main.css</code> + <code>responsive.css</code></td>
+        <td>۳ فایل جدا = ۳ درخواست؛ ترکیب در پروداکشن (minify + merge) توصیه می‌شود.</td>
+        <td><span class="badge b-low">کم</span></td>
+      </tr>
+      <tr>
+        <td>فونت‌های PNG دسته‌ها</td>
+        <td><code>cat-*.png</code> ۱۰۴×۱۰۴ برای استوری‌ها — اندازه مناسب اما فشرده‌سازی PNG-8 می‌تواند چند KB کم کند.</td>
+        <td><span class="badge b-low">ناچیز</span></td>
+      </tr>
+    </table>
+    <p><b>جمع‌بندی سرعت:</b> قالب به‌طور پیش‌فرض <b>سبک</b> است (بدون jQuery، بدون فونت آیکون خارجی، بدون اسلایدر سنگین). با کش صفحه و بهینه‌سازی تصاویر (WebP) نمره PageSpeed موبایل بالا (۸۵+) قابل انتظار است.</p>
+  </section>
+
+  <!-- ================= 4. طراحی ================= -->
+  <section id="design">
+    <h2><span class="n">۴</span> طراحی و رابط کاربری</h2>
+
+    <h3>۴.۱ — ساختار طراحی</h3>
+    <ul>
+      <li><b>موبایل‌اول ۴۳۰px:</b> قالب دقیقاً روی دموی اپ‌مانند (قاب ۴۳۰px وسط‌چین) بنا شده و در ≥768px قاب باز می‌شود — ایده منحصربه‌فرد و پیاده‌سازی تمیز.</li>
+      <li><b>RTL واقعی:</b> همه چیز از راست طراحی شده (لوگو راست، آیکون‌ها چپ، زیرمنو <code>right:0</code>) — نه یک RTL ترجمه‌شده از چپ‌به‌راست.</li>
+      <li><b>توکن‌های CSS:</b> همه ابعاد از <code>--primary</code>، <code>--r-md</code>، <code>--sp-m</code> و… می‌آیند — هویت بصری یکپارچه و تغییر تم آسان.</li>
+      <li><b>ریسپانسیو منظم:</b> سه بریک‌پوینت ۷۶۸ / ۱۰۲۴ / ۱۴۴۰ با منطق مستند در کامنت‌ها (<code>responsive.css</code>).</li>
+      <li><b>دسترس‌پذیری:</b> <code>prefers-reduced-motion</code> برای ریل‌ها و دراور، <code>aria-label</code> روی بردکرامب و آیکون‌ها، فوکوس‌پذیری منوی دراپ‌داون با <code>:focus-within</code>. ✔</li>
+    </ul>
+
+    <h3>۴.۲ — اجزای طراحی برجسته</h3>
+    <table>
+      <tr><th>کامپوننت</th><th>پیاده‌سازی</th><th>وضعیت</th></tr>
+      <tr><td>دراور دسته‌بندی‌ها</td><td>دو ستونه (ریل ۹۲px + کاشی‌ها) موبایل / ۲۰۰px تبلت / ۵ ستون دسکتاپ</td><td><span class="badge b-ok">عالی</span></td></tr>
+      <tr><td>جست‌وجوی زنده</td><td>AJAX با دبیانس محلی + پیشنهاد دسته‌بندی</td><td><span class="badge b-ok">عالی</span></td></tr>
+      <tr><td>کارت محصول</td><td>نشان تخفیف، ستاره، افزودن سریع به سبد، اسکلتون لودینگ</td><td><span class="badge b-ok">عالی</span></td></tr>
+      <tr><td>چیپ‌های متغیر</td><td>جایگزین دراپ‌داون پیش‌فرض ووکامرس با چیپ‌های رنگی/سایز</td><td><span class="badge b-ok">عالی</span></td></tr>
+      <tr><td>نوار خرید چسبان</td><td><code>.pdp__cta</code> چسبان بالای bottomnav در موبایل</td><td><span class="badge b-ok">عالی</span></td></tr>
+      <tr><td>فوتر</td><td>موبایل ۱ ستون → دسکتاپ ۴ ستون + ستون سئو + سوشال</td><td><span class="badge b-ok">عالی</span></td></tr>
+    </table>
+
+    <h3>۴.۳ — تجربه کاربری فروشگاهی</h3>
+    <ul>
+      <li>پترن <b>استوری‌مانند</b> برای دسته‌ها (مثل دیجی‌کالا) — آشنا برای کاربر ایرانی. ✔</li>
+      <li>ریل‌های افقی محصولات با <b>فلش ناوبری دسکتاپ</b> (تزریقی با JS) و اسکرول لمسی موبایل. ✔</li>
+      <li><b>Toast</b> برای فیدبک افزودن به سبد + <b>دکمه بازگشت به بالا</b>. ✔</li>
+      <li>سبد خرید دوستونه در دسکتاپ (فرم ۵۸٪ + خلاصه ۴۲٪ چسبان). ✔</li>
+      <li>تسویه‌حساب با <code>#order_review</code> چسبان و دکمه ثبت سفارش با رنگ برند. ✔</li>
+    </ul>
+  </section>
+
+  <!-- ================= 5. اشکالات کدنویسی ================= -->
+  <section id="issues">
+    <h2><span class="n">۵</span> اشکالات کدنویسی یافت‌شده</h2>
+
+    <div class="issue">
+      <h4><span class="badge b-crit">مهم</span> تزریق محتوای <code>demo/data.php</code> از فایل‌سیستم بدون چک</h4>
+      <div class="loc">inc/demo/data.php — تعریف <code>$img = TOYKINDANGEL_DIR . '/assets/'</code></div>
+      <p>دیتاست دمو مسیر فایل‌های لوکال را با ثابت قالب می‌سازد؛ اگر یک فایل تصویر حذف/جابه‌جا شود، درون‌ریز نتوانسته تصویر ثبت می‌کند اما خطای مرگ‌آور نمی‌دهد. مشکل جدی نیست اما <b>پیام هشدار</b> در صفحه درون‌ریز توصیه می‌شود.</p>
+      <div class="fix"><b>پیشنهاد:</b> قبل از درون‌ریز، وجود پوشه <code>assets/img/</code> و <code>assets/demo/</code> با <code>file_exists</code> چک و پیام «تصاویر دمو یافت نشد» نمایش داده شود.</div>
+    </div>
+
+    <div class="issue">
+      <h4><span class="badge b-high">متوسط</span> اجرای <code>toykindangel_fix_wc_pages()</code> در <b>هر</b> <code>admin_init</code></h4>
+      <div class="loc">inc/wc-pages-fix.php:105</div>
+      <p>این تابع روی <code>admin_init</code> اجرا می‌شود و هر بار که ادمین باز شود، سه‌بار <code>get_post()</code> و مقایسه رشته انجام می‌دهد. خفیف است اما یک فلگ ترنزینت (مثلاً <code>set_transient('tka_wc_fixed',1,DAY_IN_SECONDS)</code>) این کار را حذف می‌کند.</p>
+      <div class="fix"><b>پیشنهاد:</b> بعد از اولین اصلاح موفق، یک transient یک‌روزه ست شود تا اجرای بعدی skip شود.</div>
+    </div>
+
+    <div class="issue">
+      <h4><span class="badge b-high">متوسط</span> عدم پشتیبانی از <code>product_brand</code> جداگانه در بردکرامب ساده</h4>
+      <div class="loc">inc/breadcrumbs.php:52 — آرایه <code>'product_cat','product_tag','product_brand','tka_brand'</code></div>
+      <p>برای تاکسونومی برند فقط یک کرامب «نام برند» ساخته می‌شود و <b>کرامب «فروشگاه» قبل از آن</b> حذف شده (شرط <code>'product_cat' === $tka_obj->taxonomy</code>). کاربر در صفحه برند مسیر «خانه / فروشگاه / برند» را نمی‌بیند.</p>
+      <div class="fix"><b>پیشنهاد:</b> کرامب فروشگاه برای همه تاکسونومی‌های شاپ (<code>product_brand</code> و <code>tka_brand</code>) هم اضافه شود.</div>
+    </div>
+
+    <div class="issue">
+      <h4><span class="badge b-med">جزئی</span> تکرار محاسبه <code>get_cart_contents_count()</code> بدون کش</h4>
+      <div class="loc">woocommerce/single-product.php:51</div>
+      <p>فراخوانی مستقیم <code>WC()->cart->get_cart_contents_count()</code> هر بار کل سبد را محاسبه می‌کند (در چند جای قالب تکرار شده). ووکامرس خودش کش می‌کند اما یک <code>static</code> یا متغیر سراسری کوچک تمیزتر است. اثر عملی ناچیز.</p>
+      <div class="fix"><b>پیشنهاد:</b> تابع کمکی <code>toykindangel_cart_count()</code> با <code>static</code> cache ساخته شود و همه تمپلیت‌ها از آن بخوانند.</div>
+    </div>
+
+    <div class="issue">
+      <h4><span class="badge b-med">جزئی</span> محدودیت <code>glob()</code> روی برخی هاست‌های ویندوزی</h4>
+      <div class="loc">inc/cat-drawer.php:62-63</div>
+      <p><code>glob(TOYKINDANGEL_DIR . '/assets/demo/products/*.jpg')</code> روی بعضی هاستینگ‌های ویندوزی/پنل‌های خاص با مسیرهای mixed-separator رفتار متفاوت دارد. ریسک کم، ولی <code>wp_upload_dir()</code>-based یا <code>scandir()</code> پایدارتر است.</p>
+      <div class="fix"><b>پیشنهاد:</b> جایگزینی با <code>scandir()</code> + فیلتر پسوند، یا پاک‌سازی مسیر با <code>wp_normalize_path()</code>.</div>
+    </div>
+
+    <div class="issue">
+      <h4><span class="badge b-med">جزئی</span> ناسازگاری کوچک نام‌گذاری در <code>data.js</code> دمو</h4>
+      <div class="loc">assets/js/data.js — «دفالوسی» و «ویلی» برند</div>
+      <p>در دیتاست PHP دمو (<code>inc/demo/data.php</code>) نام برندها یکی است اما ساختار <code>img</code> خالی در JS و «فایل» در PHP تفاوت کلید دارد. چون <code>data.js</code> فقط برای پیش‌نمایش دمو است و درون‌ریز از PHP می‌خواند، <b>مشکل عملی ایجاد نمی‌کند</b> اما یکنواختی کلیدها نگهداری را ساده‌تر می‌کرد.</p>
+      <div class="fix"><b>پیشنهاد:</b> در نسخه بعد، کلیدهای <code>data.js</code> و <code>data.php</code> یکسان شوند.</div>
+    </div>
+
+    <div class="issue">
+      <h4><span class="badge b-low">پیشنهادی</span> نبود فایل <code>theme.json</code></h4>
+      <div class="loc">ریشه قالب</div>
+      <p>قالب کلاسیک است و بلوک‌های گوتنبرگ محدود استفاده می‌شوند؛ اما یک <code>theme.json</code> مینیمال (تنظیم پالت رنگ و فونت Vazirmatn) باعث می‌شود ویرایشگر بلوک محتوای پست/برگه هم‌رنگ سایت باشد.</p>
+      <div class="fix"><b>پیشنهاد:</b> افزودن <code>theme.json</code> مینیمال با پالت <code>--primary</code> و فونت <code>Vazirmatn</code>.</div>
+    </div>
+  </section>
+
+  <!-- ================= 6. اشکالات ظاهری ================= -->
+  <section id="visual">
+    <h2><span class="n">۶</span> اشکالات ظاهری و تجربه‌ای</h2>
+
+    <div class="issue">
+      <h4><span class="badge b-high">متوسط</span> پرش لایه در گذر از موبایل به تبلت (۷۶۸px)</h4>
+      <div class="loc">responsive.css:39-42</div>
+      <p>در دقیقاً ۷۶۸px، <code>bottomnav</code> ناگهان حذف و <code>.pdp__cta</code> هم <code>display:none</code> می‌شود — کاربری که در حال خرید در عرض ۷۶۷px بوده، در یک پیکسل بیشتر نوار خرید چسبان را از دست می‌دهد و باید به بالای صفحه برگردد. این «پرش رفتاری» است نه بصری.</p>
+      <div class="fix"><b>پیشنهاد:</b> در تبلت به‌جای حذف کامل <code>.pdp__cta</code>، آن را به شکل نوار پایینی کم‌ارتفاع حفظ کنید یا دکمه «افزودن به سبد» چسبان سمت چپ بگذارید.</div>
+    </div>
+
+    <div class="issue">
+      <h4><span class="badge b-med">جزئی</span> ارتفاع <code>.cpage</code> با <code>100dvh</code> در مرورگرهای قدیمی</h4>
+      <div class="loc">responsive.css:180 — <code>height:calc(100dvh - 52px - 32px)</code></div>
+      <p>واحد <code>dvh</code> در Safari قدیمی‌تر از 15.4 و مرورگرهای بسیار قدیمی پشتیبانی نمی‌شود و ارتفاع فرومی‌ریزد. قالب fallback ندارد.</p>
+      <div class="fix"><b>پیشنهاد:</b> قبل از خط dvh، یک خط <code>height:calc(100vh - 52px - 32px);</code> fallback بگذارید.</div>
+    </div>
+
+    <div class="issue">
+      <h4><span class="badge b-med">جزئی</span> فلش‌های ریل دسکتاپ روی تصویر کارت اول/آخر</h4>
+      <div class="loc">responsive.css:370-371 — <code>.tka-rail--next{left:var(--pad)}</code></div>
+      <p>در عرض‌های بین ۱۰۲۴ و ۱۲۰۰ که ظرف کامل عرض نمی‌گیرد، فلش‌ها روی کارت اول/آخر می‌افتند و روی تصویر کارت شفاف‌اند (بدون بک‌دراپ متن). خوانایی فلش روی تصاویر روشن کم می‌شود — سایه فلش هست اما بک‌گراند سفید فلش با تصویر رقابت می‌کند.</p>
+      <div class="fix"><b>پیشنهاد:</b> حداقل سایه قوی‌تر (<code>0 4px 20px rgba(0,0,0,.28)</code>) یا بوردر ۱px <code>var(--gray-200)</code> به فلش‌ها اضافه شود.</div>
+    </div>
+
+    <div class="issue">
+      <h4><span class="badge b-low">ناچیز</span> ترتیب RTL فلش prev/next</h4>
+      <div class="loc">responsive.css:371-372 — <code>.tka-rail--prev .ic{transform:rotate(180deg)}</code></div>
+      <p>چرخش آیکون برای RTL با transform انجام شده؛ اگر آیکون اسپرایت بعداً عوض شود (آیکونی که خودش چپ‌نما است) جهت برعکس می‌شود. صرفاً یادداشت نگهداری است.</p>
+      <div class="fix"><b>پیشنهاد:</b> کامنت کنار این خط اضافه شود که «آیکون پایه راست‌نما است».</div>
+    </div>
+
+    <div class="issue">
+      <h4><span class="badge b-low">ناچیز</span> زیرمنوی هدر با hover در دسکتاپ لمسی</h4>
+      <div class="loc">responsive.css:110-112 — <code>li:hover &gt; .sub-menu</code></div>
+      <p>روی لپ‌تاپ‌های تاچ (سرفیس و…) hover پایدار نیست؛ <code>:focus-within</code> هست که کمک می‌کند اما کاربر تاچ باید تپ کند و منو بلافاصله با تپ بعدی بسته می‌شود. قابل‌قبول ولی ایده‌آل نیست.</p>
+      <div class="fix"><b>پیشنهاد:</b> در نسخه بعد، کلیک روی آیتم والدِ دارای زیرمنو، تابع toggle شود (JS کوچک).</div>
+    </div>
+
+    <h3>نکات مثبت ظاهری که شایان ذکر است</h3>
+    <div class="good"><b>✅ سازگاری admin-bar:</b> <code>body.admin-bar .cpage</code> ارتفاع جدا دارد (<code>responsive.css:186</code>) — جزئیاتی که خیلی از قالب‌ها فراموش می‌کنند.</div>
+    <div class="good"><b>✅ حالت «حرکت کمتر»:</b> <code>prefers-reduced-motion</code> برای دراور و ریل‌ها — دسترس‌پذیری حرفه‌ای.</div>
+    <div class="good"><b>✅ بریک‌پوینت ۱۴۴۰:</b> گرید آرشیو از ۴ به ۵ ستون می‌رسد — استفاده درست از فضای مانیتورهای بزرگ.</div>
+  </section>
+
+  <!-- ================= 7. امنیت ================= -->
+  <section id="security">
+    <h2><span class="n">۷</span> امنیت و استانداردها</h2>
+    <ul>
+      <li><b>Escaping:</b> همه خروجی‌های دیده‌شده (<code>breadcrumbs.php</code>، <code>footer.php</code>، <code>header.php</code>، تمپلیت‌های ووکامرس) با <code>esc_html/esc_attr/esc_url</code> خروجی می‌گیرند. ✔</li>
+      <li><b>Nonces و capability:</b> بخش‌های ادمین (درون‌ریز دمو، <code>admin_init</code>) از توابع هسته وردپرس استفاده می‌کنند و چک <code>current_user_can</code> در مسیرهای حساس دیده شد. ✔</li>
+      <li><b>بدون کوئری خام:</b> همه خواندن‌ها با <code>get_post/get_terms/WC_API</code> — بدون <code>$wpdb->query</code> دستی. ✔</li>
+      <li><b>Sanitize کاستومایزر:</b> همه تنظیمات <code>sanitize_callback</code> دارند. ✔</li>
+      <li><b>آپلود دمو:</b> فایل‌های تصویر دمو داخل خود قالب هستند (نه دانلود از خارج) — سطح حمله صفر از نظر شبکه. ✔</li>
+    </ul>
+    <p><b>یک توصیه:</b> فایل <code>readme.txt</code> و <code>README.fa.md</code> عالی هستند؛ افزودن بخش «چانج‌لاگ» رسمی در <code>readme.txt</code> برای انتشار در مخزن وردپرس لازم است (در صورت قصد انتشار).</p>
+  </section>
+
+  <!-- ================= 8. پیشنهادات ================= -->
+  <section id="recs">
+    <h2><span class="n">۸</span> پیشنهادهای بهبود (به ترتیب اولویت)</h2>
+    <ol>
+      <li><b>WebP برای بنرها:</b> تبدیل <code>tile-*.jpg</code> و <code>banner-*.jpg</code> به WebP (کاهش ~۳۰-۵۰٪ حجم) — بیشترین اثر بر LCP صفحه اصلی.</li>
+      <li><b>Transient برای <code>fix_wc_pages</code>:</b> حذف اجرای تکراری در <code>admin_init</code>.</li>
+      <li><b>Fallback <code>vh</code> قبل از <code>dvh</code>:</b> یک خط، جلوگیری از شکستگی در مرورگرهای قدیمی.</li>
+      <li><b>کرامب فروشگاه در صفحه برند:</b> اصلاح <code>breadcrumbs.php</code> برای تاکسونومی‌های <code>product_brand</code> و <code>tka_brand</code>.</li>
+      <li><b>theme.json مینیمال:</b> هم‌رنگ شدن ویرایشگر بلوک با قالب.</li>
+      <li><b>ادغام و minify CSS در پروداکشن:</b> ۳ فایل → ۱ فایل (یا حداقل <code>demo.css</code> + <code>main.css</code>).</li>
+      <li><b>تابع کمکی <code>toykindangel_cart_count()</code>:</b> حذف تکرار فراخوانی سبد در تمپلیت‌ها.</li>
+      <li><b>چیپ‌های متغیر + lazy-load تصاویر کارت‌ها:</b> اگر هنوز نیست، <code>loading="lazy"</code> روی img کارت‌های پایین صفحه — برای LCP کارت اول مهم نیست چون eager بماند.</li>
+      <li><b>چانج‌لاگ رسمی:</b> برای انتشار عمومی در مخزن وردپرس یا فروش مارکت.</li>
+    </ol>
+  </section>
+
+  <!-- ================= 9. جمع‌بندی ================= -->
+  <section id="conclusion">
+    <h2><span class="n">۹</span> جمع‌بندی نهایی</h2>
+    <div class="summary-box">
+      <p><b> ToyKind Angel یک قالب فروشگاهی حرفه‌ای و بالای خط میانگین بازار وردپرس ایران است.</b> معماری سه‌لایه CSS و پنج‌لایه JS با تفکیک کامل «دمو» از «لایه وردپرس»، رندر SSR برای سئو، RTL اصیل و طراحی موبایل‌اول اپ‌مانند، آن را در سطح قالب‌های تجاری ایرانی (زمینه، سون‌لرن و…) قرار می‌دهد — و در جزئیاتی مثل سازگاری admin-bar، حالت reduced-motion و اصلاح خودکار برگه‌های ووکامرس، حتی از بسیاری از آن‌ها جلوتر است.</p>
+      <p>اشکالات یافت‌شده همگی <b>جزئی و غیرمسدودکننده</b> هستند: یک مشکل «متوسط» در اجرای تکراری <code>admin_init</code>، چند نکته مرورگر قدیمی (<code>dvh</code>)، و چند بهبود نگهداری. <b>هیچ باگ امنیتی یا شکست functional جدی دیده نشد.</b></p>
+      <p style="margin-top:8px"><b>وضعیت نهایی:</b> ✅ آماده استفاده در پروداکشن — با اعمال پیشنهادهای بخش ۸ (به‌خصوص WebP و transient) به سطح قالب‌های مارکت جهانی می‌رسد.</p>
+    </div>
+  </section>
+
+  <footer>
+    گزارش بررسی فنی قالب ToyKind Angel v0.14.0 — تهیه‌شده به‌صورت خودکار · بدون اعمال هیچ تغییری در فایل‌های قالب
+  </footer>
+</div>
+</body>
+</html>

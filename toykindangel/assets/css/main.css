@@ -1,0 +1,1332 @@
+/* =========================================================
+   ToyKind Angel — لایهٔ سازگاری وردپرس
+   روی demo.css سوار می‌شود و توکن‌های همان دمو را استفاده می‌کند.
+   (ادمین‌بار، breadcrumb، صفحه‌بندی، دیدگاه‌ها، محتوای نوشته، backtop و…)
+   ========================================================= */
+
+/* ----------
+   مقیاس تایپوگرافی توکن‌دار (ممیزی P2-6، v0.17.0)
+   هشت پلهٔ اصلی متن بر پایهٔ پرکاربردترین اندازه‌های واقعی قالب؛
+   اندازه‌های کامپوننت‌های لایهٔ وردپرس روی همین توکن‌ها سوار شده‌اند
+   (جابه‌جایی فقط «هم‌ارز» بوده و هیچ اندازهٔ محاسبه‌شده‌ای عوض نشده).
+   قانون برای کد جدید: از var(--fs-*) استفاده شود، نه مقدار خام px.
+   (پله‌های میانیِ 0.5px میراث دمو هستند و در فاز تثبیت نهایی یکی می‌شوند.)
+   ---------- */
+:root{
+  --fs-2xs:10.5px;  /* ریزمتّن: بج، پانویس، برچسب بسیار کوچک */
+  --fs-xs:12px;     /* متا/لیبل: بج قیمت، توضیح کوتاه، breadcrumb */
+  --fs-sm:13px;     /* متن کوچک: بدنهٔ کارت، دکمه، ورودی */
+  --fs-md:14px;     /* متن پایه: تیتر فرعی، فرم */
+  --fs-lg:16px;     /* تأکید: عنوان کارت/برگه */
+  --fs-xl:20px;     /* عنوان سکشن موبایل */
+  --fs-2xl:26px;    /* عنوان صفحه */
+  --fs-3xl:34px;    /* تیتر هیرو/نمایشی */
+  /* توکن ارتفاع هدر: مقدار پیش‌فرض دمو (104px)؛ main.js با
+     ResizeObserver مقدار «زنده و واقعی» هدر (شامل حالت فشردهٔ
+     .tka-stuck) را روی همین متغیر در html می‌نویسد. */
+}
+
+
+/* ---------- فوکوس (دمو outline را حذف می‌کند؛ برای دسترس‌پذیری برمی‌گردانیم) ---------- */
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}
+
+/* ---------- Screen reader / skip link ---------- */
+.screen-reader-text{border:0;clip:rect(1px,1px,1px,1px);clip-path:inset(50%);height:1px;width:1px;margin:-1px;overflow:hidden;padding:0;position:absolute}
+.screen-reader-text:focus{clip:auto;clip-path:none;height:auto;width:auto;display:block}
+.skip-link{position:absolute;top:-48px;right:var(--pad);z-index:100000;background:var(--primary);color:#fff;padding:10px 16px;border-radius:0 0 var(--r-md) var(--r-md);font-size:var(--fs-sm);transition:top .2s}
+.skip-link:focus{top:0;color:#fff}
+
+/* ---------- ادمین‌بار: جابه‌جایی هدر چسبان ---------- */
+body.admin-bar .header{top:32px}
+@media (max-width:782px){body.admin-bar .header{top:46px}}
+
+/* ---------- ظرف محتوای قالب‌های عمومی ---------- */
+.tka-container{padding:var(--sp-m) var(--pad) 0}
+
+/* کارت پایه — هم‌خانوادهٔ کامپوننت‌های دمو */
+.tka-card{background:var(--white);border-radius:var(--r-lg);box-shadow:0 1px 3px rgba(0,0,0,.06);padding:var(--sp-m)}
+.tka-muted{color:var(--gray-500);font-size:var(--fs-xs)}
+
+.tka-page-title{font-size:var(--fs-lg);font-weight:700;color:var(--gray-900);margin:2px 0 var(--sp-m)}
+.tka-entry-title{font-size:15px;font-weight:700;margin:0}
+.tka-entry-title a{color:var(--gray-900)}
+.tka-entry-title a:hover{color:var(--primary)}
+.tka-entry-excerpt{font-size:var(--fs-sm);color:var(--gray-700);line-height:2;margin-top:6px}
+.tka-post-thumb{display:block;border-radius:var(--r-md);overflow:hidden;margin:10px 0 2px}
+.tka-post-thumb img{width:100%;height:auto;display:block}
+.tka-readmore,.tka-btn{display:inline-flex;align-items:center;gap:6px;background:var(--primary);color:#fff;font-size:var(--fs-sm);font-weight:700;padding:9px 16px;border-radius:var(--r-md);border:0;cursor:pointer;transition:background .2s}
+.tka-readmore:hover,.tka-btn:hover{background:var(--primary-dark);color:#fff}
+.tka-readmore:active,.tka-btn:active{background:var(--primary-darkest)}
+
+.tka-notice{background:var(--primary-light);border-radius:var(--r-lg);padding:var(--sp-m);font-size:var(--fs-sm);line-height:2;color:var(--gray-800)}
+.tka-notice h2{font-size:var(--fs-md);font-weight:700;color:var(--primary);margin-bottom:4px}
+
+/* گریدهای عمومی */
+.tka-grid{display:grid;gap:var(--sp-xs)}
+.tka-grid-2{grid-template-columns:repeat(2,1fr)}
+.tka-grid-4{grid-template-columns:repeat(4,1fr)}
+
+/* ---------- breadcrumb ---------- */
+.tka-breadcrumbs{padding:8px var(--pad) 0;font-size:11px;color:var(--gray-500)}
+.tka-breadcrumbs ol{display:flex;flex-wrap:wrap;align-items:center;gap:2px}
+.tka-breadcrumbs li{display:flex;align-items:center;gap:2px}
+.tka-breadcrumbs li+li::before{content:"‹";color:var(--gray-400);margin:0 4px;font-size:10px}
+.tka-breadcrumbs a{color:var(--gray-600)}
+.tka-breadcrumbs a:hover{color:var(--primary)}
+.tka-breadcrumbs .current{color:var(--gray-800);font-weight:500}
+
+/* ---------- محتوای نوشته/برگه ---------- */
+.tka-entry-content{font-size:13.5px;line-height:2.1;color:var(--gray-800)}
+.tka-entry-content p{margin:0 0 var(--sp-m)}
+.tka-entry-content h2,.tka-entry-content h3,.tka-entry-content h4{font-weight:700;color:var(--gray-900);margin:var(--sp-l) 0 var(--sp-s)}
+.tka-entry-content h2{font-size:15px}.tka-entry-content h3{font-size:var(--fs-md)}.tka-entry-content h4{font-size:var(--fs-sm)}
+.tka-entry-content ul,.tka-entry-content ol{margin:0 0 var(--sp-m);padding-right:20px}
+.tka-entry-content ul{list-style:disc}.tka-entry-content ol{list-style:decimal}
+.tka-entry-content img{max-width:100%;height:auto;border-radius:var(--r-md)}
+.tka-entry-content a{color:var(--primary)}
+.tka-entry-content blockquote{background:var(--primary-light);border-right:3px solid var(--primary);border-radius:var(--r-md);padding:var(--sp-m);margin:0 0 var(--sp-m);color:var(--gray-700)}
+.tka-entry-content table{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--white);border-radius:var(--r-md);overflow:hidden}
+.tka-entry-content th,.tka-entry-content td{border:1px solid var(--gray-200);padding:8px 10px;text-align:right}
+.tka-entry-content th{background:var(--gray-50);font-weight:700}
+.entry-content{font-size:13.5px;line-height:2.1;color:var(--gray-800)}
+.entry-content p{margin:0 0 var(--sp-m)}
+.entry-content h2,.entry-content h3,.entry-content h4{font-weight:700;color:var(--gray-900);margin:var(--sp-l) 0 var(--sp-s)}
+.entry-content ul,.entry-content ol{margin:0 0 var(--sp-m);padding-right:20px}
+.entry-content ul{list-style:disc}.entry-content ol{list-style:decimal}
+.entry-content a{color:var(--primary)}
+.entry-content img{max-width:100%;height:auto;border-radius:var(--r-md)}
+.wp-block-image img{border-radius:var(--r-md)}
+.alignwide{width:calc(100% + 2 * var(--pad));margin-right:calc(-1 * var(--pad))}
+.alignfull{width:100vw;margin-right:calc(50% - 50vw)}
+
+/* ---------- فرم‌ها ---------- */
+input[type="text"],input[type="email"],input[type="url"],input[type="password"],textarea,select{
+  width:100%;background:var(--gray-100);border:1px solid var(--gray-200);border-radius:var(--r-md);
+  padding:10px 12px;font-size:var(--fs-sm);color:var(--content);transition:border-color .2s}
+input[type="text"]:focus,input[type="email"]:focus,input[type="url"]:focus,input[type="password"]:focus,textarea:focus,select:focus{border-color:var(--primary-medium);background:var(--white)}
+textarea{min-height:110px;resize:vertical}
+
+/* ---------- صفحه‌بندی ---------- */
+.nav-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:var(--sp-l) 0 var(--sp-m)}
+.page-numbers{display:inline-grid;place-items:center;min-width:40px;height:40px;padding:0 8px;background:var(--white);border-radius:var(--r-md);font-size:var(--fs-sm);font-weight:700;color:var(--gray-700);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.page-numbers:hover{color:var(--primary)}
+.page-numbers.current{background:var(--primary);color:#fff}
+.page-numbers.dots{background:none;box-shadow:none}
+
+/* ---------- ناوبری نوشته‌ها ---------- */
+.post-navigation .nav-links{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-xs)}
+.post-navigation .nav-previous a,.post-navigation .nav-next a{display:block;background:var(--white);border-radius:var(--r-md);box-shadow:0 1px 3px rgba(0,0,0,.06);padding:var(--sp-s) var(--sp-m);font-size:var(--fs-xs);color:var(--gray-700);line-height:1.8}
+.post-navigation .nav-previous a:hover,.post-navigation .nav-next a:hover{color:var(--primary)}
+
+/* ---------- دیدگاه‌ها ---------- */
+.comments-area{margin-top:var(--sp-l)}
+.comments-title,.comment-reply-title{font-size:var(--fs-md);font-weight:700;color:var(--gray-900);margin-bottom:var(--sp-m)}
+.comment-list{display:grid;gap:var(--sp-xs)}
+.comment-list .comment-body{background:var(--white);border-radius:var(--r-lg);box-shadow:0 1px 3px rgba(0,0,0,.06);padding:var(--sp-m);font-size:12.5px;color:var(--gray-700)}
+.comment-list .children{margin-top:var(--sp-xs);display:grid;gap:var(--sp-xs);padding-right:16px}
+.comment-list .avatar{width:34px;height:34px;border-radius:50%;float:right;margin-left:8px}
+.comment-list .comment-meta{color:var(--gray-500);font-size:11px;margin-bottom:6px;overflow:hidden}
+.comment-list .comment-meta a{color:var(--gray-600)}
+.comment-list .reply{margin-top:8px}
+.comment-list .reply a{color:var(--primary);font-weight:700;font-size:var(--fs-xs)}
+.comment-form p{margin:0 0 var(--sp-s)}
+.comment-form label{display:block;font-size:var(--fs-xs);font-weight:700;color:var(--gray-800);margin-bottom:4px}
+.comment-form .submit{display:inline-flex;align-items:center;background:var(--primary);color:#fff;font-size:var(--fs-sm);font-weight:700;padding:10px 18px;border-radius:var(--r-md);border:0;cursor:pointer}
+.comment-form .submit:hover{background:var(--primary-dark)}
+.comment-notes,.logged-in-as{font-size:11.5px;color:var(--gray-500)}
+
+/* ---------- ویجت‌ها ---------- */
+.widget{font-size:12.5px}
+.widget .widget-title{font-size:var(--fs-sm);font-weight:700;color:var(--gray-900);margin-bottom:var(--sp-s)}
+.widget ul{display:grid;gap:8px}
+.widget a{color:var(--gray-600)}
+.widget a:hover{color:var(--primary)}
+
+/* ---------- ۴۰۴ ---------- */
+.tka-error-404{text-align:center;padding:var(--sp-l) var(--sp-m)}
+.tka-404-icon{font-size:44px;line-height:1;margin-bottom:var(--sp-s)}
+.tka-error-404 .searchbox{margin:var(--sp-m) auto;max-width:280px}
+
+/* ---------- فوتر: گرید ستون‌ها (معادل inline-style دمو) ---------- */
+.footer__cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.footer__menu{display:grid;gap:6px;margin-bottom:var(--sp-m)}
+.footer__menu a{font-size:11.5px;color:var(--gray-600)}
+
+/* ---------- بازگشت به بالا ---------- */
+.tka-backtop{
+  position:fixed;bottom:calc(68px + env(safe-area-inset-bottom,0px));left:14px;z-index:65;
+  width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;
+  background:var(--primary);color:#fff;display:grid;place-items:center;
+  box-shadow:0 4px 14px rgba(180,0,174,.35);opacity:.92;transition:opacity .2s,transform .2s}
+.tka-backtop:hover{opacity:1;transform:translateY(-2px)}
+.tka-backtop .ic{font-size:var(--fs-xl);transform:rotate(90deg)}
+.tka-backtop[hidden]{display:none}
+
+/* ---------- پولیش تعاملی (لایهٔ وردپرس — demo.css دست‌نخورده) ---------- */
+.pcard{transition:transform .18s ease,box-shadow .18s ease}
+.pcard:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.12)}
+.banner{transition:transform .18s ease}
+.banner:hover{transform:translateY(-2px)}
+.story:hover .story__img{transform:scale(.96)}
+.brand:hover span{color:var(--primary)}
+.bottomnav a:hover{color:var(--primary)}
+.section__more:hover{color:var(--primary-dark)}
+.topstrip img{transition:opacity .2s}
+.topstrip:hover img{opacity:.93}
+.icon-btn{transition:background .15s}
+.icon-btn:hover{background:var(--gray-100)}
+.searchbox{transition:box-shadow .2s,background .2s}
+.searchbox:focus-within{background:var(--white);box-shadow:0 0 0 2px var(--primary-light)}
+
+/* ---------- صفحه دسته‌بندی‌ها (پولیش لایهٔ وردپرس — استپ ۴) ---------- */
+.tka-cats-main{display:block}
+.tka-cats-noscript{padding:var(--sp-m);font-size:12.5px;color:var(--gray-600);text-align:center}
+
+/* جبران ارتفاع نوار ادمین وردپرس (دمو 100vh خام است) */
+body.admin-bar .cpage{height:calc(100vh - 52px - var(--bottom-h) - 32px)}
+@supports (height:100dvh){body.admin-bar .cpage{height:calc(100dvh - 52px - var(--bottom-h) - 32px)}}
+@media (max-width:782px){
+  /* نوار ادمین در موبایل absolute است و با اسکرول خارج می‌شود */
+  body.admin-bar .cpage{height:calc(100vh - 52px - var(--bottom-h))}
+  @supports (height:100dvh){body.admin-bar .cpage{height:calc(100dvh - 52px - var(--bottom-h))}}
+}
+
+/* اسکرول‌بار باریک و نرم در پنل زیردسته‌ها (فایرفاکس + کروم) */
+.cpanel{scrollbar-width:thin;scrollbar-color:var(--gray-200) transparent}
+.cpanel::-webkit-scrollbar{width:6px}
+.cpanel::-webkit-scrollbar-track{background:transparent}
+.cpanel::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:3px}
+.cpanel::-webkit-scrollbar-thumb:hover{background:var(--gray-300)}
+
+/* بازخورد تعاملی ریل دسته‌ها */
+.crail__item{transition:background .15s ease,color .15s ease}
+.crail__item:hover{background:var(--gray-100)}
+.crail__item.on:hover{background:var(--white)}
+.crail__item img{transition:transform .18s ease}
+.crail__item:hover img{transform:scale(1.08)}
+
+/* هدر آکاردئون و لینک «مشاهده همه محصولات» */
+.cgroup__head{transition:background .15s ease}
+.cgroup__head:hover{background:var(--gray-50)}
+.cgroup__head:hover b{color:var(--primary)}
+.call{transition:background .15s ease}
+.call:hover span{color:var(--primary)}
+
+/* کاشی زیردسته: بزرگ‌نمایی ملایم تصویر + رنگ برند */
+.ctile__img{transition:transform .18s ease,box-shadow .18s ease}
+.ctile__lb{transition:color .15s ease}
+.ctile:hover .ctile__img{transform:translateY(-2px) scale(1.05);box-shadow:0 6px 16px rgba(0,0,0,.13)}
+.ctile:hover .ctile__lb,.ctile:active .ctile__lb{color:var(--primary)}
+
+/* جستجوی هدر صفحه دسته‌بندی‌ها */
+.chead__search{transition:box-shadow .2s,background .2s}
+.chead__search:focus-within{background:var(--white);box-shadow:0 0 0 2px var(--primary-light)}
+
+/* دسترس‌پذیری: حلقه فوکوس روی همه عناصر تعاملی مرورگر */
+.crail__item:focus-visible,
+.cgroup__head:focus-visible,
+.ctile:focus-visible,
+.call:focus-visible{outline:2px solid var(--primary);outline-offset:-2px;border-radius:10px}
+
+/* احترام به تنظیم کاهش انیمیشن کاربر */
+@media (prefers-reduced-motion:reduce){
+  .crail__item,.crail__item img,.cgroup__head,.call,
+  .ctile__img,.ctile__lb{transition:none}
+  .ctile:hover .ctile__img{transform:none}
+  .crail__item:hover img{transform:none}
+}
+
+/* ---------- ریسپانسیو دسکتاپ: قاب موبایل وسط می‌ماند (عیناً مثل دمو) ---------- */
+@media (min-width:480px){
+  .post-navigation .nav-links{grid-template-columns:1fr 1fr}
+}
+
+/* ================= آرشیو محصول (استپ ۴ — فاز ۲) ================= */
+
+/* سربرگ صفحه آرشیو: عنوان + شمارنده کالا */
+.tka-shophead{padding:6px 0 4px}
+.tka-shophead__title{display:flex;align-items:center;gap:8px;font-size:var(--fs-lg);font-weight:800;color:var(--ink,#1a1a1a);margin:0}
+.tka-shophead__count{background:var(--primary-light,#f6e7f6);color:var(--primary);font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.tka-shophead__desc{font-size:var(--fs-xs);color:var(--gray-600,#666);line-height:1.9;margin-top:6px}
+.tka-shophead__desc p{margin:0}
+
+/* نوار مرتب‌سازی: قرص‌های اسکرول‌شونده هم‌راستا با سبک دمو */
+.tka-sortbar{display:flex;gap:6px;overflow-x:auto;padding:10px 0 8px;scrollbar-width:none}
+.tka-sortbar::-webkit-scrollbar{display:none}
+.tka-sortbar__item{flex:0 0 auto;font-size:var(--fs-xs);font-weight:600;color:var(--gray-600,#666);background:var(--chip,#f5f5f5);border-radius:999px;padding:7px 14px;min-height:32px;display:flex;align-items:center;transition:color .15s,background .15s,box-shadow .15s}
+.tka-sortbar__item:hover{color:var(--primary);background:var(--primary-light,#f6e7f6)}
+.tka-sortbar__item.on{background:var(--primary);color:#fff;box-shadow:0 3px 10px rgba(180,0,174,.28)}
+.tka-sortbar__item:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+/* گرید دوستونه کارت‌های دمو (۱:۱ با pcard دمو) */
+.tka-pgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 8px;padding:4px 0 8px}
+.pcard-wrap{position:relative;display:block;border-radius:14px;background:var(--white,#fff);box-shadow:0 1px 6px rgba(0,0,0,.06);transition:box-shadow .18s ease,transform .18s ease}
+.pcard-wrap:hover{box-shadow:0 8px 22px rgba(0,0,0,.11);transform:translateY(-2px)}
+.pcard-wrap .pcard{display:block;border-radius:inherit}
+
+/* دکمه افزودن به سبد شناور گوشه کارت */
+.pcard__atc{position:absolute;bottom:10px;left:10px;width:38px;height:38px;border-radius:12px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(180,0,174,.32);transition:transform .15s ease,background .15s ease;z-index:2}
+.pcard__atc .ic{width:19px;height:19px}
+.pcard__atc:hover{transform:scale(1.07)}
+.pcard__atc:active{transform:scale(.96)}
+.pcard__atc.loading{opacity:.55;pointer-events:none}
+.pcard__atc.added{background:#22a06b}
+.pcard__atc:focus-visible{outline:2px solid var(--ink,#1a1a1a);outline-offset:2px}
+
+/* صفحه‌بندی آرشیو */
+.tka-pagination-wrap{padding:12px 0 20px}
+.tka-pagination-wrap ul.page-numbers{display:flex;gap:6px;justify-content:center;list-style:none;margin:0;padding:0}
+.tka-pagination-wrap .page-numbers{min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;background:var(--chip,#f5f5f5);color:var(--gray-700,#444);font-size:var(--fs-sm);font-weight:600;transition:background .15s,color .15s}
+.tka-pagination-wrap a.page-numbers:hover{background:var(--primary-light,#f6e7f6);color:var(--primary)}
+.tka-pagination-wrap .page-numbers.current{background:var(--primary);color:#fff}
+
+/* حالت خالی آرشیو */
+.tka-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:48px 16px 56px;text-align:center;color:var(--gray-500,#777);font-size:var(--fs-sm)}
+.tka-empty__ic{width:46px;height:46px;color:var(--primary-light,#f6e7f6)}
+.tka-empty p{margin:0;font-weight:600}
+
+/* ریسپانسیو دسکتاپ: گرید عریض‌تر */
+@media (min-width:480px){
+  .tka-pgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (min-width:768px){
+  .tka-pgrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+
+/* کارت گرید: فضا برای دکمه سبد تا روی قیمت نیفتد (لایه glue — دمو دست‌نخورده) */
+.pcard-wrap .pcard{padding-bottom:52px}
+.pcard-wrap .pcard__prices{padding-left:44px}
+
+/* قیمت‌های بلند در گرید: کوچک‌تر + سه‌نقطه تا کارت نشکند */
+.tka-pgrid .pcard__price{font-size:var(--fs-sm)}
+.tka-pgrid .pcard__price span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1 1 auto}
+.tka-pgrid .pcard__price small{flex:0 0 auto}
+.tka-pgrid .pcard__old{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ==========================================================================
+   صفحه محصول (PDP) — لایه glue استپ ۵ (تمام استایل‌های اصلی در demo.css است)
+   ========================================================================== */
+
+/* بدنه دمو padding-bottom داخلی دارد (.tka-pdp همان .app با padding) */
+.tka-pdp{padding-bottom:calc(var(--bottom-h, 56px) + 84px)}
+
+/* دکمه بازگشت نوار بالای محصول */
+.tka-back{cursor:pointer;border:0;background:none}
+
+/* دکمه افزودن به سبد واقعی ووکامرس (استایل دمو btn-primary) */
+.tka-atc{cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.tka-atc.added{background:var(--success,#00a049);filter:none}
+a.tka-atc.added .ic{display:none}
+
+/* لینک «مشاهده سبد» که ووکامرس بعد از افزودن اضافه می‌کند */
+.pricebox a.added_to_cart,
+.tka-added-link{display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 var(--sp-m,16px);margin-top:var(--sp-s,8px);border-radius:var(--r-md,12px);background:var(--success-light,#e7f7ee);color:var(--success,#00a049);font-size:12.5px;font-weight:700;text-decoration:none;width:100%}
+.pricebox a.added_to_cart:hover,
+.tka-added-link:hover{filter:brightness(.96)}
+.pricebox a.added_to_cart::before{content:"";width:16px;height:16px;margin-inline-end:6px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* حالت دکمه در pricebox */
+.pricebox .tka-atc[disabled]{background:var(--gray-300,#e4e4e8);color:var(--gray-500,#777);cursor:not-allowed}
+
+/* فرم تنوع (ووکامرس) داخل pricebox — هم‌خوان با چیدمان دمو */
+.tka-varform{margin-top:var(--sp-s,8px)}
+.tka-varform .variations{width:100%;border-collapse:collapse;margin-bottom:10px}
+.tka-varform .variations th{font-size:var(--fs-xs);color:var(--gray-600,#777);text-align:right;padding:6px 0;width:84px;font-weight:600}
+.tka-varform .variations td{padding:4px 0}
+.tka-varform .variations select{width:100%;max-width:220px;height:38px;border:1px solid var(--gray-300,#dcdce2);border-radius:var(--r-md,12px);background:#fff;font-family:inherit;font-size:var(--fs-xs);padding:0 10px;color:var(--gray-800,#333)}
+.tka-varform .single_variation_wrap .woocommerce-variation-price{margin-bottom:10px}
+.tka-varform .woocommerce-variation-price .price{font-weight:700;font-size:var(--fs-lg);color:var(--gray-900,#1c1c24)}
+.tka-varform .woocommerce-variation-availability p{font-size:11.5px;margin:0}
+.tka-varform .woocommerce-variation-availability p.in-stock{color:var(--success,#00a049)}
+.tka-varform .woocommerce-variation-availability p.out-of-stock{color:var(--error,#f03e3e)}
+
+/* چیپ‌های تنوع — رابط دمویی جایگزین سلكت استاندارد (سلكت مخفی می‌ماند) */
+.tka-chips{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 10px}
+.tka-chip{min-height:38px;padding:7px 18px;border-radius:999px;border:1.5px solid var(--gray-300,#dcdce2);background:#fff;color:var(--gray-700,#444);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:background .15s,color .15s,border-color .15s,box-shadow .15s;-webkit-tap-highlight-color:transparent}
+.tka-chip:hover{border-color:var(--primary,#e6007e);color:var(--primary,#e6007e)}
+.tka-chip:focus-visible{outline:2px solid var(--primary,#e6007e);outline-offset:2px}
+.tka-chip.on{background:var(--primary,#e6007e);border-color:var(--primary,#e6007e);color:#fff;box-shadow:0 2px 8px rgba(230,0,126,.25)}
+.tka-chip.disabled{opacity:.38;cursor:not-allowed;text-decoration:line-through}
+.tka-chip.disabled:hover{border-color:var(--gray-300,#dcdce2);color:var(--gray-700,#444)}
+.tka-varform .variations select.tka-chips__source{position:absolute;width:1px;height:1px;min-height:0;opacity:0;pointer-events:none;clip:rect(0 0 0 0);clip-path:inset(50%)}
+.tka-varform .stock{margin-top:8px}
+.tka-varform .quantity{display:none} /* تعداد در PDP ثابت ۱ است (رفتار دمو) */
+.tka-varform .single_add_to_cart_button{width:100%;height:44px;border:0;border-radius:var(--r-md,12px);background:var(--primary);color:#fff;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.tka-varform .single_add_to_cart_button:active{filter:brightness(.92)}
+.tka-varform .single_add_to_cart_button:disabled{background:var(--gray-300,#e4e4e8);color:var(--gray-500,#777);cursor:not-allowed}
+
+/* محدوده قیمت HTML ووکامرس (محصولات متغیر) در pricebox */
+.tka-price-html .price{font-size:18px;font-weight:700;color:var(--gray-900,#1c1c24)}
+.tka-price-html .price ins{text-decoration:none}
+.tka-price-html .price del{color:var(--gray-400,#9a9aa5);font-size:var(--fs-sm);margin-inline-start:6px}
+
+/* ردیف ناموجود در sellerbox */
+.sellerbox__row.tka-out{color:var(--error,#f03e3e)}
+.sellerbox__row.tka-out .ic{color:var(--error,#f03e3e)}
+
+/* لینک «اولین دیدگاه را شما ثبت کنید» / تعداد نظر */
+.tka-reviews-link{color:var(--primary);text-decoration:none;font-weight:600}
+
+/* دیدگاه‌های ووکامرس داخل کارت دمو */
+.tka-reviews{background:#fff;border-radius:var(--r-lg,16px);box-shadow:0 1px 3px rgba(0,0,0,.06);padding:var(--sp-s,8px)}
+.tka-reviews .comment-reply-title,
+.tka-reviews .woocommerce-Reviews-title{font-size:var(--fs-sm);font-weight:700;margin:8px 0}
+.tka-reviews .commentlist{list-style:none;margin:0;padding:0}
+.tka-reviews .commentlist .review{border-bottom:1px solid var(--gray-200,#eee);padding:10px 0}
+.tka-reviews .commentlist .review:last-child{border-bottom:0}
+.tka-reviews .commentlist .meta{font-size:11px;color:var(--gray-500,#777)}
+.tka-reviews .commentlist .meta strong{color:var(--gray-800,#333);font-size:var(--fs-xs)}
+.tka-reviews .star-rating span::before{color:var(--warning,#f5a623)}
+.tka-reviews .description{font-size:var(--fs-xs);line-height:2;color:var(--gray-700,#555);margin-top:4px}
+.tka-reviews .comment-form p{margin:0 0 10px}
+.tka-reviews .comment-form label{font-size:var(--fs-xs);color:var(--gray-600,#777);display:block;margin-bottom:4px}
+.tka-reviews .comment-form input[type="text"],
+.tka-reviews .comment-form input[type="email"],
+.tka-reviews .comment-form textarea{width:100%;border:1px solid var(--gray-300,#dcdce2);border-radius:var(--r-md,12px);padding:9px 12px;font-family:inherit;font-size:12.5px;background:var(--gray-50,#fafafa)}
+.tka-reviews .comment-form .submit{width:100%;height:40px;border:0;border-radius:var(--r-md,12px);background:var(--primary);color:#fff;font-family:inherit;font-size:var(--fs-sm);font-weight:700;cursor:pointer}
+.tka-reviews .comment-form-rating .stars{display:inline-flex;gap:4px}
+.tka-reviews .comment-form-rating .stars a{font-size:0;text-decoration:none;color:var(--gray-300,#dcdce2)}
+.tka-reviews .comment-form-rating .stars a.active{color:var(--warning,#f5a623)}
+
+/* ریل محصولات مشابه (همان اجزای دمو — فقط چیدمان glue) */
+.tka-related{margin-top:var(--sp-l,24px)}
+.tka-related .plist__track{display:flex;gap:8px;overflow-x:auto;padding:4px var(--pad,16px) 8px;scrollbar-width:none}
+.tka-related .plist__track::-webkit-scrollbar{display:none}
+.tka-related .pcard-wrap{flex:0 0 150px}
+.tka-related .pcard__name{font-size:11.5px}
+
+/* توست اعلان (اشتراک‌گذاری / علاقه‌مندی) */
+.tka-toast{position:fixed;bottom:calc(var(--bottom-h, 56px) + 86px);left:50%;transform:translate(-50%, 12px);z-index:120;background:var(--gray-900,#1c1c24);color:#fff;font-size:var(--fs-xs);font-weight:600;padding:9px 16px;border-radius:99px;box-shadow:0 4px 14px rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .3s ease,transform .3s ease;max-width:calc(100vw - 32px);text-align:center}
+.tka-toast.show{opacity:1;transform:translate(-50%, 0)}
+
+/* دکمه مورد علاقه فعال (قلب برند) */
+.tka-fav{cursor:pointer}
+.tka-fav.on{color:var(--brand,#b400ae);border-color:var(--primary-light,#f6e7f6);background:var(--primary-light,#f6e7f6)}
+.tka-fav.on .ic{fill:currentColor}
+
+/* تمرکز کیبورد روی اجزای PDP (هم‌خوان با دموی دسترس‌پذیر) */
+.tka-back:focus-visible,
+.tka-share:focus-visible,
+.tka-fav:focus-visible,
+.tka-atc:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+/* ---------- بلاگ: کارت‌های دمویی آرشیو ---------- */
+.tka-grid .tka-card.post{padding:0;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.tka-grid .tka-card.post:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.08)}
+.tka-grid .tka-card.post .tka-post-thumb{margin:0;border-radius:0}
+.tka-grid .tka-card.post .tka-post-thumb img{aspect-ratio:16/9;object-fit:cover;width:100%;display:block}
+.tka-grid .tka-card.post .tka-entry-title{padding:10px 12px 0}
+.tka-grid .tka-card.post .tka-muted{display:inline-flex;align-items:center;margin:8px 12px 0;padding:3px 10px;background:var(--primary-light);border-radius:99px;font-size:var(--fs-2xs);font-weight:700;color:var(--primary)}
+.tka-grid .tka-card.post .tka-entry-excerpt{padding:6px 12px 12px;margin-bottom:0}
+
+/* توجه: قاب دمو روی دسکتاپ هم 430px وسط‌چین است (طراحی mobile-frame)؛
+   هیچ override عرضی برای PDP انجام نشده تا ظاهر ۱۰۰٪ دمو بماند. */
+
+/* =========================================================
+   Step 6 — سبد خرید / تسویه حساب / حساب کاربری (استایل دمو)
+   همه با توکن‌های demo.css؛ بدون تغییر در فایل دمو.
+   ========================================================= */
+
+/* فاصله استاندارد محتوای ووکامرس داخل قاب دمو */
+/* TKA fix (0.16.0): ووکامرس کلاس .woocommerce را روی <body> هم می‌گذارد؛
+   ۱) قاعدهٔ قبلی font-family:inherit باعث می‌شد فونت بدنه در فروشگاه/دسته/محصول
+   به Times New Roman برگردد — حذف شد و فونت پایه روی html هم ست می‌شود.
+   ۲) پدینگ این قاعده روی body.woocommerce یک فریم ۱۲/۲۰px خاکستری دور کل
+   صفحهٔ محصول/فروشگاه می‌ساخت (شکایت «صفحه از کناره‌ها فاصله دارد») →
+   با :not(body) فقط div محتوای صفحه‌های سبد/تسویه/حساب پدینگ می‌گیرد. */
+.woocommerce:not(body){padding:var(--sp-m) var(--pad) calc(var(--bottom-h, 56px) + 24px)}
+html{font-family:"Vazirmatn",Tahoma,-apple-system,"Segoe UI",sans-serif}
+
+/* ---------- اعلان‌های ووکامرس (کارت دمو) ---------- */
+.woocommerce-message,.woocommerce-info,.woocommerce-error,.woocommerce-notice{
+  background:var(--white);border-radius:var(--r-lg);box-shadow:0 1px 3px rgba(0,0,0,.06);
+  padding:12px 14px;font-size:12.5px;line-height:1.9;color:var(--gray-800);
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 var(--sp-m);
+  border-inline-start:3px solid var(--success)}
+.woocommerce-info,.woocommerce-notice{border-inline-start-color:var(--primary)}
+.woocommerce-error{border-inline-start-color:var(--error)}
+.woocommerce-error li{margin:0}
+.woocommerce-message::before,.woocommerce-info::before,.woocommerce-error::before{display:none}
+.woocommerce-message .button,.woocommerce-info .button,.woocommerce-error .button,.woocommerce-notice .button{
+  order:2;width:100%;justify-content:center;margin-inline-start:0}
+
+/* ---------- دکمه‌های عمومی ووکامرس (قرصی دمو) ---------- */
+.woocommerce .button,.woocommerce a.button,.woocommerce button.button,
+.woocommerce input.button,.woocommerce #respond input#submit,.woocommerce .wc-forward{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:40px;padding:8px 18px;border:0;border-radius:var(--r-md);
+  background:var(--primary);color:#fff;font-family:inherit;font-size:12.5px;font-weight:700;
+  cursor:pointer;transition:background .2s,transform .1s;text-decoration:none}
+.woocommerce .button:hover,.woocommerce a.button:hover,.woocommerce button.button:hover,
+.woocommerce input.button:hover,.woocommerce #respond input#submit:hover,.woocommerce .wc-forward:hover{
+  background:var(--primary-dark);color:#fff}
+.woocommerce .button:active{background:var(--primary-darkest);transform:scale(.985)}
+.woocommerce .button:disabled,.woocommerce .button.disabled{background:var(--gray-300);color:var(--gray-500);cursor:not-allowed}
+.woocommerce .button.woocommerce-button--previous,.woocommerce .button.woocommerce-button--next,
+.woocommerce .button.wc-backward{background:var(--gray-100);color:var(--gray-700)}
+.woocommerce .button.woocommerce-button--previous:hover,.woocommerce .button.woocommerce-button--next:hover,
+.woocommerce .button.wc-backward:hover{background:var(--gray-200);color:var(--gray-900)}
+
+/* ---------- کارت‌های فرم ---------- */
+.woocommerce form .form-row{padding:4px 0}
+.woocommerce form .form-row label{font-size:var(--fs-xs);font-weight:600;color:var(--gray-700);margin-bottom:4px;display:block}
+.woocommerce form .form-row label .required{color:var(--error);text-decoration:none}
+.woocommerce form .form-row input.input-text,
+.woocommerce form .form-row textarea,
+.woocommerce form .form-row select,.select2-container--default .select2-selection--single{
+  width:100%;background:var(--gray-100);border:1px solid var(--gray-200);border-radius:var(--r-md);
+  min-height:44px;padding:10px 12px;font-size:var(--fs-sm);font-family:inherit;color:var(--content);transition:border-color .2s}
+.select2-container--default .select2-selection--single .select2-selection__rendered{line-height:22px;padding:0;color:var(--gray-800);font-size:var(--fs-sm)}
+.select2-container--default .select2-selection--single .select2-selection__arrow{height:100%}
+.select2-dropdown{border:1px solid var(--gray-200);border-radius:var(--r-md)}
+.select2-container--default .select2-results__option--highlighted[aria-selected]{background:var(--primary-light);color:var(--primary)}
+.select2-container--default .select2-results__option[aria-selected=true]{background:var(--gray-100)}
+.woocommerce form .form-row input.input-text:focus,
+.woocommerce form .form-row textarea:focus,.woocommerce form .form-row select:focus{
+  border-color:var(--primary-medium);background:var(--white);outline:none}
+
+/* ---------- جدول سبد خرید → کارت‌های دمو ---------- */
+.woocommerce table.shop_table{
+  width:100%;background:var(--white);border:0;border-radius:var(--r-lg);
+  box-shadow:0 1px 3px rgba(0,0,0,.06);border-collapse:separate;border-spacing:0;
+  font-size:12.5px;overflow:hidden;margin:0 0 var(--sp-m)}
+.woocommerce table.shop_table th{
+  background:var(--gray-50);color:var(--gray-600);font-size:11.5px;font-weight:700;
+  padding:12px 14px;text-align:right;border-bottom:1px solid var(--gray-200)}
+.woocommerce table.shop_table td{padding:12px 14px;border-bottom:1px solid var(--gray-100);vertical-align:middle;text-align:right}
+.woocommerce table.shop_table tr:last-child td{border-bottom:0}
+.woocommerce table.shop_table img{width:64px;height:64px;object-fit:cover;border-radius:var(--r-md);background:var(--gray-100)}
+.woocommerce table.shop_table .product-name a{color:var(--gray-900);font-weight:600;text-decoration:none;font-size:12.5px}
+.woocommerce table.shop_table .product-name a:hover{color:var(--primary)}
+.woocommerce table.shop_table .product-price del{color:var(--gray-400);font-size:11px;display:block}
+.woocommerce table.shop_table .product-price ins{text-decoration:none;font-weight:700;color:var(--gray-900)}
+.woocommerce table.shop_table .product-quantity .quantity{display:inline-flex;align-items:center;gap:2px;background:var(--gray-100);border-radius:var(--r-md);padding:2px}
+.woocommerce table.shop_table .product-quantity .qty{
+  width:34px;min-height:32px;border:0;background:transparent;text-align:center;
+  font-family:inherit;font-size:var(--fs-sm);font-weight:700;color:var(--gray-900);padding:4px 0}
+.woocommerce table.shop_table .product-subtotal .amount{font-weight:700}
+.woocommerce table.shop_table .product-remove a{
+  display:inline-grid;place-items:center;width:30px;height:30px;border-radius:var(--r-sm,8px);
+  background:var(--error-light,#fdecec);color:var(--error);font-size:var(--fs-lg);line-height:1;text-decoration:none;transition:background .2s}
+.woocommerce table.shop_table .product-remove a:hover{background:var(--error);color:#fff}
+.woocommerce table.shop_table td.actions{padding:12px 14px}
+.woocommerce table.shop_table td.actions .coupon{display:flex;gap:6px;flex-wrap:wrap}
+.woocommerce table.shop_table td.actions .coupon .input-text{
+  flex:1 1 120px;background:var(--gray-100);border:1px solid var(--gray-200);border-radius:var(--r-md);
+  min-height:40px;padding:8px 12px;font-size:var(--fs-xs);font-family:inherit}
+.woocommerce table.shop_table td.actions .coupon .button{min-height:40px;padding:8px 14px}
+
+/* ---------- جمع کل سبد ---------- */
+.cart_totals,.woocommerce-checkout-review-order-table-wrap{background:var(--white);border-radius:var(--r-lg);box-shadow:0 1px 3px rgba(0,0,0,.06);padding:var(--sp-m);margin-bottom:var(--sp-m)}
+.woocommerce table.shop_table.cart_totals,.woocommerce table.woocommerce-checkout-review-order-table{box-shadow:none;margin:0;padding:0}
+.woocommerce table.shop_table.cart_totals th,.woocommerce table.shop_table.cart_totals td,
+.woocommerce table.woocommerce-checkout-review-order-table th,.woocommerce table.woocommerce-checkout-review-order-table td{
+  background:transparent;border-bottom:1px dashed var(--gray-200);padding:10px 2px}
+.woocommerce table.shop_table.cart_totals tr:last-child th,.woocommerce table.shop_table.cart_totals tr:last-child td,
+.woocommerce table.woocommerce-checkout-review-order-table tr:last-child th,.woocommerce table.woocommerce-checkout-review-order-table tr:last-child td{border-bottom:0}
+.woocommerce table.shop_table.cart_totals .order-total .amount,
+.woocommerce table.woocommerce-checkout-review-order-table .order-total .amount{font-size:15px;font-weight:800;color:var(--primary)}
+.wc-proceed-to-checkout .checkout-button{width:100%;min-height:46px;font-size:13.5px}
+.wc-proceed-to-checkout{margin:0}
+
+/* ---------- تسویه حساب ---------- */
+.woocommerce-checkout #payment{background:var(--white);border-radius:var(--r-lg);box-shadow:0 1px 3px rgba(0,0,0,.06);padding:var(--sp-m)}
+.woocommerce-checkout #payment ul.payment_methods{list-style:none;margin:0 0 var(--sp-m);padding:0;border-bottom:1px dashed var(--gray-200)}
+.woocommerce-checkout #payment ul.payment_methods li{padding:10px 0;border-bottom:1px solid var(--gray-100)}
+.woocommerce-checkout #payment ul.payment_methods li:last-child{border-bottom:0}
+.woocommerce-checkout #payment ul.payment_methods label{font-size:12.5px;font-weight:700;color:var(--gray-900);display:inline-flex;align-items:center;gap:6px}
+.woocommerce-checkout #payment div.payment_box{
+  background:var(--gray-50);border-radius:var(--r-md);padding:10px 12px;font-size:11.5px;color:var(--gray-600);margin-top:8px;position:relative}
+.woocommerce-checkout #payment div.payment_box::before{display:none}
+.woocommerce-checkout #payment .place-order .button{width:100%;min-height:46px;font-size:13.5px}
+#add_payment_method #payment,.woocommerce-cart #payment,.woocommerce-checkout #payment{border-radius:var(--r-lg)}
+
+/* ---------- حساب کاربری ---------- */
+.woocommerce-account .woocommerce-MyAccount-navigation{margin-bottom:var(--sp-m)}
+.woocommerce-account .woocommerce-MyAccount-navigation ul{list-style:none;margin:0;padding:0;display:flex;gap:6px;flex-wrap:wrap}
+.woocommerce-account .woocommerce-MyAccount-navigation li a{
+  display:inline-flex;align-items:center;min-height:38px;padding:6px 14px;border-radius:99px;
+  background:var(--white);box-shadow:0 1px 3px rgba(0,0,0,.06);color:var(--gray-700);
+  font-size:var(--fs-xs);font-weight:700;text-decoration:none;transition:color .2s,background .2s}
+.woocommerce-account .woocommerce-MyAccount-navigation li a:hover{color:var(--primary)}
+.woocommerce-account .woocommerce-MyAccount-navigation li.is-active a{background:var(--primary);color:#fff}
+.woocommerce-account .woocommerce-MyAccount-content{background:var(--white);border-radius:var(--r-lg);box-shadow:0 1px 3px rgba(0,0,0,.06);padding:var(--sp-m);font-size:12.5px}
+.woocommerce-account .woocommerce-MyAccount-content table.shop_table{box-shadow:none}
+.woocommerce-account .woocommerce-MyAccount-content fieldset{border:1px dashed var(--gray-200);border-radius:var(--r-md);margin:0 0 var(--sp-m)}
+.woocommerce-account h2,.woocommerce-account h3{font-size:13.5px;font-weight:700;color:var(--gray-900);margin:0 0 var(--sp-s)}
+.woocommerce-account .u-columns{display:grid;gap:var(--sp-m)}
+.woocommerce-account .woocommerce-form-login{background:var(--white);border-radius:var(--r-lg);box-shadow:0 1px 3px rgba(0,0,0,.06);padding:var(--sp-m)}
+.woocommerce-account .woocommerce-form-login .woocommerce-form-login__submit{width:100%}
+.woocommerce-account .woocommerce-form__label-for-checkbox{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--gray-600)}
+.woocommerce-account .woocommerce-form__input-checkbox{accent-color:var(--primary);width:16px;height:16px}
+
+/* ---------- پیوندهای کمکی / حالت خالی ---------- */
+.woocommerce-info a,.woocommerce-message a{color:var(--primary);font-weight:700;text-decoration:none}
+.woocommerce .star-rating span::before,.woocommerce .star-rating::before{color:var(--warning)}
+.woocommerce p.stars a{color:var(--warning)}
+.woocommerce-terms-and-conditions-wrapper{font-size:11.5px;color:var(--gray-600)}
+.woocommerce-privacy-policy-text p{font-size:11.5px;color:var(--gray-500);line-height:1.9}
+
+/* فرم ورود/ثبت‌نام صفحه حساب (دو کارت دمو) */
+.woocommerce form.login,.woocommerce form.register,.woocommerce form.lost_reset_password{
+  background:var(--white);border-radius:var(--r-lg);box-shadow:0 1px 3px rgba(0,0,0,.06);padding:var(--sp-m);margin:0 0 var(--sp-m)}
+.woocommerce form.login .form-row-first,.woocommerce form.login .form-row-last,
+.woocommerce form.register .form-row-first,.woocommerce form.register .form-row-last{width:100%;float:none}
+
+/* ریست‌های کوچک ووکامرس داخل قاب 430px دمو */
+.woocommerce ul.products{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-xs);margin:0;padding:0}
+.woocommerce ul.products::before,.woocommerce ul.products::after{display:none}
+.woocommerce ul.products li.product{width:100%;float:none;margin:0;background:var(--white);border-radius:var(--r-lg);box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden;text-align:right}
+.woocommerce ul.products li.product .woocommerce-loop-product__title{font-size:var(--fs-xs);font-weight:700;color:var(--gray-900);padding:0 10px}
+.woocommerce ul.products li.product .price{color:var(--gray-900);font-weight:800;padding:0 10px 10px;font-size:12.5px}
+.woocommerce ul.products li.product .price del{color:var(--gray-400);font-weight:400;font-size:11px}
+.woocommerce ul.products li.product .price ins{text-decoration:none}
+.woocommerce ul.products li.product .button{width:calc(100% - 20px);margin:0 10px 10px;min-height:36px;font-size:11.5px}
+.woocommerce ul.products li.product .onsale{
+  position:absolute;top:8px;right:8px;z-index:2;min-width:38px;min-height:22px;padding:2px 8px;
+  border-radius:99px;background:var(--error);color:#fff;font-size:var(--fs-2xs);font-weight:800;line-height:20px}
+.woocommerce span.onsale{min-width:38px;min-height:22px;padding:2px 8px;border-radius:99px;background:var(--error);color:#fff;font-size:var(--fs-2xs);font-weight:800;line-height:20px;top:8px;right:8px;left:auto}
+.woocommerce nav.woocommerce-pagination{margin-top:var(--sp-m)}
+.woocommerce nav.woocommerce-pagination ul{border:0;display:flex;gap:6px;justify-content:center}
+.woocommerce nav.woocommerce-pagination ul li{border:0;float:none}
+.woocommerce nav.woocommerce-pagination ul li a,.woocommerce nav.woocommerce-pagination ul li span{
+  display:inline-grid;place-items:center;min-width:40px;height:40px;padding:0 8px;background:var(--white);
+  border-radius:var(--r-md);font-size:var(--fs-sm);font-weight:700;color:var(--gray-700);box-shadow:0 1px 3px rgba(0,0,0,.06);border:0}
+.woocommerce nav.woocommerce-pagination ul li span.current{background:var(--primary);color:#fff}
+.woocommerce nav.woocommerce-pagination ul li a:hover{color:var(--primary);background:var(--primary-light)}
+
+/* فرم تنوع (به‌روزرسانی هم‌خوان با wc_var form) */
+.woocommerce div.product form.cart .variations td.label{font-size:var(--fs-xs);font-weight:600;color:var(--gray-600);padding:6px 0}
+.woocommerce div.product form.cart .variations td.value select{min-height:42px}
+
+/* انتخاب تعداد در سبد (کنترل +/− بدون وابستگی به JS دمو) */
+.woocommerce .quantity .qty{border:0;background:transparent;font-family:inherit;font-weight:700;color:var(--gray-900);width:40px;text-align:center;min-height:32px}
+
+/* ---------- بهینه‌سازی جدول سبد برای قاب 430px دمو ---------- */
+.woocommerce-cart table.shop_table{font-size:11.5px;table-layout:fixed}
+.woocommerce-cart table.shop_table th{padding:8px 6px}
+.woocommerce-cart table.shop_table td{padding:10px 6px}
+/* ستون قیمت حذف (جمع ردیف هست)؛ عرض ستون‌ها به نام محصول می‌رسد */
+.woocommerce-cart table.shop_table .product-price,
+.woocommerce-cart table.shop_table thead th.product-price{display:none}
+.woocommerce-cart table.shop_table .product-thumbnail{width:50px}
+.woocommerce-cart table.shop_table .product-thumbnail img{width:44px;height:44px;border:1px solid var(--gray-100);background:var(--gray-50)}
+.woocommerce-cart table.shop_table .product-remove{width:26px}
+.woocommerce-cart table.shop_table .product-name{width:auto}
+.woocommerce-cart table.shop_table .product-name a{font-size:11.5px;font-weight:700;display:block;word-break:break-word;line-height:1.8}
+.woocommerce-cart table.shop_table .product-quantity{width:104px}
+.woocommerce-cart table.shop_table .product-quantity .quantity{display:inline-flex;align-items:center;justify-content:center;background:var(--gray-100);border-radius:var(--r-md);padding:3px;min-height:32px;box-sizing:border-box;gap:2px}
+.woocommerce-cart table.shop_table .product-quantity input.qty{width:26px;min-height:26px;font-size:12.5px;background:transparent;border:0;padding:0;-moz-appearance:textfield;text-align:center}
+.woocommerce-cart table.shop_table .product-quantity input.qty::-webkit-outer-spin-button,
+.woocommerce-cart table.shop_table .product-quantity input.qty::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+/* دکمه‌های +/− تعداد (glue جاوااسکریپت) */
+.tka-step{width:24px;height:24px;border:0;border-radius:var(--r-sm,8px);background:var(--white);color:var(--gray-700);font-size:var(--fs-md);font-weight:800;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;font-family:inherit;transition:color .15s,background .15s;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.tka-step:hover{color:var(--primary)}
+.tka-step:active{background:var(--primary-light)}
+.woocommerce-cart table.shop_table .product-subtotal{width:90px}
+.woocommerce-cart table.shop_table .product-subtotal .amount{font-weight:800;font-size:10px;white-space:nowrap;display:block;text-align:left;direction:ltr;unicode-bidi:isolate;letter-spacing:-.2px}
+/* اعداد بلند در RTL: جلوگیری از شکستن خط و بیرون‌زدگی */
+.woocommerce table.shop_table .amount,.woocommerce table.shop_table .woocommerce-Price-amount{white-space:nowrap}
+.woocommerce table.shop_table .product-subtotal,.woocommerce table.shop_table .product-price{text-align:left}
+/* جمع کل سبد: مقدارها جا داشته باشند */
+.woocommerce-cart table.shop_table.cart_totals th{width:42%}
+.woocommerce-cart table.shop_table.cart_totals td{text-align:left}
+.woocommerce-cart table.shop_table.cart_totals td .amount{font-size:var(--fs-xs);display:inline-block;direction:ltr;unicode-bidi:isolate}
+.woocommerce-cart table.shop_table.cart_totals .order-total td .amount{font-size:13.5px;font-weight:800;color:var(--primary)}
+/* کوپن: ردیف کامل */
+.woocommerce-cart table.shop_table td.actions .coupon{flex-direction:column}
+.woocommerce-cart table.shop_table td.actions .coupon .input-text{flex:1 1 44px}
+.woocommerce-cart table.shop_table td.actions .coupon .button{width:100%}
+/* کارت جمع کل */
+.woocommerce-cart .cart_totals h2{font-size:var(--fs-sm);font-weight:800;margin:0 0 4px}
+.woocommerce-cart .cart_totals{padding:var(--sp-m)}
+.woocommerce-cart table.shop_table.cart_totals{background:transparent;box-shadow:none}
+/* جدول مرور سفارش در تسویه */
+.woocommerce-checkout table.woocommerce-checkout-review-order-table{font-size:var(--fs-xs)}
+.woocommerce-checkout table.woocommerce-checkout-review-order-table .product-name{width:60%}
+.woocommerce-checkout table.woocommerce-checkout-review-order-table .product-total{text-align:left}
+.woocommerce-checkout table.woocommerce-checkout-review-order-table .product-total .amount{display:block;text-align:left}
+
+/* قاب دمو 430px است؛ چیدمان دوتایی دسکتاپ ووکامرس (media query بر اساس
+ * viewport است نه قاب) باید خنثی شود تا کارت‌ها تمام‌عرض بمانند */
+.woocommerce .cart-collaterals .cart_totals,
+.woocommerce-page .cart-collaterals .cart_totals{float:none;width:100%}
+.woocommerce .cart-collaterals::after{content:"";display:block;clear:both}
+.woocommerce-checkout .col2-set{float:none;width:100%}
+.woocommerce-checkout #order_review_heading,
+.woocommerce-checkout #order_review{float:none;width:100%}
+.woocommerce-checkout #payment{float:none;width:100%}
+
+/* ---------- فیکس ارث‌بری رنگ در ریل شگفت‌انگیز (v0.7.0) ----------
+ * .offer{color:#fff} روی عدد قیمت کارت‌ها (span بدون رنگ اختصاصی)
+ * نشسته بود و قیمت را روی کارت سفید نامرئی می‌کرد — در موبایل و دسکتاپ. */
+.pcard__price span{color:var(--gray-900)}
+
+/* =========================================================
+   Drawer: منوی اصلی + مرورگر دسته‌بندی‌ها (v0.9)
+   ----------------------------------------------------------
+   دراور از لبهٔ راست (inline-start در RTL) سُر می‌شود. بدنهٔ
+   مرورگر دسته‌بندی‌ها از همان کلاس‌های دمو (.crail/.cpanel/
+   .cgroup/.ctile/.call) استفاده می‌کند تا ظاهر ۱:۱ بماند؛
+   آداپت‌های تبلت/دسکتاپ در responsive.css هستند.
+   ========================================================= */
+
+/* قفل اسکرول پس‌زمینه هنگام باز بودن دراور */
+html.tka-drawer-lock,
+html.tka-drawer-lock body{overflow:hidden}
+
+/* ---------- پوستهٔ دراور ---------- */
+.tka-drawer{
+  position:fixed;top:0;bottom:0;right:0;z-index:1000;
+  width:min(430px,94vw);
+  background:var(--white);
+  box-shadow:-12px 0 40px rgba(0,0,0,.18);
+  display:flex;flex-direction:column;
+  transform:translateX(105%);
+  transition:transform .3s ease;
+  overflow-y:auto;overscroll-behavior:contain;
+  padding-bottom:env(safe-area-inset-bottom,0);
+}
+.tka-drawer[hidden]{display:none}
+.tka-drawer.is-open{transform:translateX(0)}
+.tka-drawer--menu{width:min(360px,90vw)}
+
+/* ---------- پس‌زمینهٔ تیرهٔ مشترک ---------- */
+.tka-drawer__backdrop{
+  position:fixed;inset:0;z-index:999;
+  background:rgba(0,0,0,.45);border:0;padding:0;
+  opacity:0;transition:opacity .3s ease;
+}
+.tka-drawer__backdrop[hidden]{display:none}
+.tka-drawer__backdrop.is-open{opacity:1}
+
+/* ---------- سربرگ دراور ---------- */
+.tka-drawer__head{
+  flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:10px 12px 10px 14px;border-bottom:1px solid var(--gray-100);
+}
+.tka-drawer__title{font-size:15px;font-weight:700;color:var(--gray-900)}
+.tka-drawer__close{
+  width:36px;height:36px;flex:none;display:grid;place-items:center;
+  border-radius:var(--r-md);color:var(--gray-700);
+}
+.tka-drawer__close:active{background:var(--gray-100)}
+.tka-drawer__close .ic{font-size:var(--fs-xl)}
+
+/* ---------- جستجوی دراور (هم‌طرح chead__search دمو) ---------- */
+.tka-drawer__search{
+  flex:none;display:flex;align-items:center;gap:6px;height:40px;
+  margin:10px 12px 6px;background:var(--gray-100);
+  border-radius:var(--r-xxl);padding:0 12px;
+}
+.tka-drawer__search .ic{font-size:17px;color:var(--gray-500);flex:none}
+.tka-drawer__search input{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:12.5px;color:var(--content)}
+.tka-drawer__search input::placeholder{color:var(--gray-500)}
+
+/* ---------- بدنهٔ دوستونه (ریل + پنل، کلاس‌های دمو) ---------- */
+.tka-drawer__body{flex:1;min-height:0;display:flex}
+/* .crail دمو (۹۲px) و .cpanel (flex:1 + اسکرول) عهده‌دار چیدمان‌اند */
+.tka-drawer__page[hidden]{display:none}
+.tka-drawer .cempty{flex:1}
+
+/* ---------- دراور منوی اصلی ---------- */
+.tka-drawer__menuwrap{padding:8px 10px calc(20px + env(safe-area-inset-bottom,0))}
+.tka-drawer__menu > li{border-bottom:1px solid var(--gray-100)}
+.tka-drawer__menu > li:last-child{border-bottom:0}
+.tka-drawer__menu > li > a{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:13px 10px;font-size:var(--fs-md);font-weight:600;color:var(--gray-800);
+}
+.tka-drawer__menu > li > a:hover,
+.tka-drawer__menu > li.current-menu-item > a,
+.tka-drawer__menu > li.current_page_item > a{color:var(--primary)}
+.tka-drawer__menu .sub-menu{display:grid;gap:2px;padding:2px 16px 12px}
+.tka-drawer__menu .sub-menu a{
+  display:block;padding:9px 10px;border-radius:var(--r-md);
+  font-size:var(--fs-sm);color:var(--gray-600);
+}
+.tka-drawer__menu .sub-menu a:hover{background:var(--primary-light);color:var(--primary)}
+
+/* ---------- دکمهٔ دسته‌بندی‌های هدر (فقط دسکتاپ — responsive.css) ---------- */
+.header__cats-btn{display:none}
+
+/* ---------- دکمهٔ دسته‌بندی‌ها در نوار پایین: هم‌شکل <a> دمو ---------- */
+.bottomnav button{
+  display:grid;place-items:center;gap:5px;width:100%;
+  font-size:var(--fs-xs);color:var(--gray-600);padding:11px 0 12px;
+}
+.bottomnav button.on{color:var(--primary)}
+.bottomnav button .ic{font-size:var(--fs-xl)}
+.bottomnav button:active{color:var(--primary)}
+
+/* ============================================================
+   فونت وزیرمتن (نسخهٔ متغیر بهینه — Vazirmatn Variable 33.003)
+   یک فایل woff2 برای همهٔ وزن‌ها (100 تا 900) با font-display:swap.
+   فونت IRANSansX دمو کامل حذف شده است؛ تنها یک فایل فونت لود می‌شود.
+   ============================================================ */
+@font-face{
+  font-family:"Vazirmatn";
+  src:url("../fonts/Vazirmatn-Variable.woff2") format("woff2-variations"),
+      url("../fonts/Vazirmatn-Variable.woff2") format("woff2");
+  font-weight:100 900;
+  font-style:normal;
+  font-display:swap;
+}
+body{
+  font-family:"Vazirmatn",Tahoma,-apple-system,"Segoe UI",sans-serif;
+}
+input,select,textarea,button{font-family:inherit}
+/* اعداد فارسی/لاتین همیشه با وزن یکسان و فونت یکسان رندر شوند */
+.num{font-feature-settings:"ss01"}
+
+/* ============================================================
+   فرم خرید ووکامرس (خروجی هسته داخل .pricebox / .tka-varform)
+   هم‌طرح دکمه‌های قالب — آیکن/رنگ از توکن‌های دمو
+   ============================================================ */
+.pricebox form.cart,
+.tka-varform form.cart{
+  display:flex;align-items:stretch;gap:8px;margin:0 0 4px;
+}
+.pricebox form.cart .quantity,
+.tka-varform form.cart .quantity{
+  display:inline-flex;align-items:center;border:1px solid var(--gray-200);
+  border-radius:var(--r-md,10px);overflow:hidden;background:#fff;
+}
+.pricebox form.cart .quantity .qty,
+.tka-varform form.cart .quantity .qty{
+  width:46px;height:44px;border:0;text-align:center;font-weight:700;
+  font-size:15px;color:var(--content);background:transparent;
+  -moz-appearance:textfield;appearance:textfield;
+}
+.pricebox form.cart .quantity .qty::-webkit-outer-spin-button,
+.pricebox form.cart .quantity .qty::-webkit-inner-spin-button,
+.tka-varform form.cart .quantity .qty::-webkit-outer-spin-button,
+.tka-varform form.cart .quantity .qty::-webkit-inner-spin-button{
+  -webkit-appearance:none;margin:0;
+}
+.pricebox form.cart .single_add_to_cart_button,
+.tka-varform form.cart .single_add_to_cart_button{
+  flex:1;height:44px;border:0;border-radius:var(--r-md,10px);cursor:pointer;
+  background:var(--primary);color:#fff;font-weight:700;font-size:var(--fs-md);
+  font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  transition:filter .2s ease;
+}
+.pricebox form.cart .single_add_to_cart_button:hover,
+.tka-varform form.cart .single_add_to_cart_button:hover{filter:brightness(.94)}
+.pricebox form.cart .single_add_to_cart_button:disabled,
+.tka-varform form.cart .single_add_to_cart_button:disabled{
+  background:var(--gray-200);color:var(--gray-500);cursor:not-allowed;filter:none;
+}
+/* حالت متغیر: فرم زیر چیپ‌ها */
+.tka-varform{margin-top:8px}
+.tka-varform .variations{width:100%;border-collapse:collapse}
+.tka-varform .variations td{padding:6px 0}
+.tka-varform .variations select{
+  width:100%;height:42px;border:1px solid var(--gray-200);border-radius:var(--r-md,10px);
+  background:#fff;font-family:inherit;color:var(--content);padding:0 10px;
+}
+.tka-varform .reset_variations{color:var(--primary);font-size:var(--fs-xs)}
+.tka-varform .woocommerce-variation-price{margin:6px 0}
+.tka-varform .woocommerce-variation-availability{font-size:var(--fs-xs);color:var(--gray-600)}
+
+/* =========================================================
+   مینی‌سبد (دراور) — همهٔ صفحات (v0.10)
+   ========================================================= */
+
+.tka-drawer--minicart{width:min(360px,90vw)}
+.tka-minicart__inner{flex:1;min-height:0;display:flex;flex-direction:column;overflow-y:auto}
+.tka-minicart__items{list-style:none;margin:0;padding:0 12px;flex:1}
+.tka-minicart__item{
+        display:flex;align-items:center;gap:10px;padding:10px 0;
+        border-bottom:1px solid var(--gray-100);
+}
+.tka-minicart__thumb{
+        flex:none;width:56px;height:56px;border-radius:var(--r-lg);
+        background:var(--gray-100);overflow:hidden;
+}
+.tka-minicart__thumb img{width:100%;height:100%;object-fit:cover}
+.tka-minicart__info{flex:1;min-width:0}
+.tka-minicart__name{
+        display:block;font-size:var(--fs-xs);font-weight:700;color:var(--gray-900);
+        overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+}
+.tka-minicart__name:hover{color:var(--primary)}
+.tka-minicart__qty{font-size:11px;color:var(--gray-500);margin-top:2px}
+.tka-minicart__remove{
+        flex:none;width:26px;height:26px;display:grid;place-items:center;
+        border-radius:var(--r-md);color:var(--gray-400);background:var(--gray-50);
+}
+.tka-minicart__remove .ic{font-size:11px;transform:rotate(45deg)}
+.tka-minicart__remove:hover{color:var(--error);background:var(--error-light)}
+.tka-minicart__footer{
+        flex:none;border-top:1px solid var(--gray-100);
+        padding:12px;background:var(--white);
+}
+.tka-minicart__total{
+        display:flex;align-items:center;justify-content:space-between;
+        font-size:var(--fs-xs);color:var(--gray-600);margin-bottom:10px;
+}
+.tka-minicart__total strong{font-size:15px;font-weight:900;color:var(--primary)}
+.tka-minicart__actions{display:flex;flex-direction:column;gap:8px}
+.tka-minicart__cta{
+        display:flex;align-items:center;justify-content:center;
+        height:44px;background:var(--primary);color:var(--white);
+        border-radius:var(--r-xl);font-size:13.5px;font-weight:800;
+}
+.tka-minicart__cta:hover{background:var(--primary-dark)}
+.tka-minicart__ghost{
+        display:flex;align-items:center;justify-content:center;
+        height:38px;border:1px solid var(--gray-300);color:var(--gray-700);
+        border-radius:var(--r-xl);font-size:var(--fs-xs);font-weight:700;
+}
+.tka-minicart__ghost:hover{border-color:var(--primary);color:var(--primary)}
+.tka-minicart__empty{
+        flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+        gap:10px;padding:32px 16px;text-align:center;font-size:var(--fs-sm);color:var(--gray-600);
+}
+.tka-minicart__empty-art{
+        width:64px;height:64px;display:grid;place-items:center;
+        background:var(--primary-light);color:var(--primary);border-radius:50%;
+}
+.tka-minicart__empty-art .ic{font-size:28px}
+
+
+/* ---------- علاقه‌مندی‌ها (Wishlist) ---------- */
+/* بج قلب هدر — همان زبان بصری badge-count سبد */
+.tka-fav-badge{position:absolute;top:2px;left:1px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--primary);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;border:2px solid var(--white);box-sizing:content-box}
+.icon-btn{overflow:visible}
+/* شبکه صفحهٔ علاقه‌مندی‌ها — همان کارت‌های فروشگاه، در گرید دوتایی موبایل */
+.tka-wishlist{padding-bottom:calc(var(--pad) + 24px)}
+.tka-wishlist__count{font-size:var(--fs-xs);font-weight:700;color:var(--primary);background:var(--primary-light);border-radius:999px;padding:2px 12px;min-height:24px;display:inline-flex;align-items:center}
+.tka-wishlist__grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 var(--pad)}
+@media(min-width:576px){.tka-wishlist__grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:992px){.tka-wishlist__grid{grid-template-columns:repeat(4,1fr);gap:16px;max-width:1100px;margin:0 auto}}
+.tka-wishlist__grid .pcard-wrap{position:relative}
+.tka-wishlist__loading{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;padding:48px 16px;color:var(--gray-500,#777);font-size:var(--fs-sm)}
+.tka-wish-remove{position:absolute;top:8px;left:8px;z-index:3;width:30px;height:30px;border-radius:50%;border:0;background:rgba(28,28,36,.72);color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .15s,transform .15s;-webkit-tap-highlight-color:transparent}
+.tka-wish-remove:hover{background:var(--error,#f03e3e)}
+.tka-wish-remove:active{transform:scale(.92)}
+.tka-wish-remove:focus-visible{outline:2px solid #fff;outline-offset:1px}
+.tka-wishlist__empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:56px 24px;color:var(--gray-600,#666)}
+.tka-wishlist__empty-ic{width:76px;height:76px;display:grid;place-items:center;border-radius:50%;background:var(--primary-light);color:var(--primary);margin-bottom:6px}
+.tka-wishlist__empty-ic .ic{font-size:var(--fs-3xl)}
+.tka-wishlist__empty b{font-size:14.5px;color:var(--gray-900,#1c1c24)}
+.tka-wishlist__empty small{font-size:12.5px}
+.tka-wishlist__empty .btn-primary{margin-top:14px;height:44px;padding:0 28px;border-radius:var(--r-md,12px);border:0;background:var(--primary);color:#fff;font-family:inherit;font-size:13.5px;font-weight:700;display:inline-flex;align-items:center;text-decoration:none}
+.tka-wishlist__empty[hidden]{display:none}
+
+/* =========================================================
+   جستجوی زندهٔ AJAX — پنل نتایج (Live Search)
+   ========================================================= */
+.searchbox{position:relative}
+.tka-ls{
+        position:absolute;top:calc(100% + 8px);right:0;left:0;z-index:80;
+        background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);
+        box-shadow:0 14px 40px rgba(33,33,33,.16);overflow-y:auto;overscroll-behavior:contain;
+        max-height:min(68vh,460px);
+}
+.tka-ls__sec{padding:10px 14px 2px;font-size:11px;font-weight:800;color:var(--gray-500)}
+.tka-ls__item{display:flex;align-items:center;gap:10px;padding:8px 14px;transition:background .15s;cursor:pointer}
+.tka-ls__item:hover,.tka-ls__item.on{background:var(--primary-light)}
+.tka-ls__thumb{width:46px;height:46px;border-radius:var(--r-md);object-fit:cover;flex:none;background:var(--gray-100)}
+.tka-ls__thumb--ph{display:grid;place-items:center;color:var(--gray-400)}
+.tka-ls__thumb--ph .ic{font-size:var(--fs-xl)}
+.tka-ls__body{min-width:0;flex:1;display:block}
+.tka-ls__title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:var(--fs-sm);font-weight:600;color:var(--content);line-height:1.5}
+.tka-ls__title mark{background:none;color:var(--primary);font-weight:800;padding:0}
+.tka-ls__badge{display:inline-flex;margin-inline-start:6px;padding:1px 8px;border-radius:999px;background:var(--primary-light);color:var(--primary);font-size:10px;font-weight:700;vertical-align:middle}
+.tka-ls__meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:11px;color:var(--gray-500);margin-top:2px}
+.tka-ls__meta .out{color:var(--error);font-weight:700}
+.tka-ls__sep{color:var(--gray-400)}
+.tka-ls__price{flex:none;margin-inline-start:auto;max-width:38%;font-size:12.5px;font-weight:800;color:var(--primary);text-align:start}
+.tka-ls__price del{color:var(--gray-400);font-weight:500;font-size:var(--fs-2xs);display:block}
+.tka-ls__price ins{text-decoration:none}
+.tka-ls__foot{border-top:1px solid var(--gray-200);background:var(--gray-50)}
+.tka-ls__foot a{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;color:var(--primary);font-size:var(--fs-xs);font-weight:700}
+.tka-ls__foot a:hover{background:var(--primary-light)}
+.tka-ls__empty,.tka-ls__loading{padding:20px 14px;text-align:center;color:var(--gray-500);font-size:var(--fs-xs)}
+.tka-ls__loading{display:flex;align-items:center;justify-content:center;gap:8px}
+.tka-ls__spinner{width:18px;height:18px;border-radius:50%;border:2px solid var(--primary-light);border-top-color:var(--primary);animation:tka-spin .7s linear infinite;flex:none}
+@keyframes tka-spin{to{transform:rotate(360deg)}}
+
+/* =========================================================
+   وبلاگ غنی‌تر — هیرو، چیپ دسته‌ها، پست ویژه، کارت‌ها
+   ========================================================= */
+.tka-blog-hero{padding:6px 0 2px}
+.tka-blog-hero .tka-page-title{margin-bottom:4px}
+.tka-blog-hero__sub{color:var(--gray-600);font-size:var(--fs-sm);margin:0 0 4px}
+
+.tka-blog-chips{display:flex;flex-wrap:wrap;gap:8px;padding:8px 0 12px}
+.tka-blog-chips .chip{min-height:34px}
+.tka-chip-count{background:var(--gray-100);border-radius:999px;padding:0 7px;font-size:10px;color:var(--gray-600);line-height:18px}
+.tka-blog-chips .chip.on .tka-chip-count{background:var(--primary);color:#fff}
+
+/* پست ویژه (Featured hero) */
+.tka-feat{
+        position:relative;display:block;border-radius:var(--r-xl);overflow:hidden;
+        margin:4px 0 14px;min-height:230px;isolation:isolate;
+}
+.tka-feat__img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform .5s}
+.tka-feat__img--ph{background:linear-gradient(135deg,var(--primary-light),var(--primary-medium))}
+.tka-feat__shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(28,10,30,.88) 0%,rgba(28,10,30,.42) 55%,rgba(28,10,30,.08) 100%);z-index:-1}
+.tka-feat__body{display:flex;flex-direction:column;gap:6px;align-items:flex-start;justify-content:flex-end;padding:16px;color:#fff;min-height:230px}
+.tka-feat__badge{display:inline-flex;align-items:center;gap:6px;background:var(--primary);color:#fff;border-radius:999px;padding:4px 12px;font-size:11px;font-weight:800}
+.tka-feat__badge .ic{font-size:var(--fs-md)}
+.tka-feat__title{font-size:17px;font-weight:800;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tka-feat__excerpt{font-size:12.5px;line-height:1.7;color:rgba(255,255,255,.85);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tka-feat__meta{font-size:11px;color:rgba(255,255,255,.78);display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tka-feat:hover .tka-feat__img{transform:scale(1.04)}
+@media(min-width:992px){
+        .tka-feat,.tka-feat__body{min-height:340px}
+        .tka-feat__body{padding:24px}
+        .tka-feat__title{font-size:22px;max-width:72%}
+        .tka-feat__excerpt{font-size:13.5px}
+}
+
+/* گرید کارت‌های وبلاگ */
+.tka-blog-grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:576px){.tka-blog-grid{grid-template-columns:repeat(2,1fr);gap:14px}}
+@media(min-width:992px){.tka-blog-grid{grid-template-columns:repeat(3,1fr);gap:18px}}
+
+/* کارت پست وبلاگ */
+.tka-post-card{display:flex;flex-direction:column;overflow:hidden;padding:0;transition:box-shadow .2s,transform .2s}
+.tka-post-card:hover{box-shadow:0 10px 26px rgba(33,33,33,.1);transform:translateY(-2px)}
+.tka-post-card__thumb{display:block;aspect-ratio:16/9;overflow:hidden;background:var(--gray-100)}
+.tka-post-card__thumb img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.tka-post-card:hover .tka-post-card__thumb img{transform:scale(1.05)}
+.tka-post-card__thumb--ph{display:grid;place-items:center;color:var(--gray-400);font-size:var(--fs-3xl)}
+.tka-post-card__body{display:flex;flex-direction:column;gap:7px;padding:12px 14px 14px;flex:1}
+.tka-post-card__top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tka-post-card__badge{display:inline-flex;align-items:center;background:var(--primary-light);color:var(--primary);border-radius:999px;padding:2px 10px;font-size:var(--fs-2xs);font-weight:700}
+.tka-post-card__badge--sticky{background:var(--warning-light);color:#8a6400}
+.tka-post-card__title{font-size:14.5px;font-weight:800;line-height:1.65}
+.tka-post-card__title a:hover{color:var(--primary)}
+.tka-post-card__excerpt{color:var(--gray-600);font-size:12.5px;line-height:1.8;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tka-post-card__meta{margin-top:auto;display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:var(--gray-500);font-size:11px;border-top:1px dashed var(--gray-200);padding-top:10px}
+.tka-post-card__author{display:inline-flex;align-items:center;gap:5px;font-weight:600;color:var(--gray-700)}
+.tka-post-card__author img{border-radius:50%}
+.tka-read-time{display:inline-flex;align-items:center;gap:4px}
+.tka-read-time .ic{font-size:var(--fs-sm)}
+.tka-dot{color:var(--gray-400)}
+
+/* صفحه‌بندی وبلاگ (paginate_links type=list) */
+.tka-pagination{padding:18px 0 8px}
+.tka-pagination ul{display:flex;justify-content:center;gap:6px;list-style:none;flex-wrap:wrap}
+.tka-pagination .page-numbers{min-width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-md);background:#fff;border:1px solid var(--gray-300);color:var(--gray-700);font-size:var(--fs-sm);font-weight:700;padding:0 8px}
+.tka-pagination .page-numbers.current{background:var(--primary);border-color:var(--primary);color:#fff}
+.tka-pagination a.page-numbers:hover{border-color:var(--primary);color:var(--primary)}
+.tka-pagination .dots{border:0;background:none}
+
+/* برچسب‌ها و متای نوشتهٔ تکی */
+.tka-tags{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:18px;padding-top:14px;border-top:1px dashed var(--gray-200)}
+.tka-tags__label{font-size:var(--fs-xs);font-weight:700;color:var(--gray-600)}
+.tka-tags .chip{min-height:30px;font-size:11.5px}
+.tka-tags .chip:hover{border-color:var(--primary);color:var(--primary)}
+.tka-entry-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+
+/* ###########################################################
+   TKA fix (task 15-b2) — Global CSS fixes (ToyKind Angel RTL)
+   All rules appended last so they win the cascade inside
+   main.css; where responsive.css (loaded after) competes,
+   #content-scoped selectors raise specificity deliberately.
+   ########################################################### */
+
+/* -----------------------------------------------------------
+   [7-P2] فوتر چسبان به پایین صفحه‌های کوتاه (۴۰۴ / درباره و…)
+   .app ستون فلکس می‌شود؛ فوتر با margin-top:auto ته می‌چسبد.
+   جبران نوار ادمین (fixed) تا فوتر زیر لبهٔ صفحه نرود.
+   ----------------------------------------------------------- */
+.app{display:flex;flex-direction:column}
+@supports (height:100dvh){.app{min-height:100dvh}}
+.app > .footer{margin-top:auto}
+body.admin-bar .app{min-height:calc(100vh - 32px)}
+@supports (height:100dvh){body.admin-bar .app{min-height:calc(100dvh - 32px)}}
+@media (max-width:782px){
+  body.admin-bar .app{min-height:calc(100vh - 46px)}
+  @supports (height:100dvh){body.admin-bar .app{min-height:calc(100dvh - 46px)}}
+}
+
+/* -----------------------------------------------------------
+   [5-P2] ریل‌های محصول: آیتم‌های flex واقعی .pcard-wrap هستند
+   (product-card.php کارت را در wrap می‌پیچد) ولی همهٔ basisهای
+   دمو روی .pcard بودند → عرض کارت‌ها پیش‌بینی‌نشدنی و سرریز
+   زیر پنل بنفش «شگفت‌انگیز». basis را روی wrap می‌بندیم.
+   ----------------------------------------------------------- */
+.offer__track > .pcard-wrap,
+.plist__track > .pcard-wrap,
+.tka-related .pcard-wrap{flex:0 0 132px;min-width:0;scroll-snap-align:start}
+@media (min-width:768px){
+  .offer__track > .pcard-wrap,
+  .plist__track > .pcard-wrap,
+  .tka-related .pcard-wrap{flex-basis:184px}
+}
+@media (min-width:1024px){
+  .offer__track > .pcard-wrap,
+  .plist__track > .pcard-wrap,
+  .tka-related .pcard-wrap{flex:0 0 calc((100% - 4 * var(--sp-xs)) / 5)}
+}
+/* TKA fix: کارت داخل ریل شگفت‌انگیز هرگز از پنل بیرون نزند */
+.offer .pcard-wrap{max-width:100%}
+.offer .offer__track{align-items:stretch}
+
+/* -----------------------------------------------------------
+   [5-P2] گرید بنر ۲×۲: تابع نبودن کاشی چهارم — کاشی خالی حذف
+   و کاشی آخرِ فرد، کل ردیف آخر را پر می‌کند (فقط موبایل؛
+   در دسکتاپ گرید ۳ ستونه است و ردیف کامل می‌ماند).
+   ----------------------------------------------------------- */
+.banners .banner:empty{display:none}
+@media (max-width:767.98px){
+  .banners .banner:last-child:nth-child(odd){grid-column:1/-1;aspect-ratio:1160/292}
+}
+
+/* -----------------------------------------------------------
+   [1-P0] ریل «محصولات مشابه» در PDP ساده:
+   دکمهٔ افزودن به سبد با wp_kses_post بدون SVG چاپ می‌شود
+   (سوژهٔ خالی). با :empty آیکن (mask) + برچسب دائمی می‌سازیم؛
+   همیشه آیکن + متن، وسط‌چین، با اندازهٔ حداقلی مشخص.
+   ----------------------------------------------------------- */
+.pcard__atc:empty{
+  left:10px;right:10px;bottom:10px;width:auto;min-height:32px;
+  padding:0 8px;gap:6px;border-radius:10px;
+  font-size:var(--fs-2xs);font-weight:800;line-height:1;
+}
+.pcard__atc:empty::before{
+  content:"";width:15px;height:15px;flex:none;background:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 22a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm10 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM1 1h4l2.6 12.6a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 22a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm10 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM1 1h4l2.6 12.6a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.pcard__atc:empty::after{
+  content:attr(aria-label);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  min-width:0;text-align:center;
+}
+
+/* -----------------------------------------------------------
+   [2-P1] PDP دسکتاپ: ستون خرید راست، گالری چپ (RTL: ستون اول
+   بصری = راست). DOM گالری اول است؛ جای‌گذاری صریح در گرید.
+   specificity با #content از قوانین responsive.css بالاتر است.
+   موبایل: بدون تغییر — گالری اول (ترتیب طبیعی DOM).
+   ----------------------------------------------------------- */
+@media (min-width:1024px){
+  #content.tka-pdp-main{grid-template-columns:minmax(0,5fr) minmax(0,6fr)}
+  #content.tka-pdp-main > .pdp__bar{grid-column:1/-1;grid-row:1}
+  #content.tka-pdp-main .pdp__body{grid-column:1;grid-row:2}
+  #content.tka-pdp-main .gallery{grid-column:2;grid-row:2;position:sticky;top:130px}
+  /* ریل مشابه‌ها داخل #product-… (display:contents) است؛ سلکتور
+     «>» ریسپانسیو به آن نمی‌رسد → جای‌گذاری صریح تمام‌عرض اینجا */
+  #content.tka-pdp-main .tka-related{grid-column:1/-1;grid-row:auto}
+}
+
+/* -----------------------------------------------------------
+   [3-P1] مونوگرام برند: .brand__img--mono (مارک‌آپ توسط ایجنت
+   دیگر اضافه می‌شود) — بج دایره‌ای با حرف فارسی وسط، هم‌اندازهٔ
+   جعبهٔ .brand__img و ۵ گرادیان چرخشی با nth-child.
+   ----------------------------------------------------------- */
+.brand__img--mono{
+  flex:none;width:34px;height:34px;border-radius:50%;
+  display:grid;place-items:center;overflow:visible;
+  background:var(--primary);color:#fff;
+  font-size:15px;font-weight:800;line-height:1;letter-spacing:0;
+  user-select:none;
+}
+.brands .brand:nth-child(5n+1) .brand__img--mono{background:linear-gradient(135deg,#b400ae,#e6007e)}
+.brands .brand:nth-child(5n+2) .brand__img--mono{background:linear-gradient(135deg,#3a558b,#6f8fd8)}
+.brands .brand:nth-child(5n+3) .brand__img--mono{background:linear-gradient(135deg,#f59e00,#febc00)}
+.brands .brand:nth-child(5n+4) .brand__img--mono{background:linear-gradient(135deg,#1f8f4d,#3ecf78)}
+.brands .brand:nth-child(5n+5) .brand__img--mono{background:linear-gradient(135deg,#cc1d33,#f2557a)}
+@media (min-width:768px){
+  .brand__img--mono{width:42px;height:42px;font-size:18px}
+}
+
+/* -----------------------------------------------------------
+   [4-P2] بک‌دراپ دراورها: سخت‌سازی — تا وقتی is-open نیست
+   click-through باشد (پوشش نامرئی هرگز کلیک‌ها را نبلعد).
+   (markup: footer.php / inc/minicart.php — toggle در main.js)
+   ----------------------------------------------------------- */
+.tka-drawer__backdrop{pointer-events:none}
+.tka-drawer__backdrop.is-open{pointer-events:auto}
+
+/* -----------------------------------------------------------
+   [6-P2] پنل جستجوی زنده: بازهٔ قیمت متغیر bidi درهم و خط
+   خط‌خوردهٔ ۱۰.۵px ناخوانا. قیمت‌ها LTR ایزوله می‌شوند (هم‌جهت
+   با pcard__price دمو) تا «۱،۰۰۰ – ۲،۰۰۰ تومان» مرتب بماند؛
+   del روی خط خودش ولی ۱۲px خوانا و دو خط هم‌تراز.
+   ----------------------------------------------------------- */
+.tka-ls__price{direction:ltr;text-align:right;max-width:52%;unicode-bidi:isolate}
+.tka-ls__price .woocommerce-Price-amount{unicode-bidi:isolate;white-space:nowrap}
+.tka-ls__price del{display:block;font-size:var(--fs-xs);line-height:1.7;color:var(--gray-500)}
+.tka-ls__price ins{text-decoration:none}
+
+/* [8-P2] صفحهٔ دسته‌بندی‌ها: از 0.16.0 این صفحه از هدر استاندارد +
+   cats-page.css استفاده می‌کند (task 18-d)؛ کلاس tka-cats-main دیگر
+   در قالب تولید نمی‌شود — قواعد قدیمی حذف شد. */
+
+/* TKA fix (15-QA): generated hero photos put the subject low-left; anchor the
+   crop to the subject instead of the empty copy-space wall. */
+.hero__slide img{object-position:left bottom}
+
+/* TKA fix (17): "choose options" pill for variable product cards. */
+.pcard__atc--choose{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:auto;min-width:96px;height:38px;padding:0 14px;font-size:12.5px;font-weight:700;white-space:nowrap}
+
+/* ============================================================
+   TKA fix (0.14.0)
+   ۱) بنر نوار بالای صفحه: ارتفاع هم‌قدِ هدر (درخواست کاربر)
+   ۲) آرشیو محصول: سایدبار فیلترها (راست در RTL) + چیدمان دوستونه
+   ============================================================ */
+
+/* ---------- ۱) بنر بالا = ارتفاع هدر ---------- */
+.topstrip img{width:100%;height:64px;object-fit:cover;object-position:center}
+@media (max-width:767.98px){
+  .topstrip img{height:56px}
+}
+
+/* ---------- ۲) سایدبار فیلتر آرشیو ---------- */
+.tka-shoppage__layout{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:2px}
+.tka-shoppage__main{min-width:0}
+
+.tka-filters{min-width:0}
+.tka-filters__toggle{
+  display:flex;align-items:center;gap:8px;width:100%;
+  min-height:44px;padding:10px 14px;
+  border:1px solid var(--gray-200,#e6e6ea);border-radius:var(--r-md,14px);
+  background:var(--white,#fff);
+  font-size:var(--fs-sm);font-weight:800;color:var(--gray-900,#1c1c22);
+  cursor:pointer;list-style:none;-webkit-user-select:none;user-select:none;
+}
+.tka-filters__toggle::-webkit-details-marker{display:none}
+.tka-filters__toggle .ic{color:var(--primary,#b400ae)}
+.tka-filters__chev{margin-inline-start:auto;color:var(--gray-500,#8a8a93)!important;transform:rotate(90deg);transition:transform .2s}
+.tka-filters[open] .tka-filters__chev{transform:rotate(-90deg)}
+
+.tka-filters__panel{display:grid;gap:10px;padding:10px 0 2px}
+.tka-filters .widget{
+  background:var(--white,#fff);
+  border:1px solid var(--gray-200,#e6e6ea);
+  border-radius:var(--r-md,14px);
+  padding:12px 14px;min-width:0;
+}
+.tka-filters .widgettitle{font-size:12.5px;font-weight:800;color:var(--gray-900,#1c1c22);margin:0 0 8px}
+.tka-filters .widget ul{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.tka-filters .widget li{margin:0}
+.tka-filters .widget a{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  min-height:34px;padding:4px 8px;border-radius:10px;
+  font-size:12.5px;font-weight:600;color:var(--gray-700,#444);
+  transition:background .15s,color .15s;
+}
+.tka-filters .widget a:hover{background:var(--primary-light,#fbe9fb);color:var(--primary,#b400ae)}
+.tka-filters .widget .count,
+.tka-filters .tka-flt-brands__count{
+  font-size:var(--fs-2xs);color:var(--gray-500,#8a8a93);
+  background:var(--gray-50,#f6f6f8);border-radius:99px;padding:2px 8px;
+}
+/* دسته‌ها: زیرشاخه تورفتگی */
+.tka-filters .product-categories .children{margin-top:2px;padding-inline-start:12px;border-inline-start:2px solid var(--gray-100,#efeff3)}
+
+/* فیلتر فعال (چیپ‌های ووکامرس) */
+.tka-filters .widget_layered_nav_filters ul{display:flex;flex-wrap:wrap;gap:6px}
+.tka-filters .widget_layered_nav_filters a{
+  min-height:30px;padding:4px 10px;border-radius:99px;
+  background:var(--primary-light,#fbe9fb);color:var(--primary,#b400ae);
+  font-size:11.5px;font-weight:700;
+}
+
+/* اسلایدر قیمت ووکامرس */
+.tka-filters .price_slider_wrapper{padding-top:6px}
+.tka-filters .price_slider{margin:14px 6px 16px;height:4px;border-radius:99px;background:var(--gray-200,#e6e6ea)}
+.tka-filters .price_slider .ui-slider-range{background:var(--primary,#b400ae);border-radius:99px}
+.tka-filters .price_slider .ui-slider-handle{
+  width:16px;height:16px;border-radius:50%;
+  background:var(--white,#fff);border:2.5px solid var(--primary,#b400ae);
+  top:-6.5px;box-shadow:0 1px 4px rgba(0,0,0,.18);cursor:grab;
+}
+.tka-filters .price_slider_amount{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--gray-600,#666)}
+.tka-filters .price_slider_amount input[type="text"]{
+  flex:1 1 0;min-width:0;width:100%;min-height:36px;
+  border:1px solid var(--gray-200,#e6e6ea);border-radius:10px;
+  padding:0 10px;font-family:inherit;font-size:var(--fs-xs);text-align:center;color:var(--gray-900,#1c1c22);
+}
+.tka-filters .price_slider_amount .button{
+  min-height:36px;padding:0 14px;border:0;border-radius:10px;
+  background:var(--primary,#b400ae);color:#fff;font-family:inherit;font-size:var(--fs-xs);font-weight:800;cursor:pointer;
+}
+.tka-filters .price_slider_amount .price_label{flex-basis:100%;text-align:center;font-size:11px;color:var(--gray-500,#8a8a93)}
+
+/* ---------- دسکتاپ: ریل ثابت راست ---------- */
+@media (min-width:1024px){
+  .tka-shoppage__layout{grid-template-columns:264px minmax(0,1fr);gap:16px;align-items:start}
+  .tka-filters__toggle{display:none}
+  .tka-filters__panel{display:grid;padding-top:0}
+  .tka-filters{position:sticky;top:84px;max-height:calc(100vh - 100px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+}
+
+/* =====================================================================
+   TKA fix (0.15.0) — گیت صفحه اصلی: کارت راه‌اندازی تا درون‌ریزی دمو
+   ===================================================================== */
+.tka-onboard{
+  min-height:52vh;display:grid;place-items:center;
+  padding:var(--sp-l,24px) var(--sp-m,16px) calc(var(--sp-l,24px) + 40px);
+}
+.tka-onboard__card{
+  width:100%;max-width:460px;text-align:center;
+  background:#fff;border-radius:var(--r-lg,18px);
+  box-shadow:0 6px 24px rgba(28,28,36,.08),0 1px 3px rgba(28,28,36,.05);
+  padding:36px 24px 28px;display:grid;justify-items:center;gap:12px;
+}
+.tka-onboard__icon{
+  width:64px;height:64px;border-radius:20px;display:grid;place-items:center;
+  background:var(--primary-light,#ffe6f4);color:var(--primary,#b400ae);
+}
+.tka-onboard__icon .ic{font-size:32px}
+.tka-onboard__title{font-size:16.5px;font-weight:800;color:var(--gray-900,#1c1c24);margin:2px 0 0}
+.tka-onboard__text{font-size:12.5px;line-height:2;color:var(--gray-600,#666);margin:0}
+.tka-onboard__actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:6px}
+.tka-onboard__btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:44px;padding:0 22px;border-radius:var(--r-md,12px);
+  background:var(--primary,#b400ae);color:#fff;
+  font-size:var(--fs-sm);font-weight:700;text-decoration:none;
+  transition:filter .15s ease,transform .15s ease;
+}
+.tka-onboard__btn:hover{filter:brightness(.94)}
+.tka-onboard__btn:active{transform:scale(.98)}
+.tka-onboard__btn--ghost{
+  background:#fff;color:var(--primary,#b400ae);
+  border:1.5px solid var(--primary-light,#f3c9e8);
+}
+.tka-onboard__btn--ghost:hover{filter:none;border-color:var(--primary,#b400ae)}
+.tka-onboard__hint{
+  font-size:11px;line-height:1.9;color:var(--gray-500,#8a8a93);
+  margin:8px 0 0;max-width:360px;
+}
+@media (max-width:480px){
+  .tka-onboard__actions{width:100%;flex-direction:column}
+  .tka-onboard__btn{width:100%}
+}
+
+/* =========================================================
+   TKA 0.16.0 — Layout System & Sticky Header (task 18-b)
+   سیستم چیدمان استاندارد: گاتر یکنواخت ۱۶px موبایل / ۲۴px دسکتاپ،
+   کانتینر ۱۳۲۰px، PDP تمام‌عرض، هدر چسبان فشرده.
+   ========================================================= */
+:root{
+  --tka-container:1320px;
+  --tka-gutter:16px;
+  /* گاتر استاندارد موبایل: ۱۲px دمو → ۱۶px (استاندارد فروشگاهی ایران) */
+  --pad:16px;
+}
+
+/* ---------- PDP: پدینگ پایه موبایل (قبلاً از فریم body.woocommerce
+   می‌آمد که با :not(body) حذف شد) ---------- */
+.tka-pdp-main{padding-inline:var(--pad)}
+
+/* ---------- هدر چسبان فشرده (body.tka-stuck توسط main.js) ---------- */
+.header{transition:box-shadow .25s ease}
+.header__row{transition:padding .2s ease}
+.header__search{transition:padding .2s ease}
+body.tka-stuck .header{box-shadow:0 8px 24px rgba(0,0,0,.10)}
+body.tka-stuck .header__row{padding-block:5px 3px}
+body.tka-stuck .header__search{padding-bottom:8px}
+@media (prefers-reduced-motion:reduce){
+  .header,.header__row,.header__search{transition:none}
+}

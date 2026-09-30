@@ -1,0 +1,459 @@
+/* =========================================================
+   ToyKind Angel — لایهٔ تبلت و دسکتاپ (v0.7.0)
+   ----------------------------------------------------------
+   موبایل (<768px): دست‌نخورده — دقیقاً همان دمو (قاب 430px).
+   ≥768px  : قاب باز می‌شود (فلوید)، منوی افقی هدر، بدون bottomnav.
+   ≥1024px : ظرف 1200px وسط‌چین، فوتر ۴ ستونه، PDP دوستونه،
+             سبد/تسویه/حساب دسکتاپ، فلش ریل‌ها.
+   همهٔ مقادیر از توکن‌های demo.css استفاده می‌کنند تا هویت بصری
+   دمو حفظ شود. demo.css و مارک‌آپ موبایل تغییری نمی‌کنند.
+   ========================================================= */
+
+/* ---------- منوی افقی هدر — در موبایل پنهان ---------- */
+.header__nav{display:none}
+
+/* ---------- ستون‌های جدید فوتر — فقط دسکتاپ ---------- */
+.footer__col--desktop{display:none}
+
+/* ---------- سکشن محصولات مشابه PDP: بیرون از pdp__body (دسکتاپ تمام‌عرض)
+   روی موبایل همان پدینگ قبلی بدنه اعمال می‌شود تا ۱:۱ دمو بماند ---------- */
+.tka-related{margin-inline:var(--pad)}
+
+/* =========================================================
+   ≥768px — تبلت: قاب باز، منوی افقی، خداحافظی با bottomnav
+   ========================================================= */
+@media (min-width:768px){
+
+  :root{
+    --pad:16px;
+  }
+
+  /* ---------- قاب دمو به فلوید باز می‌شود ---------- */
+  .app{
+    max-width:none;
+    box-shadow:none;
+    background:var(--gray-50);
+  }
+
+  /* نوار پایین موبایل و فضای رزروشدهٔ آن حذف */
+  .bottomnav{display:none}
+  .app--padded{padding-bottom:32px}
+  .tka-pdp{padding-bottom:48px}
+  .pdp__cta{display:none}
+
+  /* بازگشت به بالا: دیگر نیازی به فاصلهٔ bottomnav نیست */
+  .tka-backtop{bottom:24px;left:24px}
+
+  /* توست هم پایین صفحه می‌نشیند */
+  .tka-toast{bottom:24px}
+
+  /* =========================================================
+     هدر: یک ردیفه — لوگو | جستجو | علاقه‌مندی | سبد
+     (RTL: لوگو راست، آیکن‌ها چپ — مثل اپ‌های فروشگاهی ایرانی)
+     ========================================================= */
+  .header{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto auto;
+    align-items:center;
+    gap:var(--sp-s);
+    padding:12px var(--pad);
+  }
+  .header__row{display:contents}
+  .header .icon-btn--menu{display:none}
+  .logo{grid-column:1;grid-row:1}
+  .logo img{height:38px}
+  .logo__txt{font-size:18px}
+  .header__search{grid-column:2;grid-row:1;padding:0}
+  .header__search .searchbox{height:44px;background:var(--gray-100);border:1px solid var(--gray-200)}
+  .header__search .searchbox:focus-within{border-color:var(--primary-medium);background:var(--white)}
+  .header__search .searchbox input{font-size:13.5px}
+  .header__row a.icon-btn:nth-last-child(2){grid-column:3;grid-row:1}
+  .header__row a.icon-btn:last-child{grid-column:4;grid-row:1}
+  .icon-btn{width:40px;height:40px}
+  .icon-btn .ic{font-size:24px}
+  .icon-btn:hover{background:var(--gray-100);color:var(--primary)}
+
+  /* ---------- منوی افقی زیر هدر ---------- */
+  .header__nav{
+    display:block;
+    grid-column:1/-1;
+    grid-row:2;
+    border-top:1px solid var(--gray-100);
+    margin-top:10px;
+  }
+  .header__menu{
+    display:flex;align-items:center;gap:2px;flex-wrap:wrap;
+    padding:4px 0;position:relative;
+  }
+  .header__menu > li{position:relative}
+  .header__menu > li > a{
+    display:flex;align-items:center;gap:6px;
+    padding:8px 14px;border-radius:var(--r-md);
+    font-size:13.5px;font-weight:600;color:var(--gray-700);
+    white-space:nowrap;transition:color .15s,background .15s;
+  }
+  .header__menu > li > a:hover,
+  .header__menu > li.current-menu-item > a,
+  .header__menu > li.current_page_item > a,
+  .header__menu > li.current-product-ancestor > a{
+    color:var(--primary);background:var(--primary-light);
+  }
+  /* زیرمنو (دراپ‌داون) */
+  .header__menu .sub-menu{
+    position:absolute;top:100%;right:0;min-width:230px;
+    background:var(--white);border:1px solid var(--gray-200);
+    border-radius:var(--r-lg);box-shadow:0 14px 34px rgba(0,0,0,.12);
+    padding:6px;opacity:0;visibility:hidden;transform:translateY(6px);
+    transition:opacity .18s,transform .18s,visibility .18s;z-index:80;
+    display:grid;gap:2px;
+  }
+  .header__menu li:hover > .sub-menu,
+  .header__menu li:focus-within > .sub-menu{
+    opacity:1;visibility:visible;transform:none;
+  }
+  .header__menu .sub-menu a{
+    display:block;padding:8px 12px;border-radius:var(--r-md);
+    font-size:12.5px;color:var(--gray-700);white-space:nowrap;
+  }
+  .header__menu .sub-menu a:hover{background:var(--primary-light);color:var(--primary)}
+
+  /* ---------- ظرف مرکزی ۱۲۰۰px برای سکشن‌های صفحهٔ اصلی ---------- */
+  .hero,
+  .stories,
+  .banners,
+  .brands,
+  .usps,
+  .section__head{
+    max-width:calc(1320px + 2 * var(--pad)); /* TKA 0.16.0 (18-b): کانتینر ۱۳۲۰ */
+    margin-inline:auto;
+    padding-inline:var(--pad);
+  }
+  .hero{padding-inline:var(--pad)}
+  .offer{
+    max-width:calc(1320px + 2 * var(--pad)); /* TKA 0.16.0 (18-b) */
+    margin:var(--sp-m) auto 0;
+    padding-inline:var(--pad);
+  }
+  .offer .offer__track{padding-inline:0}
+
+  /* اسلایدر هیرو: TKA 0.16.0 (18-b) — تمام‌عرض (الگوی اسنپ‌شاپ/دیجی‌کالا)
+     با ارتفاع مهارشده تا بخش بزرگ‌تر از قاب نشود */
+  .hero{max-width:none;padding-inline:0;margin-inline:0;border-radius:0}
+  .hero__slide{aspect-ratio:auto;height:clamp(320px,30vw,420px)}
+  .hero__slide img{height:100%;object-fit:cover}
+
+  /* بنر نوار بالا: کنترل ارتفاع در عرض‌های بزرگ */
+  .topstrip img{max-height:170px;object-fit:cover;width:100%}
+
+  /* بنرها ۲×۲ (۴ بنر دمو) — TKA fix #19 */
+  .banners{grid-template-columns:repeat(2,1fr)}
+
+  /* استوری‌ها و برندها بزرگ‌تر */
+  .stories{--story-size:112px}
+  .brand{flex:0 0 112px}
+
+  /* ریل‌های محصول: کارت‌های بزرگ‌تر */
+  .offer__track .pcard,
+  .plist__track .pcard{flex-basis:184px}
+  .pcard__name{font-size:12.5px;min-height:38px}
+  .pcard__price{font-size:15px}
+
+  /* ---------- فوتر: ظرف مرکزی ---------- */
+  .footer__cols,
+  .footer__seo,
+  .footer__copy{
+    max-width:calc(1320px + 2 * var(--pad)); /* TKA 0.16.0 (18-b): ۱۳۲۰ */
+    margin-inline:auto;
+    padding-inline:var(--pad);
+  }
+  .footer li a,.footer__menu a{font-size:12.5px}
+  .footer h5{font-size:var(--fs-md)}
+
+  /* ---------- صفحات عمومی (بلاگ/آرشیو/جستجو/برگه) ---------- */
+  .tka-container{
+    max-width:calc(1320px + 2 * var(--pad)); /* TKA 0.16.0 (18-b): ۱۳۲۰ */
+    margin-inline:auto;
+    padding-inline:var(--pad);
+  }
+
+  /* ---------- صفحهٔ دسته‌بندی‌ها (دو پنل) کارت وسط‌چین ---------- */
+  .cpage{
+    max-width:1100px;
+    margin:16px auto 0;
+    height:calc(100dvh - 52px - 32px);
+    border-radius:var(--r-2xl);
+    box-shadow:0 12px 40px rgba(0,0,0,.10);
+    overflow:hidden;
+    border:1px solid var(--gray-200);
+  }
+  body.admin-bar .cpage{height:calc(100dvh - 52px - 32px - 32px)}
+
+  /* ---------- ووکامرس: ظرف مرکزی ----------
+     فقط .woocommerce داخل صفحه (کارت/تسویه/حساب) را می‌گیرد؛
+     body.woocommerce نباید محدود شود وگرنه کل صفحه از تمام‌عرض
+     می‌افتد (باگ «صفحه تمام‌صفحه نیست»). */
+  body .woocommerce{
+    max-width:calc(1320px + 2 * var(--pad)); /* TKA 0.16.0 (18-b): ۱۳۲۰ */
+    margin-inline:auto;
+    padding-inline:var(--pad);
+    padding-bottom:40px;
+  }
+
+  /* ---------- PDP: تک‌ستونه عریض (تا 1024) ---------- */
+  .tka-pdp-main{
+    max-width:calc(1320px + 2 * var(--pad)); /* TKA 0.16.0 (18-b): ۱۳۲۰ */
+    margin-inline:auto;
+    padding-inline:var(--pad);
+  }
+  .gallery__slide{aspect-ratio:1;max-height:520px}
+  .pdp__title{font-size:18px}
+
+  /* محصولات مشابه (بیرون body از این نسخه) پدینگ ظرف می‌گیرد */
+  .tka-pdp-main .tka-related{margin-inline:0;padding-inline:var(--pad)}
+
+  /* ---------- آرشیو محصول ---------- */
+  .tka-pgrid{gap:14px 12px}
+
+  /* تایپوگرافی بخش‌ها */
+  .section__title{font-size:var(--fs-lg)}
+  .usp b{font-size:var(--fs-sm)}
+  .usp small{font-size:11px}
+}
+
+/* =========================================================
+   ≥1024px — دسکتاپ کامل
+   ========================================================= */
+@media (min-width:1024px){
+
+  :root{
+    --pad:24px; /* TKA 0.16.0 (18-b): گاتر دسکتاپ ۲۰ → ۲۴px استاندارد */
+  }
+
+  body{font-size:var(--fs-md)}
+
+  /* ---------- PDP دوستونه: گالری | مشخصات و خرید ----------
+     TKA 0.16.0 (18-b): PDP تمام‌عرض — بدون کادر خاکستری کناره‌ها */
+  .tka-pdp-main{
+    max-width:none;
+    display:grid;
+    grid-template-columns:minmax(0,6fr) minmax(0,5fr);
+    gap:32px;
+    align-items:start;
+  }
+  .tka-pdp-main > .pdp__bar{grid-column:1/-1;grid-row:1}
+  /* رپر استاندارد ووکامرس #product-… (post_class) شفاف می‌شود تا گالری و
+     بدنه مستقیماً در گرید دسکتاپ شرکت کنند (سازگار با هوک‌های هسته) */
+  .tka-pdp-main > .product,
+  .tka-pdp-main > div[class*="product-"]{display:contents}
+  .tka-pdp-main .gallery{grid-column:1;grid-row:2;position:sticky;top:130px}
+  .tka-pdp-main .pdp__body{grid-column:2;grid-row:2}
+  .tka-pdp-main > .tka-related{grid-column:1/-1;grid-row:3}
+  .gallery__slide{aspect-ratio:4/3;max-height:560px;border-radius:var(--r-xl);border:1px solid var(--gray-100)}
+  .pdp__body{padding-top:var(--sp-s)}
+  .pdp__title{font-size:21px;line-height:1.7}
+  .pricebox__now b{font-size:var(--fs-2xl)}
+  .sellerbox,.shipmethod,.pricebox{padding:var(--sp-m)}
+  .specs li span{flex:0 0 160px}
+
+  /* کارت‌های ریل دسکتاپ: ۵ کارت در عرض ۱۲۰۰ */
+  .offer__track .pcard,
+  .plist__track .pcard{flex-basis:calc((100% - 4 * var(--sp-xs)) / 5)}
+  .pcard__name{font-size:var(--fs-sm);min-height:40px}
+  .pcard__price{font-size:15.5px}
+
+  /* ---------- فوتر ۴ ستونه ---------- */
+  .footer__cols{grid-template-columns:1.5fr 1fr 1.2fr 1fr;gap:40px}
+  .footer__col--desktop{display:block}
+  .footer h5{font-size:15px;margin-bottom:var(--sp-m)}
+  .footer li a,.footer__menu a{font-size:var(--fs-sm)}
+  .footer li a:hover,.footer__menu a:hover{color:var(--primary)}
+  .footer__copy{font-size:var(--fs-xs)}
+  .footer__contact-list{display:grid;gap:10px}
+  .footer__contact-list li{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);color:var(--gray-700)}
+  .footer__contact-list .ic{color:var(--primary);font-size:var(--fs-lg);flex:none}
+  .footer__contact-list a:hover{color:var(--primary)}
+  .footer__social{display:flex;gap:8px;flex-wrap:wrap}
+  .footer__social a{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--primary-light);color:var(--primary);
+    border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:700;
+    transition:background .15s,color .15s;
+  }
+  .footer__social a:hover{background:var(--primary);color:#fff}
+  .footer__social .ic{font-size:var(--fs-md)}
+
+  /* ---------- سبد خرید دوستونه ---------- */
+  .woocommerce-cart .woocommerce-cart-form{
+    float:right;
+    width:calc(58% - 12px);
+  }
+  .woocommerce-cart .cart-collaterals{
+    float:left;
+    width:calc(42% - 12px);
+  }
+  .woocommerce-cart .woocommerce::after{
+    content:"";display:table;clear:both;
+  }
+  .woocommerce-cart .woocommerce-cart-form table.shop_table{font-size:var(--fs-sm)}
+  .woocommerce-cart .woocommerce-cart-form .product-name .tka-cart-item-title{font-size:13.5px}
+  /* قوانین موبایلِ glue (ستون‌های فشرده) در دسکتاپ باز می‌شوند */
+  .woocommerce-cart table.shop_table .product-thumbnail{display:table-cell}
+  .woocommerce-cart table.shop_table .product-price{display:table-cell}
+  /* ردیف کد تخفیف: تک‌ردیفی در دسکتاپ */
+  .woocommerce-cart table.shop_table td.actions .coupon{flex-direction:row;display:flex;align-items:center;gap:8px}
+  .woocommerce-cart table.shop_table td.actions .coupon .input-text{flex:1 1 auto;min-height:42px}
+  .woocommerce-cart table.shop_table td.actions .coupon .button{width:auto;min-width:120px;min-height:42px}
+
+  /* ---------- تسویه‌حساب دوستونه ---------- */
+  .woocommerce-checkout .col2-set{
+    float:right;width:calc(57% - 12px);
+  }
+  /* فرم صورتحساب و توضیحات: پشت‌سرهم داخل ستون راست */
+  .woocommerce-checkout .col2-set .col-1,
+  .woocommerce-checkout .col2-set .col-2{float:none;width:100%}
+  .woocommerce-checkout #order_review_heading{
+    float:left;width:calc(43% - 12px);
+    margin-top:var(--sp-m);
+    background:var(--white);border-radius:var(--r-lg) var(--r-lg) 0 0;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+    padding:var(--sp-m) var(--sp-m) 0;
+  }
+  .woocommerce-checkout #order_review{
+    float:left;width:calc(43% - 12px);
+    position:sticky;top:130px;
+    background:var(--white);border-radius:0 0 var(--r-lg) var(--r-lg);
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  .woocommerce-checkout .woocommerce::after{
+    content:"";display:table;clear:both;
+  }
+  .woocommerce-checkout #payment{border-radius:var(--r-lg)}
+  /* دکمه ثبت سفارش با رنگ برند */
+  .woocommerce-checkout #place_order{
+    background:var(--primary) !important;color:#fff !important;
+    border-radius:var(--r-md);min-height:48px;font-weight:700;
+  }
+  .woocommerce-checkout #place_order:hover{background:var(--primary-dark) !important}
+
+  /* ---------- حساب کاربری: سایدبار عمودی ---------- */
+  .woocommerce-account .woocommerce{
+    display:grid;
+    grid-template-columns:250px minmax(0,1fr);
+    gap:24px;
+    align-items:start;
+  }
+  .woocommerce-account .woocommerce-MyAccount-navigation{margin-bottom:0}
+  .woocommerce-account .woocommerce-MyAccount-navigation ul{
+    flex-direction:column;flex-wrap:nowrap;gap:4px;
+    background:var(--white);border-radius:var(--r-lg);
+    box-shadow:0 1px 3px rgba(0,0,0,.06);padding:var(--sp-s);
+    position:sticky;top:130px;
+  }
+  .woocommerce-account .woocommerce-MyAccount-navigation li a{
+    display:flex;align-items:center;padding:10px 14px;font-size:var(--fs-sm);
+  }
+
+  /* ---------- آرشیو: گرید ۴ ستونه و نوار مرتب‌سازی ایستا ---------- */
+  .tka-pgrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .tka-sortbar{flex-wrap:wrap;overflow:visible}
+  .tka-shophead__title{font-size:var(--fs-xl)}
+  .tka-shophead__desc{font-size:var(--fs-sm);max-width:720px}
+
+  /* ---------- ریل‌ها: فلش ناوبری دسکتاپ (تزریق با main.js) ---------- */
+  .tka-railsec{position:relative}
+  .tka-rail{
+    display:grid;place-items:center;
+    position:absolute;top:46%;transform:translateY(-50%);
+    width:44px;height:44px;border-radius:50%;
+    background:var(--white);color:var(--gray-700);
+    box-shadow:0 4px 16px rgba(0,0,0,.16);
+    z-index:6;transition:color .15s,box-shadow .15s,opacity .15s;
+  }
+  .tka-rail:hover{color:var(--primary);box-shadow:0 6px 20px rgba(180,0,174,.28)}
+  .tka-rail:disabled{opacity:.35;pointer-events:none}
+  .tka-rail .ic{font-size:22px}
+  .tka-rail--next{left:var(--pad)}
+  .tka-rail--prev{right:var(--pad)}
+  .tka-rail--prev .ic{transform:rotate(180deg)}
+  .offer .tka-rail{top:50%}
+  .tka-related .tka-rail{top:50%}
+
+  /* ---------- برندها و مزایا ---------- */
+  .brand{flex:0 0 128px}
+  .brand__img img{max-height:42px}
+  .usps{gap:var(--sp-m)}
+  .usp{padding:var(--sp-l) var(--sp-m)}
+  .usp .ic{font-size:30px}
+
+  /* ---------- صفحهٔ دسته‌بندی‌ها: پهن‌تر ---------- */
+  .cpage{max-width:1240px}
+  .crail{flex:0 0 128px;width:128px}
+  .cgrid{grid-template-columns:repeat(4,1fr)}
+
+  /* ---------- کارت‌های بلاگ و فهرست نوشته‌ها ---------- */
+  .tka-blogcard__title{font-size:15px}
+}
+
+/* ≥1440: کمی هوا */
+@media (min-width:1440px){
+  .tka-pgrid{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
+
+/* ---------- حرکت کم‌تر ---------- */
+@media (prefers-reduced-motion:reduce){
+  .tka-rail{transition:none}
+  .header__menu .sub-menu{transition:none}
+}
+
+/* =========================================================
+   Drawer: منوی اصلی + مرورگر دسته‌بندی‌ها — تبلت/دسکتاپ (v0.9)
+   ----------------------------------------------------------
+   موبایل: دراور 430px با ریل ۹۲px باریک (کلاس‌های دمو).
+   ≥768px : دراور پهن‌تر (880px) + ریل ۲۰۰px افقی + دکمهٔ
+            «دسته‌بندی‌ها» در ناوبری هدر.
+   ≥1024px: شبکهٔ کاشی‌ها ۵ ستونه.
+   ========================================================= */
+@media (min-width:768px){
+
+  /* ---------- ابعاد دراور ---------- */
+  .tka-drawer{width:min(880px,92vw)}
+  .tka-drawer--menu{width:min(380px,90vw)}
+
+  /* ریل دسته‌ها: ستون ~200px با آیتم‌های افقی (چیدمان صفحهٔ دسکتاپ) */
+  .tka-drawer .crail{flex:0 0 200px;width:200px;border-left:1px solid var(--gray-200)}
+  .tka-drawer .crail__item{
+    flex-direction:row;justify-content:flex-start;text-align:right;
+    height:auto;min-height:60px;padding:10px 14px;gap:12px;
+  }
+  .tka-drawer .crail__item .crail__ico{width:36px;height:36px}
+  .tka-drawer .crail__item.on::after{top:8px;bottom:8px}
+  .tka-drawer .crail__item span{-webkit-line-clamp:1}
+
+  /* پنل: شبکهٔ پهن‌تر داخل دراور ۸۸۰px */
+  .tka-drawer .cgrid{grid-template-columns:repeat(4,1fr)}
+  .tka-drawer .ctile__img{width:64px;height:64px}
+
+  /* ---------- دکمهٔ دسته‌بندی‌ها در ناوبری هدر ---------- */
+  .header__nav{display:flex;align-items:center;gap:10px}
+  .header__nav .header__menu{flex:1;min-width:0}
+  .header__cats-btn{
+    display:inline-flex;align-items:center;gap:8px;flex:none;
+    background:var(--primary);color:#fff;
+    padding:9px 18px;border-radius:var(--r-xxl);
+    font-size:13.5px;font-weight:700;white-space:nowrap;
+    transition:background .15s,color .15s;
+  }
+  .header__cats-btn:hover{background:var(--primary-dark);color:#fff}
+  .header__cats-btn .ic{font-size:17px}
+}
+
+@media (min-width:1024px){
+  .tka-drawer .cgrid{grid-template-columns:repeat(5,1fr)}
+  .tka-drawer .cpanel{padding:0 20px 28px}
+}
+
+/* ---------- حرکت کم‌تر: بدون انیمیشن دراور ---------- */
+@media (prefers-reduced-motion:reduce){
+  .tka-drawer,
+  .tka-drawer__backdrop{transition:none}
+}

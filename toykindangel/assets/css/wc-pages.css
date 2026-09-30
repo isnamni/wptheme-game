@@ -1,0 +1,761 @@
+@charset "utf-8";
+/* =========================================================
+   قالب فرشته مهربون — صفحات داشبورد ووکامرس (سبد/تسویه/حساب)
+   موبایل‌اول · RTL · توکن‌های demo.css · رسپانسیو ≥768px
+   ========================================================= */
+
+/* ---------- کارت پایه ---------- */
+.tka-wc-page{max-width:none;padding:0}
+/* ووکامرس عمومی float می‌گذارد؛ چیدمان این صفحات با گرید قالب است */
+.tka-cart__form,.tka-cart__card,.tka-totals,.tka-coupon,
+.tka-co__form .col2-set,.tka-co__form #order_review,
+.tka-co__form #order_review_heading,.tka-co__review,
+.tka-acc__nav,.tka-acc__content,
+.tka-acc__nav.woocommerce-MyAccount-navigation,.tka-acc__content.woocommerce-MyAccount-content{
+        float:none !important;width:auto !important;
+}
+.tka-co__form #order_review_heading,.tka-co__form #order_review{
+        position:static !important;
+}
+.tka-card{
+        background:var(--white);
+        border-radius:var(--r-2xl);
+        box-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.05);
+        padding:14px;
+        margin:0 12px 12px;
+}
+.tka-card__title{
+        display:flex;align-items:center;gap:6px;
+        font-size:15px;font-weight:800;color:var(--gray-900);
+        margin-bottom:12px;
+}
+.tka-card__title .ic{color:var(--primary);font-size:18px}
+
+/* =========================================================
+   سبد خرید
+   ========================================================= */
+.tka-cart{display:block;padding:12px 0 0}
+.tka-cart__card{
+        background:var(--white);border-radius:var(--r-2xl);
+        box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden;
+        margin:0 12px 12px;
+}
+.tka-cart__head{
+        display:flex;align-items:center;gap:8px;
+        padding:14px 16px;border-bottom:1px solid var(--gray-100);
+}
+.tka-cart__head .ic{color:var(--primary);font-size:var(--fs-xl)}
+.tka-cart__title{font-size:var(--fs-lg);font-weight:800;flex:1}
+.tka-cart__count{
+        font-size:11px;color:var(--primary);background:var(--primary-light);
+        border-radius:999px;padding:2px 10px;font-weight:700;
+}
+.tka-cart__items{list-style:none;margin:0;padding:0}
+.tka-cart__item{
+        display:flex;gap:10px;padding:12px 16px;position:relative;
+        border-bottom:1px solid var(--gray-100);
+}
+.tka-cart__item:last-child{border-bottom:0}
+.tka-cart__thumb{
+        flex:none;width:72px;height:72px;border-radius:var(--r-xl);
+        background:var(--gray-100);overflow:hidden;
+}
+.tka-cart__thumb img{width:100%;height:100%;object-fit:cover}
+.tka-cart__info{flex:1;min-width:0}
+.tka-cart__name{
+        display:block;font-size:var(--fs-sm);font-weight:700;color:var(--gray-900);
+        margin-bottom:2px;
+        overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+}
+.tka-cart__name:hover{color:var(--primary)}
+.tka-cart__item .variation{
+        margin:0 0 4px;font-size:11px;color:var(--gray-600);
+}
+.tka-cart__item .variation p{margin:0}
+.tka-cart__item .variation dt,.tka-cart__item .variation dd{display:inline;margin:0;font-style:normal}
+.tka-cart__item .variation dt{font-weight:700}
+.tka-cart__item .variation dd{margin-inline-start:3px}
+.tka-cart__price{font-size:11.5px;color:var(--gray-500);margin-bottom:6px}
+.tka-cart__price .amount{color:var(--gray-500)}
+.tka-cart__row{
+        display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.tka-cart__subtotal{font-size:13.5px;font-weight:800;color:var(--gray-900)}
+.tka-cart__remove{
+        flex:none;width:30px;height:30px;display:grid;place-items:center;
+        border-radius:var(--r-md);color:var(--gray-400);
+        background:var(--gray-50);margin-top:2px;
+}
+.tka-cart__remove .ic{font-size:var(--fs-md);transform:rotate(45deg)}
+.tka-cart__remove:hover{color:var(--error);background:var(--error-light)}
+.tka-cart__foot{padding:12px 16px;background:var(--gray-50)}
+.tka-cart__update{
+        display:inline-flex;align-items:center;gap:6px;
+        font-size:var(--fs-xs);font-weight:700;color:var(--gray-700);
+        background:var(--white);border:1px solid var(--gray-300);
+        border-radius:var(--r-xl);padding:8px 14px;
+}
+.tka-cart__update .ic{font-size:var(--fs-md);color:var(--gray-500)}
+.tka-cart__update:hover{border-color:var(--primary);color:var(--primary)}
+
+/* ---------- ورودی تعداد (استایل استپر دمو) ---------- */
+.tka-cart__qty .quantity{display:inline-flex;align-items:center;gap:0}
+.tka-cart__qty .quantity .qty{
+        width:56px;height:34px;text-align:center;
+        border:1px solid var(--gray-300);border-radius:var(--r-lg);
+        font:inherit;font-size:var(--fs-sm);font-weight:700;color:var(--gray-900);
+        -moz-appearance:textfield;appearance:textfield;background:var(--white);
+}
+.tka-cart__qty .quantity .qty::-webkit-outer-spin-button,
+.tka-cart__qty .quantity .qty::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.tka-cart__solo{font-size:12.5px;color:var(--gray-600);font-weight:700}
+.tka-qty-btn{
+        width:30px;height:34px;flex:none;display:grid;place-items:center;
+        background:var(--gray-100);color:var(--gray-700);
+        border:1px solid var(--gray-200);
+}
+.tka-qty-btn:first-child{border-radius:var(--r-lg) 0 0 var(--r-lg)}
+.tka-qty-btn:last-child{border-radius:0 var(--r-lg) var(--r-lg) 0}
+.tka-qty-btn:active{background:var(--gray-200)}
+.tka-qty-btn .ic{font-size:var(--fs-xs)}
+
+/* ---------- کد تخفیف ---------- */
+.tka-coupon{
+        display:flex;gap:8px;margin:0 12px 12px;
+}
+.tka-coupon__field{
+        flex:1;display:flex;align-items:center;gap:8px;
+        background:var(--white);border:1px dashed var(--gray-300);
+        border-radius:var(--r-xl);padding:0 12px;height:44px;
+}
+.tka-coupon__field .ic{color:var(--primary);font-size:var(--fs-lg);flex:none}
+.tka-coupon__field input{
+        flex:1;min-width:0;border:0;background:none;font:inherit;
+        font-size:12.5px;color:var(--gray-900);
+}
+.tka-coupon__field input::placeholder{color:var(--gray-400)}
+.tka-coupon__btn{
+        flex:none;padding:0 16px;height:44px;
+        background:var(--primary-light);color:var(--primary);
+        border-radius:var(--r-xl);font-size:12.5px;font-weight:800;
+}
+.tka-coupon__btn:hover{background:#f0d8ee}
+
+/* ---------- جمع سفارش ---------- */
+.tka-totals{display:block;margin:0 0 4px}
+.tka-totals__card{
+        background:var(--white);border-radius:var(--r-2xl);
+        box-shadow:0 1px 3px rgba(0,0,0,.06);padding:16px;
+        margin:0 12px 12px;
+}
+.tka-totals__title{
+        display:flex;align-items:center;gap:6px;
+        font-size:14.5px;font-weight:800;color:var(--gray-900);margin-bottom:12px;
+}
+.tka-totals__title .ic{color:var(--primary);font-size:18px}
+.tka-totals__row{
+        display:flex;align-items:center;justify-content:space-between;gap:8px;
+        padding:8px 0;font-size:var(--fs-sm);color:var(--gray-700);
+        border-bottom:1px dashed var(--gray-200);
+}
+.tka-totals__row strong{font-size:var(--fs-sm);color:var(--gray-900);font-weight:800}
+.tka-totals__row--discount strong{color:var(--success)}
+.tka-totals__row--total{
+        border-bottom:0;margin-top:4px;padding-top:12px;
+        border-top:1px solid var(--gray-100);
+}
+.tka-totals__row--total span{font-size:var(--fs-md);font-weight:800;color:var(--gray-900)}
+.tka-totals__row--total strong{font-size:17px;color:var(--primary);font-weight:900}
+.tka-totals__shipping{padding:8px 0;border-bottom:1px dashed var(--gray-200);font-size:var(--fs-sm)}
+.tka-totals__shipping .woocommerce-shipping-totals td{padding:0}
+.tka-totals__shipping .shipping_method{font-weight:700;color:var(--gray-900)}
+.tka-totals__cta{
+        display:flex;align-items:center;justify-content:center;gap:6px;
+        height:48px;margin-top:12px;
+        background:var(--primary);color:var(--white);
+        border-radius:var(--r-xl);font-size:var(--fs-md);font-weight:800;
+        box-shadow:0 6px 16px rgba(180,0,174,.28);
+        transition:transform .15s ease,box-shadow .15s ease;
+}
+.tka-totals__cta:hover{background:var(--primary-dark);transform:translateY(-1px)}
+.tka-totals__cta .ic{font-size:var(--fs-lg)}
+.tka-totals__note{
+        display:flex;align-items:center;justify-content:center;gap:5px;
+        margin:10px 0 0;font-size:var(--fs-2xs);color:var(--gray-500);
+}
+.tka-totals__note .ic{font-size:var(--fs-sm);color:var(--success)}
+
+/* ---------- سبد خالی ---------- */
+.tka-emptycart{padding:20px 12px}
+.tka-emptycart__card{
+        background:var(--white);border-radius:var(--r-2xl);
+        box-shadow:0 1px 3px rgba(0,0,0,.06);padding:28px 20px;text-align:center;
+}
+.tka-emptycart__art{
+        width:72px;height:72px;margin:0 auto 12px;display:grid;place-items:center;
+        background:var(--primary-light);color:var(--primary);
+        border-radius:50%;
+}
+.tka-emptycart__art .ic{font-size:32px}
+.tka-emptycart__title{font-size:var(--fs-lg);font-weight:800;margin-bottom:6px}
+.tka-emptycart__text{font-size:12.5px;color:var(--gray-600);margin-bottom:16px}
+.tka-emptycart__actions{display:flex;flex-direction:column;gap:8px;align-items:center}
+.tka-emptycart__cta{
+        display:inline-flex;align-items:center;justify-content:center;gap:6px;
+        min-width:180px;height:44px;padding:0 18px;
+        background:var(--primary);color:var(--white);
+        border-radius:var(--r-xl);font-size:var(--fs-sm);font-weight:800;
+}
+.tka-emptycart__cta:hover{background:var(--primary-dark)}
+.tka-emptycart__ghost{font-size:12.5px;color:var(--primary);font-weight:700}
+.tka-emptycart__ghost:hover{text-decoration:underline}
+
+/* =========================================================
+   تسویه حساب
+   ========================================================= */
+.tka-co{padding:12px 0 0}
+.tka-co__head{
+        display:flex;align-items:center;justify-content:space-between;gap:8px;
+        margin:0 12px 12px;
+}
+.tka-co__title{display:flex;align-items:center;gap:6px;font-size:var(--fs-lg);font-weight:800}
+.tka-co__title .ic{color:var(--primary);font-size:19px}
+.tka-co__steps{display:flex;gap:4px;font-size:10px}
+.tka-co__step{
+        color:var(--gray-500);background:var(--gray-100);
+        border-radius:999px;padding:3px 9px;font-weight:700;
+}
+.tka-co__step--on{color:var(--white);background:var(--primary)}
+.tka-co__fields{background:var(--white);border-radius:var(--r-2xl);box-shadow:0 1px 3px rgba(0,0,0,.06);padding:14px;margin:0 12px 12px}
+.tka-co__side{display:block}
+.tka-co__review{margin:0 12px 12px}
+.tka-co__payment{margin:0 12px 12px;background:var(--white);border-radius:var(--r-2xl);box-shadow:0 1px 3px rgba(0,0,0,.06);padding:14px}
+.tka-co__register{margin:0 12px 12px;background:var(--white);border-radius:var(--r-xl);border:1px solid var(--gray-200);padding:12px 14px;font-size:12.5px}
+.tka-co__register input[type=checkbox]{accent-color:var(--primary)}
+.tka-co__login-notice{margin:0 12px 12px;padding:12px 14px;background:var(--warning-light);border-radius:var(--r-xl);font-size:12.5px;color:var(--gray-800)}
+
+/* فیلدهای فرم (سبد/تسویه/حساب) */
+.tka-co__fields label,.tka-acc__content label,.tka-edit__form label,.tka-login__form label,.tka-addrform label{
+        font-size:var(--fs-xs);font-weight:700;color:var(--gray-800);
+}
+.woocommerce form .form-row input.input-text,
+.woocommerce form .form-row textarea,
+.woocommerce form .form-row select,
+.woocommerce form .form-row .select2-selection--single,
+.select2-container--default .select2-selection--single{
+        height:44px !important;padding:0 12px !important;
+        border:1px solid var(--gray-300) !important;border-radius:var(--r-xl) !important;
+        background:var(--white);font:inherit;font-size:var(--fs-sm) !important;color:var(--gray-900);
+        line-height:42px;
+}
+.woocommerce form .form-row textarea{height:auto;min-height:88px;padding:10px 12px !important;line-height:1.6}
+.woocommerce form .form-row input.input-text:focus,
+.woocommerce form .form-row textarea:focus,
+.woocommerce form .form-row select:focus,
+.select2-container--default.select2-container--open .select2-selection--single{
+        border-color:var(--primary) !important;box-shadow:0 0 0 3px rgba(180,0,174,.12);outline:none;
+}
+.woocommerce form .form-row .required{color:var(--error)}
+.woocommerce form .form-row label{margin-bottom:5px}
+.woocommerce form .form-row input.checkbox{width:auto;height:auto;accent-color:var(--primary)}
+.select2-container--default .select2-selection--single .select2-selection__rendered{line-height:42px;padding:0}
+.select2-container--default .select2-selection--single .select2-selection__arrow{height:42px}
+.select2-dropdown{border-color:var(--gray-300) !important;border-radius:var(--r-xl) !important}
+
+/* جدول سفارش شما در تسویه */
+#order_review{
+        border:0;background:none;
+}
+#order_review thead{display:none}
+#order_review tfoot td,#order_review tfoot th,#order_review td,#order_review th{
+        padding:8px 0;border:0;border-bottom:1px dashed var(--gray-200);background:none;
+}
+#order_review .product-name{font-size:12.5px;font-weight:700;color:var(--gray-900)}
+#order_review .product-quantity{color:var(--gray-500);font-weight:400}
+#order_review .product-total,#order_review tfoot .amount{font-weight:800}
+#order_review tfoot .order-total .amount{color:var(--primary);font-size:15px;font-weight:900}
+#order_review .woocommerce-shipping-totals td{padding:8px 0}
+#order_review .shipping_method{font-weight:700}
+
+/* روش پرداخت */
+.wc_payment_methods{list-style:none;margin:0 0 12px;padding:0}
+.wc_payment_method{border:1px solid var(--gray-200);border-radius:var(--r-xl);margin-bottom:8px;overflow:hidden}
+.wc_payment_method>label{
+        display:flex;align-items:center;gap:8px;padding:12px 14px;
+        font-size:var(--fs-sm);font-weight:700;cursor:pointer;background:var(--white);
+}
+.wc_payment_method>label input{accent-color:var(--primary)}
+.payment_box{
+        background:var(--gray-50);padding:10px 14px;font-size:var(--fs-xs);color:var(--gray-700);
+        border-top:1px solid var(--gray-200);
+}
+#place_order{
+        display:block;width:100%;height:50px;margin-top:4px;
+        background:var(--primary);color:var(--white);
+        border:0;border-radius:var(--r-xl);
+        font:inherit;font-size:15px;font-weight:800;cursor:pointer;
+        box-shadow:0 6px 16px rgba(180,0,174,.28);
+        transition:transform .15s ease,background .15s ease;
+}
+#place_order:hover{background:var(--primary-dark);transform:translateY(-1px)}
+#payment{background:none;border-radius:0}
+#payment div.payment_box,#payment ul{margin-bottom:0}
+
+/* =========================================================
+   حساب کاربری
+   ========================================================= */
+.tka-acc{padding:12px 0 0}
+.tka-acc__hero{
+        display:flex;align-items:center;gap:12px;
+        margin:0 12px 12px;padding:16px;
+        background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);
+        border-radius:var(--r-2xl);color:var(--white);
+        box-shadow:0 8px 24px rgba(180,0,174,.30);
+}
+.tka-acc__avatar{
+        flex:none;width:52px;height:52px;display:grid;place-items:center;
+        background:rgba(255,255,255,.18);border-radius:50%;
+}
+.tka-acc__avatar .ic{font-size:var(--fs-2xl)}
+.tka-acc__who{flex:1;min-width:0}
+.tka-acc__title{font-size:15px;font-weight:800}
+.tka-acc__name{font-size:11.5px;opacity:.85;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tka-acc__stat{
+        flex:none;text-align:center;background:rgba(255,255,255,.14);
+        border-radius:var(--r-xl);padding:6px 14px;
+}
+.tka-acc__stat-num{display:block;font-size:18px;font-weight:900}
+.tka-acc__stat-label{font-size:10px;opacity:.8}
+
+/* چیدمان: منوی کنار محتوا */
+.tka-acc__layout{display:block}
+.tka-acc__nav{margin:0 12px 12px}
+.tka-acc__menu{
+        display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+        padding-bottom:4px;scrollbar-width:none;
+}
+.tka-acc__menu::-webkit-scrollbar{display:none}
+.tka-acc__menu-item{flex:none}
+.tka-acc__menu-link{
+        display:flex;align-items:center;height:36px;padding:0 14px;
+        background:var(--white);border:1px solid var(--gray-200);
+        border-radius:999px;font-size:var(--fs-xs);font-weight:700;color:var(--gray-700);
+        white-space:nowrap;transition:all .15s ease;
+}
+.tka-acc__menu-link:hover{border-color:var(--primary);color:var(--primary)}
+.tka-acc__menu-item.is-active .tka-acc__menu-link{
+        background:var(--primary);border-color:var(--primary);color:var(--white);
+        box-shadow:0 4px 12px rgba(180,0,174,.28);
+}
+.tka-acc__content{margin:0 0 8px}
+
+/* ---------- سفارش‌ها ---------- */
+.tka-orders__table{width:100%;border-collapse:collapse;font-size:12.5px}
+.tka-orders__table thead{display:none}
+.tka-orders__row{
+        display:block;background:var(--white);border:1px solid var(--gray-200);
+        border-radius:var(--r-xl);padding:10px 12px;margin-bottom:8px;
+}
+.tka-orders__cell{
+        display:flex;align-items:center;justify-content:space-between;gap:8px;
+        border:0 !important;padding:4px 0 !important;
+}
+.tka-orders__cell::before{
+        content:attr(data-title);font-size:var(--fs-2xs);font-weight:700;color:var(--gray-500);
+}
+.tka-orders__num{font-weight:800;color:var(--primary);font-size:var(--fs-sm)}
+.tka-orders__items{display:block;color:var(--gray-500);font-size:var(--fs-2xs)}
+.tka-orders__action{
+        display:inline-flex;align-items:center;height:30px;padding:0 12px;
+        background:var(--primary-light);color:var(--primary);
+        border-radius:999px;font-size:11px;font-weight:800;margin-inline-start:4px;
+}
+.tka-orders__action:hover{background:var(--primary);color:var(--white)}
+.tka-orders__action--pay{background:var(--warning-light);color:#a06a00}
+.tka-orders__action--pay:hover{background:var(--warning);color:var(--white)}
+.tka-orders__pager{display:flex;justify-content:space-between;gap:8px;margin-top:12px}
+.tka-orders__pager-btn{
+        height:38px;padding:0 16px;display:inline-flex;align-items:center;
+        background:var(--white);border:1px solid var(--gray-300);
+        border-radius:var(--r-xl);font-size:var(--fs-xs);font-weight:700;color:var(--gray-700);
+}
+.tka-orders__pager-btn:hover{border-color:var(--primary);color:var(--primary)}
+.tka-orders__empty .tka-emptycart__art{width:56px;height:56px}
+.tka-orders__empty .tka-emptycart__art .ic{font-size:var(--fs-2xl)}
+
+/* ---------- بج وضعیت سفارش ---------- */
+.tka-badge{
+        display:inline-flex;align-items:center;height:24px;padding:0 10px;
+        border-radius:999px;font-size:var(--fs-2xs);font-weight:800;white-space:nowrap;
+}
+.tka-badge--completed{background:var(--success-light);color:var(--success)}
+.tka-badge--processing{background:var(--primary-light);color:var(--primary)}
+.tka-badge--on-hold{background:var(--warning-light);color:#8a6100}
+.tka-badge--pending{background:var(--gray-100);color:var(--gray-700)}
+.tka-badge--cancelled,.tka-badge--failed{background:var(--error-light);color:var(--error)}
+.tka-badge--refunded{background:var(--gray-200);color:var(--gray-700)}
+
+/* ---------- آدرس‌ها ---------- */
+.tka-addr__desc{margin:0 12px 12px;font-size:var(--fs-xs);color:var(--gray-600)}
+.tka-addr__grid{display:block}
+.tka-addr__head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.tka-addr__title{display:flex;align-items:center;gap:5px;font-size:var(--fs-sm);font-weight:800}
+.tka-addr__title .ic{color:var(--primary);font-size:15px}
+.tka-addr__edit{
+        display:inline-flex;align-items:center;gap:2px;
+        font-size:11px;font-weight:800;color:var(--primary);
+}
+.tka-addr__edit .ic{font-size:var(--fs-xs)}
+.tka-addr__body{font-style:normal;font-size:12.5px;line-height:1.9;color:var(--gray-700)}
+.tka-addrform__grid .form-row{width:100% !important;float:none !important}
+.tka-addrform__actions{display:flex;gap:8px;margin-top:12px}
+
+/* ---------- دانلودها ---------- */
+.tka-dl__scroll{overflow-x:auto}
+.tka-dl__empty{font-size:12.5px;color:var(--gray-600)}
+.tka-dl__empty a{color:var(--primary);font-weight:700;margin-inline-start:4px}
+
+/* ---------- جزئیات سفارش (نمای تکی + تشکر) ---------- */
+.woocommerce-table--order-details,.woocommerce-order-details table{width:100%;border-collapse:collapse;font-size:var(--fs-xs)}
+.woocommerce-table--order-details thead{background:var(--gray-50)}
+.woocommerce-table--order-details th{
+        padding:9px 10px;font-size:11px;font-weight:800;color:var(--gray-700);
+        text-align:right;border-bottom:1px solid var(--gray-200);
+}
+.woocommerce-table--order-details td{padding:9px 10px;border-bottom:1px dashed var(--gray-200);color:var(--gray-800)}
+.woocommerce-table--order-details tfoot td{font-weight:700}
+.woocommerce-table--order-details tfoot .order-total td{color:var(--primary);font-size:var(--fs-md);font-weight:900;border-bottom:0}
+.woocommerce-order-details__title,.woocommerce-customer-details h2{
+        display:flex;align-items:center;gap:6px;
+        font-size:var(--fs-md);font-weight:800;margin-bottom:10px;
+}
+.woocommerce-customer-details{margin-top:16px}
+.woocommerce-customer-details address{
+        font-style:normal;font-size:12.5px;line-height:2;color:var(--gray-700);
+        background:var(--gray-50);border-radius:var(--r-xl);padding:12px 14px;margin-bottom:8px;
+}
+
+/* ---------- نمایش سفارش ---------- */
+.tka-vieworder__head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tka-vieworder__num{color:var(--primary)}
+.tka-vieworder__meta{font-size:var(--fs-xs);color:var(--gray-600);margin-bottom:10px}
+.tka-vieworder__note{background:var(--gray-50);border-radius:var(--r-xl);padding:10px 12px;margin-bottom:8px;list-style:none}
+.tka-vieworder__note-meta{font-size:var(--fs-2xs);color:var(--gray-500);margin-bottom:4px}
+.tka-vieworder__note-text{font-size:12.5px;color:var(--gray-800)}
+
+/* =========================================================
+   ورود / ثبت‌نام
+   ========================================================= */
+.tka-login{padding:16px 12px;max-width:480px;margin:0 auto}
+.tka-login__tabs{
+        display:flex;background:var(--gray-100);border-radius:var(--r-2xl);
+        padding:4px;margin-bottom:12px;
+}
+.tka-login__tab{
+        flex:1;height:40px;border-radius:var(--r-xl);
+        font:inherit;font-size:var(--fs-sm);font-weight:800;color:var(--gray-600);
+        transition:all .2s ease;
+}
+.tka-login__tab.is-active{background:var(--white);color:var(--primary);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.tka-login__pane{display:none}
+.tka-login__pane.is-active{display:block;animation:tka-fade .25s ease}
+@keyframes tka-fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.tka-login__card{
+        background:var(--white);border-radius:var(--r-2xl);
+        box-shadow:0 1px 3px rgba(0,0,0,.06);padding:18px 16px;
+}
+.tka-login__heading{display:flex;align-items:center;gap:6px;font-size:15px;font-weight:800;margin-bottom:4px}
+.tka-login__heading .ic{color:var(--primary);font-size:18px}
+.tka-login__hint{font-size:11.5px;color:var(--gray-600);margin-bottom:14px}
+.tka-login__row{margin-bottom:12px}
+.tka-login__row--split{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tka-login__remember{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--gray-700);font-weight:400}
+.tka-login__remember input{accent-color:var(--primary);width:16px;height:16px}
+.tka-login__submit{
+        display:inline-flex;align-items:center;justify-content:center;gap:6px;
+        height:44px;padding:0 20px;
+        background:var(--primary);color:var(--white);
+        border:0;border-radius:var(--r-xl);
+        font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;
+        box-shadow:0 6px 16px rgba(180,0,174,.28);
+        transition:transform .15s ease,background .15s ease;
+}
+.tka-login__submit:hover{background:var(--primary-dark);transform:translateY(-1px)}
+.tka-login__submit .ic{font-size:var(--fs-md)}
+.tka-login__lost{text-align:center;margin-top:10px}
+.tka-login__lost a{font-size:11.5px;color:var(--gray-600)}
+.tka-login__lost a:hover{color:var(--primary)}
+.tka-edit__grid .form-row{width:100% !important;float:none !important}
+.tka-edit__hint{display:block;font-size:var(--fs-2xs);color:var(--gray-500)}
+.tka-edit__pass{border:1px dashed var(--gray-300);border-radius:var(--r-xl);padding:12px;margin:4px 0 12px}
+.tka-edit__pass legend{font-size:var(--fs-xs);font-weight:800;color:var(--gray-800);padding:0 6px}
+.tka-edit__actions{margin-top:8px}
+
+/* =========================================================
+   سپاس از خرید (سفارش ثبت شد)
+   ========================================================= */
+.tka-thanks{padding:16px 0 0}
+.tka-thanks__card{
+        background:var(--white);border-radius:var(--r-2xl);
+        box-shadow:0 1px 3px rgba(0,0,0,.06);
+        margin:0 12px 12px;padding:24px 18px;text-align:center;
+}
+.tka-thanks__badge{
+        width:64px;height:64px;margin:0 auto 12px;display:grid;place-items:center;
+        background:var(--success-light);color:var(--success);border-radius:50%;
+        animation:tka-pop .45s cubic-bezier(.34,1.56,.64,1);
+}
+.tka-thanks__badge .ic{font-size:30px}
+@keyframes tka-pop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+.tka-thanks__title{font-size:16.5px;font-weight:900;margin-bottom:8px}
+.tka-thanks__title--fail{color:var(--error)}
+.tka-thanks__text{font-size:12.5px;color:var(--gray-600);margin-bottom:16px}
+.tka-thanks__meta{
+        display:grid;grid-template-columns:repeat(2,1fr);gap:8px;
+        list-style:none;margin:0 0 16px;padding:0;text-align:right;
+}
+.tka-thanks__meta-item{background:var(--gray-50);border-radius:var(--r-xl);padding:10px 12px}
+.tka-thanks__meta-item span{display:block;font-size:10px;color:var(--gray-500);margin-bottom:3px}
+.tka-thanks__meta-item strong{font-size:12.5px;font-weight:800;color:var(--gray-900)}
+.tka-thanks__actions{display:flex;flex-direction:column;gap:8px;align-items:center}
+.tka-thanks__cta{
+        display:inline-flex;align-items:center;justify-content:center;gap:6px;
+        min-width:200px;height:44px;padding:0 18px;
+        background:var(--primary);color:var(--white);
+        border-radius:var(--r-xl);font-size:var(--fs-sm);font-weight:800;
+}
+.tka-thanks__cta:hover{background:var(--primary-dark)}
+.tka-thanks__ghost{font-size:var(--fs-xs);color:var(--gray-600);font-weight:700}
+.tka-thanks__ghost:hover{color:var(--primary)}
+.tka-thanks__details .woocommerce-order-details{margin:0 12px 12px;background:var(--white);border-radius:var(--r-2xl);box-shadow:0 1px 3px rgba(0,0,0,.06);padding:16px}
+.tka-thanks__details .woocommerce-customer-details{margin:0 12px 12px;background:var(--white);border-radius:var(--r-2xl);box-shadow:0 1px 3px rgba(0,0,0,.06);padding:16px}
+
+/* =========================================================
+   مینی‌سبد (دراور)
+   ========================================================= */
+
+/* اعلان‌های ووکامرس (خطا/موفقیت) */
+.woocommerce-message,.woocommerce-info,.woocommerce-error{
+        border-radius:var(--r-xl) !important;border-width:0 !important;
+        border-inline-start:4px solid var(--success) !important;
+        background:var(--white) !important;box-shadow:0 2px 10px rgba(0,0,0,.07);
+        font-size:12.5px !important;padding:12px 14px !important;margin:0 12px 12px !important;
+        list-style:none;
+}
+.woocommerce-error{border-inline-start-color:var(--error) !important}
+.woocommerce-info{border-inline-start-color:var(--info,#3a558b) !important}
+.woocommerce-message::before,.woocommerce-info::before,.woocommerce-error::before{display:none !important}
+.woocommerce-NoticeGroup .woocommerce-error{margin:0 0 12px !important}
+.woocommerce-form-coupon-toggle .woocommerce-info{
+        background:var(--warning-light) !important;border-inline-start-color:var(--warning) !important;
+}
+
+/* =========================================================
+   دسکتاپ ≥768px
+   ========================================================= */
+@media (min-width:768px){
+        .tka-cart,.tka-co,.tka-acc,.tka-thanks,.tka-emptycart,.tka-login{
+                max-width:1080px;margin:0 auto;padding:20px 16px 0;
+        }
+
+        /* سبد: دوستونه */
+        .tka-cart{display:grid;grid-template-columns:1.7fr 1fr;gap:16px;align-items:start}
+        .tka-cart__form{grid-column:1;grid-row:1}
+        .tka-cart__card,.tka-totals{margin:0}
+        .tka-cart{margin:0}
+        .tka-coupon{grid-column:1;grid-row:2;margin:0}
+        .tka-totals{grid-column:2;grid-row:1;position:sticky;top:16px}
+
+        /* تسویه: دوستونه */
+        .tka-co__form{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start}
+        .tka-co__fields,.tka-co__review,.tka-co__payment,.tka-co__register{margin:0}
+        .tka-co__side{position:sticky;top:16px;display:block}
+        .tka-co__main{min-width:0}
+        .tka-co__form .col2-set{grid-column:1;grid-row:1}
+        .tka-co__side{grid-column:2;grid-row:1}
+
+        /* حساب: منوی کنار محتوا */
+        .tka-acc__layout{display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:start}
+        .tka-acc__nav{position:sticky;top:16px;margin:0}
+        .tka-acc__menu{flex-direction:column;gap:4px}
+        .tka-acc__menu-link{
+                width:100%;height:42px;border-radius:var(--r-xl);
+                border:1px solid transparent;background:none;font-size:var(--fs-sm);
+        }
+        .tka-acc__menu-link:hover{background:var(--primary-light)}
+        .tka-acc__menu-item.is-active .tka-acc__menu-link{
+                background:var(--primary-light);color:var(--primary);
+                border-color:rgba(180,0,174,.25);box-shadow:none;
+        }
+        .tka-acc__content{min-width:0}
+        .tka-card{margin:0 0 12px}
+
+        /* جدول سفارش‌ها: حالت جدولی واقعی */
+        .tka-orders__table thead{display:table-header-group}
+        .tka-orders__table thead th{
+                padding:10px 12px;background:var(--gray-50);
+                font-size:11px;font-weight:800;color:var(--gray-700);text-align:right;
+                border-bottom:1px solid var(--gray-200);
+        }
+        .tka-orders__row{display:table-row;border:0;border-radius:0;padding:0;margin:0;background:none}
+        .tka-orders__row:hover td,.tka-orders__row:hover th{background:var(--gray-50)}
+        .tka-orders__cell{
+                display:table-cell;border-bottom:1px solid var(--gray-100) !important;
+                padding:10px 12px !important;vertical-align:middle;
+        }
+        .tka-orders__cell::before{display:none}
+        .tka-orders__num{font-size:var(--fs-sm)}
+        .tka-orders__empty{max-width:420px;margin:0 auto}
+
+        /* آدرس‌ها دوستونه */
+        .tka-addr__grid--two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .tka-addr__grid .tka-card{margin:0}
+
+        /* تشکر */
+        .tka-thanks__meta{grid-template-columns:repeat(4,1fr)}
+        .tka-thanks__actions{flex-direction:row;justify-content:center}
+        .tka-thanks__details{max-width:820px;margin:0 auto}
+        .tka-thanks__details .woocommerce-order-details,.tka-thanks__details .woocommerce-customer-details{margin:0 0 12px}
+
+        /* فرم‌های دوستونه */
+        .tka-edit__grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+        .tka-edit__row--wide{grid-column:1 / -1}
+        .tka-addrform__grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+        .tka-addrform__grid .form-row{grid-column:auto}
+        .tka-addrform__grid .form-row-wide,.tka-addrform__grid .address-field{grid-column:1 / -1}
+
+        /* ورود دو پنل */
+        .tka-login{max-width:880px}
+        .tka-login__tabs{display:none}
+        .tka-login{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+        .tka-login__pane{display:block !important}
+        .tka-login__pane--login{grid-column:1}
+        .tka-login__pane--register{grid-column:2}
+        .tka-login__hint,.tka-login__card{margin:0}
+        .tka-login__card{margin:0}
+
+        /* گام‌های تسویه بزرگ‌تر */
+        .tka-co__step{font-size:11.5px}
+}
+
+/* =========================================================
+   TKA fix (Task 15-b1): اصلاحات ممیزی UI صفحات ووکامرس
+   ========================================================= */
+
+/* TKA fix (1) [P0]: ورود میهمان — responsive.css در ≥1024px روی
+   .woocommerce-account .woocommerce گرید سایدبار 250px می‌گذارد؛
+   در صفحهٔ ورود (.tka-login) این باعث می‌شود فرم در ستون باریک
+   راست (~۲۵٪) له شود. چیدمان حسابِ قالب با .tka-acc__layout است،
+   پس گرید بیرونی خنثی می‌شود و فرم ورود تمام‌عرض می‌گیرد. */
+.woocommerce-account .woocommerce{
+        display:block;grid-template-columns:none;gap:0;
+}
+.woocommerce-account .woocommerce > .tka-login{
+        grid-column:auto;width:100%;
+}
+/* TKA fix (1b): «مرا به خاطر بسپار» همیشه در یک خط */
+.tka-login__row--split .tka-login__remember{white-space:nowrap;flex:none}
+.tka-login__row--split .tka-login__remember span{white-space:nowrap}
+/* TKA fix (1c): متن سیاست حفظ حریم خصوصی در پنل ثبت‌نام کوچک و مرتب */
+.tka-login .woocommerce-privacy-policy-text{font-size:11px;line-height:1.8;color:var(--gray-500)}
+.tka-login .woocommerce-privacy-policy-text p{margin:0 0 10px}
+.tka-login .woocommerce-privacy-policy-text a{color:var(--primary);font-weight:700}
+
+/* TKA fix (2) [P1]: اعلان‌های ووکامرس — دکمهٔ wc-forward به‌جای
+   دکمهٔ بزرگ تمام‌عرض (main.css: .woocommerce-message .button{width:100%})
+   به چیپ پیوندی کوچک در انتهای همان خط تبدیل می‌شود.
+   با پیشوند .woocommerce از `.woocommerce a.button` (0,2,1) رد می‌شویم */
+.woocommerce .woocommerce-message .button,.woocommerce .woocommerce-info .button,
+.woocommerce .woocommerce-error .button,.woocommerce .woocommerce-message .wc-forward,
+.woocommerce .woocommerce-info .wc-forward,.woocommerce .woocommerce-error .wc-forward{
+        order:2;flex:0 0 auto;width:auto;min-width:0;min-height:0;height:26px;
+        margin-inline-start:auto;padding:0 12px;
+        background:var(--primary-light);color:var(--primary);
+        border-radius:999px;font-size:11.5px;font-weight:800;line-height:26px;
+        box-shadow:none;
+}
+.woocommerce .woocommerce-message .button:hover,.woocommerce .woocommerce-info .button:hover,
+.woocommerce .woocommerce-error .button:hover,.woocommerce .woocommerce-message .wc-forward:hover,
+.woocommerce .woocommerce-info .wc-forward:hover,.woocommerce .woocommerce-error .wc-forward:hover{
+        background:var(--primary);color:var(--white);transform:none;
+}
+.woocommerce .woocommerce-error .button,.woocommerce .woocommerce-error .wc-forward{
+        background:var(--error-light);color:var(--error);
+}
+.woocommerce .woocommerce-error .button:hover,.woocommerce .woocommerce-error .wc-forward:hover{
+        background:var(--error);color:var(--white);
+}
+/* آیتم‌های خطا: بدون بولت اضافه و فشرده */
+.woocommerce-error li,.woocommerce-info li,.woocommerce-message li{
+        flex:1 1 auto;margin:0;padding:0;list-style:none;
+}
+
+/* TKA fix (3) [P1]: سلکت کشور/استان (و select2) تمام‌عرض + ریتم عمودی
+   فرم تسویه — WC روی select عرض نمی‌گذارد و select2 عرض درون‌خطی
+   باریک می‌گیرد */
+.woocommerce form .form-row select{width:100% !important}
+.woocommerce form .form-row .woocommerce-input-wrapper{display:block;width:100%}
+.woocommerce form .form-row .select2-container,
+.tka-co__form .select2-container,.tka-acc__content .select2-container,
+.tka-addrform .select2-container,.tka-edit__form .select2-container{
+        width:100% !important;max-width:100% !important;
+}
+.woocommerce form.checkout .form-row{padding:0;margin:0 0 10px}
+.woocommerce form.checkout .form-row label{margin-bottom:4px;line-height:1.6}
+.woocommerce form.checkout .form-row.notes{margin-bottom:4px}
+.woocommerce form.checkout .form-row.notes textarea{min-height:72px !important}
+
+/* TKA fix (4) [P2]: جدول جزئیات سفارش (نمای سفارش) — سلول‌های
+   خاکستری به‌هم‌ریخته WC (border-top + border-collapse:separate) مرتب
+   می‌شود؛ فقط در صفحهٔ view-order تا تشکر/سبد دست‌نخورده بماند */
+body.woocommerce-view-order .woocommerce table.shop_table{
+        border:0;background:var(--white);
+        border-collapse:collapse;border-spacing:0;
+}
+body.woocommerce-view-order .woocommerce table.shop_table th,
+body.woocommerce-view-order .woocommerce table.shop_table td{
+        background:none;border:0;border-bottom:1px solid var(--gray-100);
+        text-align:right;vertical-align:middle;
+}
+body.woocommerce-view-order .woocommerce table.shop_table tfoot th,
+body.woocommerce-view-order .woocommerce table.shop_table tfoot td{
+        border-top:0;border-bottom:1px dashed var(--gray-200);font-weight:800;
+}
+body.woocommerce-view-order .woocommerce table.shop_table tfoot .order-total td{
+        color:var(--primary);font-size:var(--fs-md);font-weight:900;border-bottom:0;
+}
+body.woocommerce-view-order .woocommerce table.shop_table tr:last-child td,
+body.woocommerce-view-order .woocommerce table.shop_table tr:last-child th{border-bottom:0}
+
+/* TKA fix (5) [P2]: نوار چسبان ثبت سفارش در موبایل — بالای bottomnav
+   (z-index:70 ، ارتفاع 56px) می‌نشیند و با آن هم‌پوشانی ندارد؛
+   padding-bottom هم محتوای انتهای فرم را قابل‌دسترس نگه می‌دارد */
+@media (max-width:767.98px){
+        .tka-co{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+        .woocommerce .tka-co__form .form-row.place-order{
+                position:sticky;bottom:calc(56px + env(safe-area-inset-bottom,0px));
+                z-index:80;clear:both;
+                margin:10px 0 0;padding:10px;
+                background:rgba(255,255,255,.97);
+                -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+                border:1px solid var(--gray-200);border-radius:var(--r-xl);
+                box-shadow:0 -6px 20px rgba(0,0,0,.08);
+        }
+}
+
+/* ============================================================
+   TKA fix (0.14.0) — پشتیبان بلوک‌های سبد/تسویه ووکامرس
+   اگر برگه‌ها با بلوک ساخته شده باشند (نصب تمیز)، حداقل فونت/جهت
+   و عدم سرریز تضمین شود تا نمایش کاملاً به‌هم‌نریزد.
+   (قالب اصلی صفحات کلاسیک است؛ این فقط زنه‌ای امنیتی است.)
+   ============================================================ */
+.wp-block-woocommerce-cart,
+.wp-block-woocommerce-checkout{
+  font-family:"Vazirmatn",Tahoma,-apple-system,"Segoe UI",sans-serif;
+  direction:rtl;
+  max-width:100%;
+  overflow-x:clip;
+}
+.wp-block-woocommerce-cart .wc-block-cart__main,
+.wp-block-woocommerce-checkout .wc-block-checkout__main,
+.wp-block-woocommerce-checkout .wc-block-components-panel{min-width:0;max-width:100%}
