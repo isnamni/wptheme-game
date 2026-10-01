@@ -88,15 +88,42 @@ function toykindangel_wish_card( $product ) {
 /**
  * AJAX endpoint: render wishlist cards for the given product IDs.
  * Public read-only render — no privileged action, IDs are sanitized ints.
+ *
+ * v0.20.1 audit fix H3 — this is the heaviest public endpoint on the site
+ * (up to 60 full WC_Product hydrations per call, ~163-500 queries measured).
+ * Unlike the lighter live-search endpoint, it had no throttle and no cache.
+ * Both are now applied, reusing the helpers already in the codebase:
+ *   - toykindangel_ls_throttled() (inc/ajax-search.php) — same 60/15s per-IP
+ *     sliding window as live-search. Shared counter means a flood on one
+ *     endpoint also protects the other.
+ *   - toykindangel_cache_get/set (inc/cache.php) — short-TTL (3 min) cache
+ *     keyed on a hash of the sorted id list, so identical requests from
+ *     different visitors share the rendered HTML.
+ * The id ceiling is lowered from 60 to 24 (a wishlist grid never shows more
+ * than ~24 cards in practice; the previous 60 only widened the abuse surface).
  */
 function toykindangel_wishlist_render() {
         $tka_ids = isset( $_POST['ids'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['ids'] ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- public read-only endpoint
-        $tka_ids = array_filter( array_unique( array_slice( $tka_ids, 0, 60 ) ) );
+        $tka_ids = array_filter( array_unique( array_slice( $tka_ids, 0, 24 ) ) );
 
         header( 'Content-Type: text/html; charset=' . get_option( 'blog_charset' ) );
 
         if ( empty( $tka_ids ) || ! function_exists( 'wc_get_product' ) ) {
                 wp_send_json_error( array( 'html' => '' ) );
+        }
+
+        /* Throttle: same per-IP window as live-search. */
+        if ( function_exists( 'toykindangel_ls_throttled' ) && toykindangel_ls_throttled() ) {
+                wp_send_json_error(
+                        array( 'message' => __( 'درخواست‌های بیش از حد مجاز؛ لطفاً کمی بعد دوباره تلاش کنید.', 'toykindangel' ) )
+                );
+        }
+
+        /* Cache: identical id list → identical HTML, shared across visitors. */
+        $tka_cache_key = 'wish_' . md5( implode( ',', $tka_ids ) );
+        $tka_cached    = function_exists( 'toykindangel_cache_get' ) ? toykindangel_cache_get( $tka_cache_key ) : null;
+        if ( null !== $tka_cached ) {
+                wp_send_json_success( array( 'html' => $tka_cached ) );
         }
 
         $tka_html = '';
@@ -109,6 +136,10 @@ function toykindangel_wishlist_render() {
 
         if ( '' === $tka_html ) {
                 wp_send_json_error( array( 'html' => '' ) );
+        }
+
+        if ( function_exists( 'toykindangel_cache_set' ) ) {
+                toykindangel_cache_set( $tka_cache_key, $tka_html, 3 * MINUTE_IN_SECONDS );
         }
 
         wp_send_json_success( array( 'html' => $tka_html ) );

@@ -386,7 +386,26 @@ function toykindangel_dashboard_widget_html() {
         $tka_today_sum = toykindangel_order_total_sum( $tka_statuses, $tka_today_start );
         $tka_month_sum = toykindangel_order_total_sum( $tka_statuses, $tka_month_start );
 
-        $tka_processing = (int) wp_count_posts( 'shop_order' )->{'wc-processing'};
+        /*
+         * v0.20.1 audit fix H4 — wp_count_posts('shop_order') returns 0 under HPOS
+         * (orders live in wc_orders, not wp_posts), so the «سفارش در انتظار ارسال»
+         * tile always showed zero on modern WooCommerce installs. wc_get_orders()
+         * with 'paginate' => true is storage-agnostic (HPOS + CPT) and returns the
+         * real total. Same pattern WooCommerce core uses in its own reports.
+         */
+        $tka_processing = 0;
+        if ( function_exists( 'wc_get_orders' ) ) {
+                $tka_proc_result = wc_get_orders(
+                        array(
+                                'status'   => 'processing',
+                                'limit'    => 1,
+                                'paginate' => true,
+                        )
+                );
+                if ( $tka_proc_result && isset( $tka_proc_result->total ) ) {
+                        $tka_processing = (int) $tka_proc_result->total;
+                }
+        }
         $tka_low_stock  = 0;
         if ( class_exists( 'WC_Product_Query' ) ) {
                 /**

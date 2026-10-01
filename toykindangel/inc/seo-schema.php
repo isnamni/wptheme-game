@@ -12,9 +12,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Whether an SEO plugin already outputs JSON-LD.
+ *
+ * v0.20.1 audit fix H5 — class_exists('WPSEO_Frontend') was removed in Yoast 14
+ * (the class no longer exists in any modern Yoast version), so the check always
+ * returned false under Yoast and the theme emitted duplicate JSON-LD / OG tags
+ * alongside Yoast's own output. The stable Yoast detection since 14.x is the
+ * WPSEO_VERSION constant. The legacy class check is kept as a belt-and-braces
+ * fallback for very old Yoast installs, but it no longer gates the result.
  */
 function toykindangel_seo_plugin_active() {
-        return class_exists( 'WPSEO_Frontend' ) || defined( 'RANK_MATH_VERSION' ) || defined( 'AIOSEO_VERSION' );
+        return defined( 'WPSEO_VERSION' )
+                || class_exists( 'WPSEO_Frontend' )
+                || defined( 'RANK_MATH_VERSION' )
+                || defined( 'AIOSEO_VERSION' );
 }
 
 /**
