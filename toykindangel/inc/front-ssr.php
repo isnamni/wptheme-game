@@ -293,3 +293,130 @@ function toykindangel_ssr_catgrid() {
         toykindangel_cache_set( 'home_catgrid', $tka_local, 12 * HOUR_IN_SECONDS );
         return $tka_local;
 }
+
+/**
+ * Server-rendered /categories/ tree browser (section 5 of page-categories.php).
+ *
+ * v0.21.0 refactor — the two-column category browser (#catRail / #catPanel)
+ * used to be painted entirely by app.js from window.TKA_WP.categories, which
+ * was SEO-blind (crawlers saw only empty containers + a <noscript>). The data
+ * was already built in PHP by toykindangel_cats_data() (inc/cat-data.php) —
+ * only the rendering was delegated to JS.
+ *
+ * This helper emits the exact same markup app.js produced (crail/cpanel/
+ * cgroup/ctile) with REAL hrefs straight from the term links, so:
+ *   - crawlers see the full category tree (internal linking + SEO),
+ *   - the page works without JavaScript (progressive enhancement),
+ *   - window.TKA_WP.categories / catLinks / catByName are no longer needed,
+ *   - app.js renderCategories() and main.js section 4 (URL attacher) become
+ *     dead code and are removed.
+ *
+ * JavaScript keeps only the three interactions that need it:
+ *   - rail click → switch the visible panel (show/hide pre-rendered panels),
+ *   - accordion (open/close a cgroup),
+ *   - live filter (DOM-based search over the pre-rendered tiles).
+ *
+ * @return string HTML markup (empty when no categories exist).
+ */
+function toykindangel_ssr_categories_tree() {
+        $tka_data = toykindangel_cats_data();
+        if ( ! $tka_data || empty( $tka_data['categories'] ) ) {
+                return '';
+        }
+
+        $tka_categories = $tka_data['categories'];
+        $tka_links      = $tka_data['catLinks'];
+        $tka_img_pool   = ! empty( $tka_data['productImgs'] ) ? array_values( $tka_data['productImgs'] ) : array();
+        $tka_cat_url    = toykindangel_categories_url();
+
+        /* img() helper — matches app.js img() markup 1:1. */
+        $tka_img = static function ( $src ) {
+                if ( ! $src ) {
+                        return '';
+                }
+                return '<img src="' . esc_url( $src ) . '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">';
+        };
+
+        /* catTile() helper — matches app.js catTile() markup 1:1.
+         * $fb is a fallback image src used when the main image fails to load. */
+        $tka_tile = static function ( $name, $src, $fb, $href = '#' ) use ( $tka_img ) {
+                $tka_tag = $fb
+                        ? '<img src="' . esc_url( $src ) . '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=\'' . esc_url( $fb ) . '\'">'
+                        : $tka_img( $src );
+                return '<a class="ctile" href="' . esc_url( $href ) . '">'
+                        . '<span class="ctile__img">' . $tka_tag . '</span>'
+                        . '<span class="ctile__lb">' . esc_html( $name ) . '</span>'
+                        . '</a>';
+        };
+
+        /* Pool iterator — mirrors app.js nextImg(): cycles through the unique
+         * term thumbnails so every tile gets an image even when the term has
+         * no thumbnail of its own. */
+        $tka_n = 0;
+        $tka_next_img = static function () use ( &$tka_n, $tka_img_pool ) {
+                $tka_i = $tka_n++;
+                return array(
+                        'src' => ! empty( $tka_img_pool ) ? $tka_img_pool[ $tka_i % count( $tka_img_pool ) ] : '',
+                        'fb'  => '',
+                );
+        };
+
+        /* Rail (left column): one button per top-level category. */
+        $tka_rail_html = '';
+        foreach ( $tka_categories as $tka_i => $tka_cat ) {
+                $tka_rail_html .= '<button type="button" class="crail__item' . ( 0 === $tka_i ? ' on' : '' ) . '" data-i="' . esc_attr( (string) $tka_i ) . '">'
+                        . ( ! empty( $tka_cat['img'] ) ? '<img class="crail__ico" src="' . esc_url( $tka_cat['img'] ) . '" alt="" loading="lazy">' : '' )
+                        . '<span>' . esc_html( $tka_cat['name'] ) . '</span>'
+                        . '</button>';
+        }
+
+        /* Panel (right column): one full panel per top-level category, all
+         * pre-rendered. CSS shows only the active one (.cpanel__page.on).
+         * This is the key change vs. app.js: instead of repainting panel
+         * innerHTML on every rail click, all panels exist in the DOM and
+         * JS only toggles visibility — much faster and SEO-visible. */
+        $tka_panels_html = '';
+        foreach ( $tka_categories as $tka_i => $tka_cat ) {
+                $tka_lnk    = isset( $tka_links[ $tka_i ] ) ? $tka_links[ $tka_i ] : array( 'url' => $tka_cat_url, 'groups' => array() );
+                $tka_topurl = ! empty( $tka_lnk['url'] ) ? $tka_lnk['url'] : $tka_cat_url;
+
+                $tka_panel  = '<div class="cpanel__page' . ( 0 === $tka_i ? ' on' : '' ) . '" data-i="' . esc_attr( (string) $tka_i ) . '">';
+                $tka_panel .= '<a class="call" href="' . esc_url( $tka_topurl ) . '"><span>' . esc_html__( 'مشاهده همه محصولات', 'toykindangel' ) . '</span><svg class="ic" aria-hidden="true"><use href="#i-chev-left"></use></svg></a>';
+
+                if ( ! empty( $tka_cat['groups'] ) ) {
+                        foreach ( $tka_cat['groups'] as $tka_gi => $tka_group ) {
+                                $tka_gdata = isset( $tka_lnk['groups'][ $tka_gi ] ) ? $tka_lnk['groups'][ $tka_gi ] : array( 'url' => $tka_topurl, 'urls' => array() );
+                                $tka_gurl  = ! empty( $tka_gdata['url'] ) ? $tka_gdata['url'] : $tka_topurl;
+
+                                $tka_panel .= '<div class="cgroup' . ( 0 === $tka_gi ? ' cgroup--open' : '' ) . '">'
+                                        . '<button type="button" class="cgroup__head"><b>' . esc_html( $tka_group['title'] ) . '</b><svg class="ic" aria-hidden="true"><use href="#i-chev-left"></use></svg></button>'
+                                        . '<div class="cgrid">';
+
+                                if ( ! empty( $tka_group['items'] ) ) {
+                                        foreach ( $tka_group['items'] as $tka_k => $tka_item_name ) {
+                                                $tka_p    = $tka_next_img();
+                                                $tka_href = ( isset( $tka_gdata['urls'][ $tka_k ] ) && $tka_gdata['urls'][ $tka_k ] ) ? $tka_gdata['urls'][ $tka_k ] : $tka_gurl;
+                                                $tka_panel .= $tka_tile( $tka_item_name, $tka_p['src'], $tka_p['fb'], $tka_href );
+                                        }
+                                }
+
+                                /* «همه کالاها» closing tile — matches app.js. */
+                                $tka_p_all = $tka_next_img();
+                                $tka_panel .= $tka_tile( __( 'همه کالاها', 'toykindangel' ), $tka_p_all['src'], $tka_p_all['fb'], $tka_gurl );
+
+                                $tka_panel .= '</div></div>';
+                        }
+                }
+
+                $tka_panel .= '</div>';
+                $tka_panels_html .= $tka_panel;
+        }
+
+        /* Assemble the two-column browser. */
+        $tka_html  = '<div class="cpage cthub-cpage">';
+        $tka_html .= '<aside class="crail" id="catRail" aria-label="' . esc_attr__( 'دسته‌های اصلی', 'toykindangel' ) . '">' . $tka_rail_html . '</aside>';
+        $tka_html .= '<div class="cpanel" id="catPanel" aria-label="' . esc_attr__( 'زیردسته‌ها', 'toykindangel' ) . '">' . $tka_panels_html . '</div>';
+        $tka_html .= '</div>';
+
+        return $tka_html;
+}

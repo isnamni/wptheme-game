@@ -49,52 +49,21 @@ function toykindangel_register_brand_tax() {
 }
 add_action( 'init', 'toykindangel_register_brand_tax' );
 
-/**
- * Map WC_Product objects to the demo pcard field contract:
- * { name, price, old, off, bnpl, img, url }.
- *
- * @param WC_Product[] $products Products.
- * @return array[]
+/*
+ * v0.21.0 refactor — toykindangel_map_products() and toykindangel_wc_rails()
+ * (which built the window.TKA_WP.products JSON) were removed: every homepage
+ * section is now server-rendered by inc/front-ssr.php directly from
+ * WC_Product objects, so the JSON field contract {name, price, old, off, bnpl,
+ * img, url} is no longer needed. The single source of truth for the rails is
+ * toykindangel_home_rail_products() below, consumed only by the SSR helper.
  */
-function toykindangel_map_products( $products ) {
-        $out  = array();
-        $bnpl = wp_validate_boolean( get_theme_mod( 'tka_show_bnpl', true ) );
-
-        foreach ( $products as $p ) {
-                $product = ( $p instanceof WC_Product ) ? $p : wc_get_product( $p );
-                if ( ! $product instanceof WC_Product ) {
-                        continue;
-                }
-
-                $img_id  = $product->get_image_id();
-                $img     = $img_id ? wp_get_attachment_image_url( $img_id, 'woocommerce_thumbnail' ) : '';
-                $price   = (float) $product->get_price();
-                $regular = (float) $product->get_regular_price();
-                $off     = ( $regular > 0 && $price > 0 && $price < $regular ) ? (int) round( ( 1 - $price / $regular ) * 100 ) : 0;
-
-                $out[] = array(
-                        'name'  => $product->get_name(),
-                        'price' => $price > 0 ? (int) $price : 0,
-                        'old'   => ( $off && $regular > 0 ) ? (int) $regular : 0,
-                        'off'   => $off,
-                        'bnpl'  => $bnpl && $price > 0,
-                        'img'   => $img,
-                        'url'   => get_permalink( $product->get_id() ),
-                );
-        }
-
-        return $out;
-}
 
 /**
  * Single source of truth for the three homepage product rails
  * (amazing offers / newest / best sellers).
  *
- * v0.19.0: both renderers consume this — the SSR markup
- * (inc/front-ssr.php::toykindangel_ssr_products()) and the window.TKA_WP
- * dataset (toykindangel_wc_rails()). Previously each pipeline ran its own
- * WooCommerce queries, so every homepage view paid the full rail cost
- * twice. Static-cached per request: the rails query exactly once.
+ * v0.21.0 — consumed only by inc/front-ssr.php::toykindangel_ssr_products().
+ * Static-cached per request: the rails query exactly once.
  *
  * @return array<string, WC_Product[]> amazing/newest/best arrays (may be empty).
  */
@@ -219,37 +188,12 @@ function toykindangel_price_diff_sale_ids( $limit = 10 ) {
         return array_slice( array_values( (array) $tka_ids ), 0, (int) $limit );
 }
 
-/**
- * Product rails: amazing (on-sale) / newest / best-selling.
- *
- * v0.19.0: a thin mapper over toykindangel_home_rail_products() — the
- * queries themselves live in the shared provider so the SSR renderer and
- * this dataset builder never duplicate them again.
- *
- * @return array|null
+/*
+ * v0.21.0 — toykindangel_wc_rails() (the JSON mapper over
+ * toykindangel_home_rail_products()) was removed. The SSR helper in
+ * inc/front-ssr.php reads WC_Product objects directly now, so the
+ * intermediate JSON contract is gone.
  */
-function toykindangel_wc_rails() {
-        if ( ! function_exists( 'wc_get_products' ) ) {
-                return null;
-        }
-
-        $tka_products = toykindangel_home_rail_products();
-
-        $rails = array();
-        if ( ! empty( $tka_products['amazing'] ) ) {
-                $rails['amazing'] = toykindangel_map_products( $tka_products['amazing'] );
-        }
-        $rails['newest'] = toykindangel_map_products( (array) $tka_products['newest'] );
-        if ( ! empty( $tka_products['best'] ) ) {
-                $rails['best'] = toykindangel_map_products( $tka_products['best'] );
-        }
-
-        if ( empty( $rails['newest'] ) ) {
-                return empty( $rails ) ? null : $rails;
-        }
-
-        return $rails;
-}
 
 /**
  * First-level product categories for the stories row.
@@ -262,20 +206,20 @@ function toykindangel_wc_rails() {
  * @return array|null
  */
 function toykindangel_wc_stories() {
-	static $tka_local = null;
-	if ( null !== $tka_local ) {
-		return $tka_local;
-	}
+        static $tka_local = null;
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
 
-	$tka_local = toykindangel_cache_get( 'home_stories' );
-	if ( null === $tka_local ) {
-		$tka_local = toykindangel_wc_stories_uncached();
-		if ( null !== $tka_local ) {
-			toykindangel_cache_set( 'home_stories', $tka_local, 12 * HOUR_IN_SECONDS );
-		}
-	}
+        $tka_local = toykindangel_cache_get( 'home_stories' );
+        if ( null === $tka_local ) {
+                $tka_local = toykindangel_wc_stories_uncached();
+                if ( null !== $tka_local ) {
+                        toykindangel_cache_set( 'home_stories', $tka_local, 12 * HOUR_IN_SECONDS );
+                }
+        }
 
-	return $tka_local;
+        return $tka_local;
 }
 
 /**
@@ -347,20 +291,20 @@ function toykindangel_wc_stories_uncached() {
  * @return array|null
  */
 function toykindangel_wc_brands() {
-	static $tka_local = null;
-	if ( null !== $tka_local ) {
-		return $tka_local;
-	}
+        static $tka_local = null;
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
 
-	$tka_local = toykindangel_cache_get( 'home_brands' );
-	if ( null === $tka_local ) {
-		$tka_local = toykindangel_wc_brands_uncached();
-		if ( null !== $tka_local ) {
-			toykindangel_cache_set( 'home_brands', $tka_local, 12 * HOUR_IN_SECONDS );
-		}
-	}
+        $tka_local = toykindangel_cache_get( 'home_brands' );
+        if ( null === $tka_local ) {
+                $tka_local = toykindangel_wc_brands_uncached();
+                if ( null !== $tka_local ) {
+                        toykindangel_cache_set( 'home_brands', $tka_local, 12 * HOUR_IN_SECONDS );
+                }
+        }
 
-	return $tka_local;
+        return $tka_local;
 }
 
 /**
@@ -462,104 +406,40 @@ function toykindangel_front_unlocked() {
         return false;
 }
 
-/**
- * Build the full front-page dataset.
- *
- * @return array
+/*
+ * v0.21.0 — toykindangel_front_data() (the full TKA_WP dataset builder) was
+ * removed. All homepage sections are server-rendered by inc/front-ssr.php
+ * directly from Customizer + WooCommerce, so the JSON dataset that app.js
+ * used to paint is no longer needed. The tiny {fallback, catUrl, searchUrl}
+ * config that JS still needs is built inline in toykindangel_localize_front_data().
  */
-function toykindangel_front_data() {
-        $data = array(
-                'fallback' => toykindangel_front_fallback_enabled(),
-                'catUrl'   => toykindangel_categories_url(),
-                'strip'    => null,
-                'hero'     => null,
-                'grid'     => null,
-                'stories'  => null,
-                'brands'   => null,
-                'products' => null,
-        );
-
-        // Top strip banner.
-        $tka_strip_img = get_theme_mod( 'tka_strip_img' );
-        if ( $tka_strip_img ) {
-                $data['strip'] = array(
-                        'img'  => $tka_strip_img,
-                        'href' => get_theme_mod( 'tka_strip_link', home_url( '/' ) ),
-                );
-        }
-
-        // Hero slider slides (up to 4).
-        $tka_hero = array();
-        for ( $i = 1; $i <= 4; $i++ ) {
-                $tka_img = get_theme_mod( "tka_hero_{$i}_img" );
-                if ( $tka_img ) {
-                        $tka_hero[] = array(
-                                'img'  => $tka_img,
-                                'href' => get_theme_mod( "tka_hero_{$i}_link", '#' ),
-                        );
-                }
-        }
-        if ( ! empty( $tka_hero ) ) {
-                $data['hero'] = $tka_hero;
-        }
-
-        // 2x2 promotional banner grid.
-        $tka_grid = array();
-        for ( $i = 1; $i <= 4; $i++ ) {
-                $tka_img = get_theme_mod( "tka_banner_{$i}_img" );
-                if ( $tka_img ) {
-                        $tka_grid[] = array(
-                                'img'  => $tka_img,
-                                'href' => get_theme_mod( "tka_banner_{$i}_link", '#' ),
-                        );
-                }
-        }
-        if ( ! empty( $tka_grid ) ) {
-                $data['grid'] = $tka_grid;
-        }
-
-        // WooCommerce-powered sections.
-        $tka_stories = toykindangel_wc_stories();
-        if ( ! empty( $tka_stories ) ) {
-                $data['stories'] = $tka_stories;
-        }
-
-        $tka_brands = toykindangel_wc_brands();
-        if ( ! empty( $tka_brands ) ) {
-                $data['brands'] = $tka_brands;
-        }
-
-        $tka_rails = toykindangel_wc_rails();
-        if ( ! empty( $tka_rails ) ) {
-                $data['products'] = $tka_rails;
-        }
-
-        return $data;
-}
 
 /**
- * Print window.TKA_WP just before the WordPress glue script (main.js),
- * which applies it onto the untouched demo dataset before app.js renders.
+ * Print a small window.TKA_WP config for the homepage.
+ *
+ * v0.21.0 refactor — all homepage sections (hero/grid/strip/stories/brands/
+ * products) are server-rendered by inc/front-ssr.php, so the bulky dataset
+ * that used to be shipped to JS for app.js to paint is no longer needed.
+ * Only two small keys remain:
+ *   - fallback: whether the demo-fallback mode is on (gates the setup card
+ *     and any future demo-only behaviour; main.js reads it).
+ *   - catUrl:   the real shop/categories URL, used by main.js to fix the
+ *     few remaining demo href="#" links inside SSR output.
  */
 function toykindangel_localize_front_data() {
         if ( ! is_front_page() ) {
                 return;
         }
 
-        /* Homepage gate: until demo import the JS demo dataset must never
-         * paint sample content — emit fallback:false (or skip entirely). */
-        if ( ! toykindangel_front_unlocked() ) {
-                wp_add_inline_script(
-                        'toykindangel-main',
-                        'window.TKA_WP={"fallback":false};',
-                        'before'
-                );
-                return;
-        }
+        $tka_payload = array(
+                'fallback' => toykindangel_front_unlocked() && toykindangel_front_fallback_enabled(),
+                'catUrl'   => toykindangel_categories_url(),
+                'searchUrl' => home_url( '/' ),
+        );
 
         wp_add_inline_script(
                 'toykindangel-main',
-                'window.TKA_WP=' . wp_json_encode( toykindangel_front_data() ) . ';',
+                'window.TKA_WP=' . wp_json_encode( $tka_payload ) . ';',
                 'before'
         );
 }

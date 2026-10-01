@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ممیزی معماری — میراث تبدیل HTML→WordPress در قالب ToyKind Angel</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --card: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #6b6b6b;
+    --line: #e5e5e5;
+    --primary: #b400ae;
+    --primary-light: #f7e5f5;
+    --green: #15803d;
+    --green-light: #dcfce7;
+    --amber: #b45309;
+    --amber-light: #fef3c7;
+    --red: #b91c1c;
+    --red-light: #fee2e2;
+    --blue: #1e40af;
+    --blue-light: #dbeafe;
+    --gray-light: #f3f4f6;
+    --heritage: #7c3aed;
+    --heritage-light: #ede9fe;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.8;
+    margin: 0;
+    padding: 0;
+    font-size: 15px;
+  }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 32px 24px 80px; }
+  h1 { font-size: 28px; font-weight: 700; margin: 0 0 8px; color: var(--ink); line-height: 1.4; }
+  h2 {
+    font-size: 22px; font-weight: 700; margin: 48px 0 16px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--primary);
+    color: var(--ink);
+  }
+  h3 { font-size: 18px; font-weight: 600; margin: 32px 0 12px; color: var(--ink); }
+  h4 { font-size: 16px; font-weight: 600; margin: 20px 0 8px; color: var(--ink); }
+  p { margin: 10px 0; }
+  code {
+    font-family: 'Fira Code', 'Consolas', monospace;
+    background: var(--gray-light);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    direction: ltr;
+    display: inline-block;
+  }
+  pre {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    direction: ltr;
+    text-align: left;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  pre code { background: transparent; padding: 0; color: inherit; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .meta {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 4px 0 0;
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 0 4px 4px 0;
+  }
+  .badge-heritage { background: var(--heritage-light); color: var(--heritage); }
+  .badge-legitimate { background: var(--green-light); color: var(--green); }
+  .badge-remove { background: var(--red-light); color: var(--red); }
+  .badge-refactor { background: var(--amber-light); color: var(--amber); }
+  .badge-keep { background: var(--blue-light); color: var(--blue); }
+  .badge-optional { background: var(--primary-light); color: var(--primary); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+    background: var(--card);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  th {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 700;
+    text-align: right;
+    padding: 12px 14px;
+    border-bottom: 2px solid var(--primary);
+    font-size: 13px;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--gray-light); }
+
+  .finding {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-right: 4px solid var(--heritage);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 16px 0;
+  }
+  .finding.legitimate { border-right-color: var(--green); }
+  .finding.remove { border-right-color: var(--red); }
+  .finding.refactor { border-right-color: var(--amber); }
+
+  .finding h4 { margin-top: 0; }
+  .finding dl { margin: 8px 0; }
+  .finding dt {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 10px;
+  }
+  .finding dd { margin: 2px 0 8px; }
+
+  .toc {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 24px 0;
+  }
+  .toc ol { margin: 8px 0; padding-right: 24px; }
+  .toc li { margin: 6px 0; }
+  .toc a { color: var(--primary); text-decoration: none; font-weight: 600; }
+  .toc a:hover { text-decoration: underline; }
+
+  .callout {
+    background: var(--blue-light);
+    border-right: 4px solid var(--blue);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+  }
+  .callout.warning { background: var(--amber-light); border-right-color: var(--amber); }
+  .callout.danger { background: var(--red-light); border-right-color: var(--red); }
+  .callout.success { background: var(--green-light); border-right-color: var(--green); }
+  .callout.heritage { background: var(--heritage-light); border-right-color: var(--heritage); }
+
+  .arch-diagram {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 16px;
+    border-radius: 8px;
+    direction: ltr;
+    text-align: left;
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 16px 0;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat .num { font-size: 28px; font-weight: 700; color: var(--primary); }
+  .stat .lbl { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  .footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .wrap { padding: 20px 14px 60px; }
+    h1 { font-size: 22px; }
+    h2 { font-size: 18px; }
+    table { font-size: 12px; }
+    th, td { padding: 8px; }
+    pre, .arch-diagram { font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>ممیزی معماری — میراث تبدیل HTML→WordPress در قالب ToyKind Angel</h1>
+<p class="meta">
+  نسخهٔ قالب: <code>0.20.1</code> (commit <code>f4c265b</code>) &nbsp;|&nbsp;
+  شاخه: <code>dev</code> &nbsp;|&nbsp;
+  نوع ممیزی: معماری — فقط‌خواندنی &nbsp;|&nbsp;
+  تاریخ: ۱۴۰۵/۰۷/۰۸
+</p>
+
+<div class="callout heritage">
+  <strong>هدف این ممیزی:</strong> شناسایی بخش‌هایی از قالب که <strong>میراث تبدیل HTML/JS demo → WordPress</strong>
+  هستند و اگر قالب از صفر WordPress-first نوشته می‌شد، وجود نداشتند. این ممیزی رفتار ظاهری،
+  قابلیت‌ها، یا کدهای legitimate را تغییر نمی‌دهد — فقط نقشهٔ معماری و «میراث» را شناسایی می‌کند.
+</div>
+
+<div class="toc">
+  <strong>فهرست مطالب</strong>
+  <ol>
+    <li><a href="#summary">خلاصهٔ مدیریتی</a></li>
+    <li><a href="#premise">پیش‌فرض شما — و پاسخ کوتاه</a></li>
+    <li><a href="#architecture">نقشهٔ معماری فعلی</a></li>
+    <li><a href="#tka-wp">تحلیل عمیق <code>window.TKA_WP</code></a></li>
+    <li><a href="#data-js">تحلیل <code>data.js</code> و <code>app.js</code></a></li>
+    <li><a href="#categories-tree">مشکل بزرگ: مرور درختی /categories/</a></li>
+    <li><a href="#duplicate-pipelines">خطوط تولید تکراری داده</a></li>
+    <li><a href="#heritage-inventory">فهرست کامل میراث تبدیل</a></li>
+    <li><a href="#legitimate">کدهای legitimate (نه میراث)</a></li>
+    <li><a href="#wordpress-first">اگر از صفر WordPress-first می‌ساختیم</a></li>
+    <li><a href="#recommendations">توصیه‌ها و اولویت‌بندی</a></li>
+    <li><a href="#risk-matrix">ماتریس ریسک و منفعت</a></li>
+    <li><a href="#conclusion">نتیجه‌گیری</a></li>
+  </ol>
+</div>
+
+<h2 id="summary">۱. خلاصهٔ مدیریتی</h2>
+
+<div class="summary-grid">
+  <div class="stat"><div class="num">۷</div><div class="lbl">مورد میراث تبدیل</div></div>
+  <div class="stat"><div class="num">۵</div><div class="lbl">مورد legitimate</div></div>
+  <div class="stat"><div class="num">۲</div><div class="lbl">مشکل SEO واقعی</div></div>
+  <div class="stat"><div class="num">۴</div><div class="lbl">توصیهٔ سریع کم‌ریسک</div></div>
+</div>
+
+<p>
+  این قالب از یک <strong>دموی HTML/JS</strong> شروع شده و بعد به WordPress متصل شده.
+  این الگو در خودش اشکالی ندارد — ولی باعث شده چندین «لایهٔ پل» بین دمو و WordPress
+  بسازید که اگر از صفر WordPress-first طراحی می‌کردید، وجود نداشتند. مهم‌ترین آن‌ها:
+</p>
+
+<ol>
+  <li><strong><code>window.TKA_WP</code></strong> — یک لایهٔ واسط بین PHP و JS که داده‌های WooCommerce را به JS demo می‌دهد. در storefront واقعی، ۶ از ۸ کلید آن <strong>تکراری با SSR</strong> است.</li>
+  <li><strong><code>data.js</code></strong> — دیتاست دمو (محصولات، دسته‌ها، برندها) که بعد از import دمو دیگر نیاز نیست ولی هنوز در homepage و /categories/ load می‌شود.</li>
+  <li><strong><code>app.js</code></strong> — رندرر JS که با SSR guard کار می‌کند. در storefront واقعی، بخش rails آن <strong>dead code</strong> است.</li>
+  <li><strong>مرور درختی /categories/</strong> — کاملاً JS-rendered است (SEO-blind). این <strong>تنها مورد بحرانی</strong> است.</li>
+  <li><strong>دو نسخه از demo dataset</strong> — <code>data.js</code> (JS) و <code>inc/demo/data.php</code> (PHP) همین داده را دارند.</li>
+</ol>
+
+<div class="callout success">
+  <strong>خبر خوب:</strong> هیچ‌کدام از این موارد <em>باگ</em> نیستند. قالب کار می‌کند، SSR فعال است،
+  و <code>app.js</code> با guard کار می‌کند. ولی در یک قالب WordPress-first حرفه‌ای،
+  این لایه‌ها حذف یا ساده می‌شدند.
+</div>
+
+<h2 id="premise">۲. پیش‌فرض شما — و پاسخ کوتاه</h2>
+
+<div class="card">
+  <h4>سؤال شما:</h4>
+  <p>
+    «اگر از صفر قالب را برای WordPress/WooCommerce می‌نوشتیم و دیتای دمو را هم در تنظیمات تعریف می‌کردیم
+    (کاربر بعد از نصب import می‌کند)، آیا هنوز به ساختار <code>TKA_WP</code> نیاز داشتیم؟»
+  </p>
+
+  <h4>پاسخ کوتاه:</h4>
+  <p><strong>نه — به این شکل از <code>TKA_WP</code> نیاز نداشتید.</strong></p>
+
+  <p>دلیل:</p>
+  <ul>
+    <li>در معماری فعلی، <code>TKA_WP</code> یک <strong>پل بین دموی JS و WordPress</strong> است. وقتی دمو فعال است، JS از <code>window.TKA</code> (دیتاست دمو) render می‌کند. <code>TKA_WP</code> داده‌های واقعی WordPress را روی <code>TKA</code> overlay می‌کند تا JS همان UI را با داده واقعی نشان دهد.</li>
+    <li>اگر WordPress-first می‌بودید، PHP مستقیماً HTML را از WooCommerce می‌ساخت (که اکنون <code>inc/front-ssr.php</code> همین کار را می‌کند) و JS فقط برای تعاملات (کلیک، AJAX، اسلایدر) استفاده می‌شد. در آن صورت، فقط چند متغیر کوچک (AJAX URL، nonce، product ID) نیاز بود — نه کل payload.</li>
+  </ul>
+
+  <div class="callout">
+    <strong>ولی نکتهٔ مهم:</strong> حذف کامل <code>TKA_WP</code> الان <strong>ریسک بالایی دارد</strong> چون <code>app.js</code> و <code>main.js</code> به آن وابسته‌اند. این یک <em>refactor معماری</em> است نه یک fix. این گزارش فقط <strong>شناسایی</strong> می‌کند، نه توصیهٔ حذف فوری.
+  </div>
+</div>
+
+<h2 id="architecture">۳. نقشهٔ معماری فعلی</h2>
+
+<p>قالب اکنون این معماری را دارد:</p>
+
+<div class="arch-diagram">
+<pre>  ┌─────────────────────────────────────────────────────────┐
+  │                    WordPress / WooCommerce                │
+  │  (products, categories, brands, customizer settings)     │
+  └────────────────────────┬─────────────────────────────────┘
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+              ▼                         ▼
+  ┌───────────────────────┐   ┌─────────────────────────┐
+  │   inc/front-ssr.php   │   │   inc/front-data.php    │
+  │   (SSR renderer)      │   │   (builds TKA_WP JSON)  │
+  │                       │   │                         │
+  │  → HTML با محصولات    │   │  → window.TKA_WP = {    │
+  │    واقعی در صفحه      │   │      products, stories, │
+  │                       │   │      brands, hero, ...  │
+  │  ✅ SEO-visible       │   │    }                    │
+  └───────────┬───────────┘   └────────────┬────────────┘
+              │                            │
+              ▼                            ▼
+  ┌───────────────────────┐   ┌─────────────────────────┐
+  │   front-page.php      │   │   assets/js/data.js     │
+  │   (template)          │   │   (demo dataset: TKA)   │
+  │                       │   │                         │
+  │  echo SSR HTML +     │   │  window.TKA = {         │
+  │  echo TKA_WP JSON    │◄──┤    demo products, ...   │
+  │                       │   │  }                      │
+  └───────────┬───────────┘   └────────────┬────────────┘
+              │                            │
+              └────────────┬───────────────┘
+                           │
+                           ▼
+              ┌────────────────────────────┐
+              │   assets/js/main.js         │
+              │   (merges TKA_WP onto TKA)  │
+              │                            │
+              │   T.banners.hero = WP.hero │
+              │   T.stories = WP.stories   │
+              │   T.products = WP.products │
+              │   ...                      │
+              └─────────────┬──────────────┘
+                           │
+                           ▼
+              ┌────────────────────────────┐
+              │   assets/js/app.js          │
+              │   (demo renderer)           │
+              │                            │
+              │   if (container empty) {   │
+              │     render from T          │
+              │   }                        │
+              └────────────────────────────┘
+</pre>
+</div>
+
+<p>
+  <strong>نکتهٔ کلیدی:</strong> داده‌ها از <strong>دو مسیر</strong> به مرورگر می‌رسند:
+  SSR HTML (که در صفحه هست) و <code>TKA_WP</code> JSON (که برای JS است). وقتی SSR فعال است،
+  app.js با SSR guard کار می‌کند و از <code>TKA_WP</code> استفاده نمی‌کند — ولی <code>TKA_WP</code>
+  همچنان ساخته و load می‌شود.
+</p>
+
+<h2 id="tka-wp">۴. تحلیل عمیق <code>window.TKA_WP</code></h2>
+
+<h3>۴.۱ ساختار TKA_WP در homepage</h3>
+
+<p>ساخته‌شده در <code>inc/front-data.php:470-538</code> (<code>toykindangel_front_data()</code>):</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>کلید</th>
+      <th>منبع</th>
+      <th>مصرف‌کننده JS</th>
+      <th>SSR duplicate?</th>
+      <th>در storefront واقعی...</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fallback</code></td>
+      <td><code>tka_fallback_demo</code> theme_mod</td>
+      <td><code>main.js:37</code> — gate برای empty-state</td>
+      <td>خیر</td>
+      <td><span class="badge badge-legitimate">LEGITIMATE</span> load-bearing</td>
+    </tr>
+    <tr>
+      <td><code>catUrl</code></td>
+      <td><code>toykindangel_categories_url()</code></td>
+      <td><code>main.js:86</code> — fix لینک‌های demo <code>categories.html</code></td>
+      <td>خیر</td>
+      <td><span class="badge badge-legitimate">LEGITIMATE</span> load-bearing</td>
+    </tr>
+    <tr>
+      <td><code>strip</code></td>
+      <td>Customizer</td>
+      <td><code>main.js:39</code> → <code>app.js:101</code></td>
+      <td><strong>بله</strong> — <code>front-ssr.php</code> هم render می‌کند</td>
+      <td><span class="badge badge-heritage">HERITAGE</span> dead (SSR جایگزین)</td>
+    </tr>
+    <tr>
+      <td><code>hero</code></td>
+      <td>Customizer (۴ اسلاید)</td>
+      <td><code>main.js:40</code> → <code>app.js:60-90</code></td>
+      <td><strong>بله</strong> — <code>front-ssr.php:115-148</code></td>
+      <td><span class="badge badge-heritage">HERITAGE</span> dead (SSR جایگزین)</td>
+    </tr>
+    <tr>
+      <td><code>grid</code></td>
+      <td>Customizer (۴ بنر)</td>
+      <td><code>main.js:41</code> → <code>app.js</code></td>
+      <td><strong>بله</strong> — <code>front-ssr.php:155-170</code></td>
+      <td><span class="badge badge-heritage">HERITAGE</span> dead (SSR جایگزین)</td>
+    </tr>
+    <tr>
+      <td><code>stories</code></td>
+      <td>WooCommerce product_cat terms</td>
+      <td><code>main.js:42</code> → <code>app.js:104-116</code></td>
+      <td><strong>بله</strong> — <code>front-ssr.php:62-81</code></td>
+      <td><span class="badge badge-heritage">HERITAGE</span> dead (SSR جایگزین)</td>
+    </tr>
+    <tr>
+      <td><code>brands</code></td>
+      <td>WooCommerce brands taxonomy</td>
+      <td><code>main.js:43</code> → <code>app.js</code></td>
+      <td><strong>بله</strong> — <code>front-ssr.php:177-194</code></td>
+      <td><span class="badge badge-heritage">HERITAGE</span> dead (SSR جایگزین)</td>
+    </tr>
+    <tr>
+      <td><code>products</code></td>
+      <td>۳ rail (amazing/newest/best) × ۱۰ محصول</td>
+      <td><code>main.js:63-71</code> → <code>app.js:118+</code></td>
+      <td><strong>بله</strong> — <code>front-ssr.php:90-108</code></td>
+      <td><span class="badge badge-heritage">HERITAGE</span> dead (SSR جایگزین)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  <strong>نتیجه:</strong> از ۸ کلید، فقط ۲ کلید (<code>fallback</code> و <code>catUrl</code>) در storefront واقعی
+  load-bearing هستند. ۶ کلید دیگر <strong>تکراری با SSR</strong> هستند و در حالت storefront واقعی
+  (که <code>tka_fallback_demo=false</code>) مصرف‌کننده‌ای ندارند.
+</p>
+
+<h3>۴.۲ حجم TKA_WP</h3>
+
+<p>طبق اندازه‌گیری گزارش v0.19.0:</p>
+<ul>
+  <li>کل <code>TKA_WP</code>: ~۱۵٬۳۶۱ بایت (~۱۵KB)</li>
+  <li>از آن، کلید <code>products</code> (۳ rail × ۱۰ محصول): ~۷-۸KB</li>
+  <li>بعد از gzip: ~۲-۴KB</li>
+</ul>
+
+<div class="callout">
+  <strong>ارزیابی:</strong> این حجم <strong>بحرانی نیست</strong>. ولی در یک قالب WordPress-first،
+  این ۶ کلید تکراری اصلاً ساخته نمی‌شدند و ~۱۲-۱۴KB در هر homepage load ذخیره می‌شد.
+</div>
+
+<h3>۴.۳ ساختار TKA_WP در /categories/</h3>
+
+<p>ساخته‌شده در <code>inc/cat-data.php:308-328</code>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>کلید</th>
+      <th>منبع</th>
+      <th>مصرف‌کننده JS</th>
+      <th>SSR duplicate?</th>
+      <th>وضعیت</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fallback</code></td>
+      <td><code>tka_fallback_demo</code> (default <strong>true</strong>!)</td>
+      <td><code>app.js</code></td>
+      <td>خیر</td>
+      <td><span class="badge badge-legitimate">LEGITIMATE</span> ولی default متناقض</td>
+    </tr>
+    <tr>
+      <td><code>catUrl</code></td>
+      <td><code>toykindangel_categories_url()</code></td>
+      <td><code>main.js</code></td>
+      <td>خیر</td>
+      <td><span class="badge badge-legitimate">LEGITIMATE</span></td>
+    </tr>
+    <tr>
+      <td><code>searchUrl</code></td>
+      <td><code>home_url('/')</code></td>
+      <td><code>app.js</code></td>
+      <td>خیر</td>
+      <td><span class="badge badge-legitimate">LEGITIMATE</span></td>
+    </tr>
+    <tr>
+      <td><code>categories</code></td>
+      <td>درخت کامل دسته‌ها (۳ سطح)</td>
+      <td><code>app.js:168-225</code> — <strong>paint می‌کند</strong></td>
+      <td><strong>خیر</strong> — JS primary است</td>
+      <td><span class="badge badge-remove">CRITICAL</span> SEO-blind</td>
+    </tr>
+    <tr>
+      <td><code>catLinks</code></td>
+      <td>URL نقشه برای categories</td>
+      <td><code>main.js</code> — fix href‌ها</td>
+      <td>خیر</td>
+      <td><span class="badge badge-heritage">HERITAGE</span></td>
+    </tr>
+    <tr>
+      <td><code>catByName</code></td>
+      <td>name → URL map</td>
+      <td><code>main.js</code></td>
+      <td>خیر</td>
+      <td><span class="badge badge-heritage">HERITAGE</span></td>
+    </tr>
+    <tr>
+      <td><code>productImgs</code></td>
+      <td>تصاویر محصول برای tile‌ها</td>
+      <td><code>app.js</code></td>
+      <td>خیر</td>
+      <td><span class="badge badge-heritage">HERITAGE</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout danger">
+  <strong>مشکل بحرانی:</strong> کلید <code>categories</code> در /categories/ <strong>توسط JS paint می‌شود</strong> نه SSR.
+  این یعنی crawlerها (Googlebot) هیچ محتوای درخت دسته را نمی‌بینند. فقط یک <code>&lt;noscript&gt;</code>
+  «please enable JS» می‌بینند. این <strong>تنها مورد SEO-blind در کل قالب</strong> است.
+</div>
+
+<h2 id="data-js">۵. تحلیل <code>data.js</code> و <code>app.js</code></h2>
+
+<h3>۵.۱ <code>assets/js/data.js</code> — دیتاست دمو</h3>
+
+<div class="finding">
+  <h4>data.js <span class="badge badge-heritage">HERITAGE — میراث دمو</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>assets/js/data.js</code> (۱۸۸ خط، ~۱۵KB raw، ~۴.۲KB gzip)</dd>
+
+    <dt>محتوا:</dt>
+    <dd>
+      <code>window.TKA = { banners, stories, catIcons, categories, productImgs, brands, products: {amazing, newest, best} }</code> —
+      کل دیتاست دمو: محصولات فرضی، دسته‌های فرضی، برندهای فرضی، بنرهای فرضی.
+    </dd>
+
+    <dt>کجا load می‌شود:</dt>
+    <dd>
+      <code>functions.php:152-159</code> — در homepage و /categories/ <strong>همیشه</strong> load می‌شود،
+      بدون توجه به <code>tka_demo_imported</code> یا <code>tka_fallback_demo</code>.
+    </dd>
+
+    <dt>آیا بعد از import نیاز است؟</dt>
+    <dd>
+      <strong>نه.</strong> بعد از import، <code>TKA_WP</code> داده‌های واقعی را روی <code>TKA</code> overlay می‌کند.
+      app.js با SSR guard کار می‌کند. <code>TKA</code> فقط وقتی نیاز است که <code>tka_fallback_demo=true</code>
+      باشد و <code>TKA_WP</code> یک section را پر نکرده باشد.
+    </dd>
+
+    <dt>تکراری با:</dt>
+    <dd>
+      <code>inc/demo/data.php</code> (۱۹۳ خط) — همان دیتاست را در PHP برای importer دارد.
+      یعنی <strong>دو نسخه از demo dataset</strong> در codebase وجود دارد.
+    </dd>
+
+    <dt>در یک قالب WordPress-first:</dt>
+    <dd>
+      <strong>وجود نداشت.</strong> بعد از import، منبع داده WordPress است نه یک dataset ایستا.
+    </dd>
+  </dl>
+</div>
+
+<h3>۵.۲ <code>assets/js/app.js</code> — رندرر دمو</h3>
+
+<div class="finding">
+  <h4>app.js <span class="badge badge-heritage">HERITAGE — میراث دمو (بخشی legitimate)</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>assets/js/app.js</code> (۳۱۲ خط، ~۴.۴KB gzip)</dd>
+
+    <dt>محتوا:</dt>
+    <dd>
+      رندرر demo: <code>hero()</code>, <code>renderHome()</code> (story row + ۳ rail),
+      <code>renderCategories()</code> (درخت /categories/), <code>startTimers()</code>,
+      اسلایدر hero، اسکرول rails.
+    </dd>
+
+    <dt>SSR guard:</dt>
+    <dd>
+      <code>app.js:67, 105, 121, 129, 137</code> — هر renderer قبل از paint بررسی می‌کند
+      <code>if (container.children.length)</code>. اگر SSR پر کرده، skip می‌کند. <strong>این درست طراحی شده.</strong>
+    </dd>
+
+    <dt>در storefront واقعی (با <code>tka_fallback_demo=false</code>):</dt>
+    <dd>
+      <ul>
+        <li><code>hero()</code> — فقط dots wiring لازم است (slides از SSR). <strong>نیمه-legitimate.</strong></li>
+        <li><code>renderHome()</code> rails — <strong>dead code</strong> چون SSR همیشه پر کرده.</li>
+        <li><code>renderCategories()</code> — <strong>primary renderer</strong> برای /categories/ tree. <strong>CRITICAL</strong> چون SSR وجود ندارد.</li>
+        <li><code>startTimers()</code> — <strong>legitimate</strong> (تایمر شمارش معکوس).</li>
+      </ul>
+    </dd>
+
+    <dt>در یک قالب WordPress-first:</dt>
+    <dd>
+      بخش rails حذف می‌شد. بخش hero maybe با یک slider library سبک جایگزین می‌شد.
+      بخش categories با SSR جایگزین می‌شد. فقط <code>startTimers()</code> و شاید hero wiring باقی می‌ماند.
+    </dd>
+  </dl>
+</div>
+
+<h3>۵.۳ <code>assets/js/main.js</code> — WP glue</h3>
+
+<div class="finding legitimate">
+  <h4>main.js <span class="badge badge-legitimate">MOSTLY LEGITIMATE</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>assets/js/main.js</code> (۸۰۸ خط)</dd>
+
+    <dt>محتوا:</dt>
+    <dd>
+      <ul>
+        <li><strong>بخش ۱-۴ (lines 1-190):</strong> path rewrite + TKA_WP merge + link fixer + cats browser URL attacher — <span class="badge badge-heritage">HERITAGE</span> (پل بین demo و WP)</li>
+        <li><strong>بخش ۵+ (lines 190-808):</strong> back-to-top, drawers, sticky header, wishlist AJAX, cart steppers, PDP gallery wiring, variable-product chips, rail scroll arrows — <span class="badge badge-legitimate">LEGITIMATE</span></li>
+      </ul>
+    </dd>
+
+    <dt>ارزیابی:</dt>
+    <dd>
+      ~۷۵% از main.js legitimate WP theme JS است. فقط ~۲۵% اول (sections 1-4) میراث پل demo→WP است.
+    </dd>
+  </dl>
+</div>
+
+<h2 id="categories-tree">۶. مشکل بزرگ: مرور درختی /categories/</h2>
+
+<div class="finding remove">
+  <h4>بخش ۵ از page-categories.php — مرور درختی <span class="badge badge-remove">CRITICAL — SEO-blind</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>page-categories.php:619-644</code> (template) + <code>app.js:168-265</code> (renderer) + <code>inc/cat-data.php:138-299</code> (data builder)</dd>
+
+    <dt>مشکل:</dt>
+    <dd>
+      template این بخش را <strong>خالی</strong> چاپ می‌کند:
+      <pre><code>&lt;aside class="crail" id="catRail"&gt;&lt;/aside&gt;
+&lt;div class="cpanel" id="catPanel"&gt;&lt;/div&gt;
+&lt;noscript&gt;...please enable JS...&lt;/noscript&gt;</code></pre>
+      سپس <code>app.js:168-225</code> با <code>renderCategories()</code> کل درخت را از <code>window.TKA_WP.categories</code>
+      paint می‌کند. crawlerها (Googlebot) <strong>هیچ محتوایی نمی‌بینند</strong> — فقط یک <code>&lt;noscript&gt;</code>.
+    </dd>
+
+    <dt>داده از کجا می‌آید:</dt>
+    <dd>
+      <code>inc/cat-data.php:138-299</code> (<code>toykindangel_cats_data()</code>) کل درخت را در PHP می‌سازد
+      و در <code>window.TKA_WP.categories</code> می‌ریزد. <strong>داده در PHP موجود است</strong> — فقط render آن به JS سپرده شده.
+    </dd>
+
+    <dt>چرا این الگو انتخاب شده:</dt>
+    <dd>
+      چون در دموی HTML اصلی، درخت توسط JS paint می‌شده (با <code>data.js</code>). وقتی به WordPress تبدیل شد،
+      به‌جای rewrite کردن به SSR، داده از <code>data.js</code> به <code>TKA_WP</code> تغییر کرد ولی render همچنان با JS ماند.
+    </dd>
+
+    <dt>در یک قالب WordPress-first:</dt>
+    <dd>
+      <strong>این بخش حتماً SSR می‌شد.</strong> داده در <code>toykindangel_cats_data()</code> موجود است —
+      فقط کافی است PHP آن را به HTML تبدیل کند. JS فقط برای کلیک/accordion/search می‌ماند.
+    </dd>
+
+    <dt>ریسک fix:</dt>
+    <dd>
+      <strong>متوسط.</strong> باید PHP renderer نوشته شود که همان markup <code>app.js</code> را تولید کند
+      (crail, cpanel, cgroup, ctile). بعد app.js فقط به event handlers (click, accordion, search) کاهش می‌یابد.
+      ~۱۰۰-۱۵۰ خط PHP + ساده‌سازی app.js.
+    </dd>
+
+    <dt>منفعت:</dt>
+    <dd>
+      <ul>
+        <li>SEO: crawlerها کل درخت دسته را می‌بینند (internal linking بهتر)</li>
+        <li><code>TKA_WP.categories</code> در /categories/ حذف می‌شود (~۵-۱۰KB)</li>
+        <li>صفحه بدون JS هم کار می‌کند (progressive enhancement واقعی)</li>
+      </ul>
+    </dd>
+  </dl>
+</div>
+
+<h2 id="duplicate-pipelines">۷. خطوط تولید تکراری داده</h2>
+
+<p>این مهم‌ترین بخش برای فهمیدن «میراث تبدیل» است. ببینیم کدام داده‌ها از چند مسیر تولید می‌شوند:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>نوع داده</th>
+      <th>خط تولید ۱ (PHP/SSR)</th>
+      <th>خط تولید ۲ (JS)</th>
+      <th>خط تولید ۳ (Demo)</th>
+      <th>وضعیت</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Homepage rails (amazing/newest/best)</td>
+      <td><code>front-ssr.php:90-108</code> → HTML</td>
+      <td><code>TKA_WP.products</code> → <code>app.js</code></td>
+      <td><code>data.js</code> → <code>app.js</code></td>
+      <td><span class="badge badge-heritage">۳ خط — SSR primary، بقیه fallback</span></td>
+    </tr>
+    <tr>
+      <td>Homepage stories row</td>
+      <td><code>front-ssr.php:62-81</code> → HTML</td>
+      <td><code>TKA_WP.stories</code> → <code>app.js:104</code></td>
+      <td><code>data.js</code></td>
+      <td><span class="badge badge-heritage">۳ خط — SSR primary</span></td>
+    </tr>
+    <tr>
+      <td>Homepage brands row</td>
+      <td><code>front-ssr.php:177-194</code> → HTML</td>
+      <td><code>TKA_WP.brands</code> → <code>app.js</code></td>
+      <td><code>data.js</code></td>
+      <td><span class="badge badge-heritage">۳ خط — SSR primary</span></td>
+    </tr>
+    <tr>
+      <td>Homepage hero slider</td>
+      <td><code>front-ssr.php:115-148</code> → HTML</td>
+      <td><code>TKA_WP.hero</code> → <code>app.js:60</code></td>
+      <td><code>data.js</code></td>
+      <td><span class="badge badge-heritage">۳ خط — SSR primary، app.js فقط dots wiring</span></td>
+    </tr>
+    <tr>
+      <td>Homepage banner grid</td>
+      <td><code>front-ssr.php:155-170</code> → HTML</td>
+      <td><code>TKA_WP.grid</code> → <code>app.js</code></td>
+      <td><code>data.js</code></td>
+      <td><span class="badge badge-heritage">۳ خط — SSR primary</span></td>
+    </tr>
+    <tr>
+      <td>/categories/ category grid (بخش ۳)</td>
+      <td><code>page-categories.php</code> با <code>cats_page_grid_data()</code> → HTML</td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="badge badge-legitimate">۱ خط — SSR ✅</span></td>
+    </tr>
+    <tr>
+      <td>/categories/ popular rail (بخش ۴)</td>
+      <td><code>page-categories.php</code> با <code>cats_page_popular_data()</code> → HTML</td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="badge badge-legitimate">۱ خط — SSR ✅</span></td>
+    </tr>
+    <tr>
+      <td><strong>/categories/ tree browser (بخش ۵)</strong></td>
+      <td>—</td>
+      <td><code>TKA_WP.categories</code> → <code>app.js:168</code></td>
+      <td><code>data.js</code></td>
+      <td><span class="badge badge-remove">۲ خط — JS primary! ⚠️</span></td>
+    </tr>
+    <tr>
+      <td>Shop archive product grid</td>
+      <td><code>archive-product.php</code> → HTML (main loop)</td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="badge badge-legitimate">۱ خط — SSR ✅</span></td>
+    </tr>
+    <tr>
+      <td>PDP gallery</td>
+      <td><code>single-product.php</code> → HTML</td>
+      <td><code>app.js</code> (gallery wiring)</td>
+      <td>—</td>
+      <td><span class="badge badge-legitimate">۲ خط — SSR primary، JS enhancement</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout warning">
+  <strong>نکته:</strong> همهٔ موارد «۳ خط» در storefront واقعی (با <code>tka_fallback_demo=false</code>)
+  عملاً به «۱ خط SSR» تقلیل می‌یابند چون app.js با SSR guard skip می‌کند. ولی همچنان
+  <code>TKA_WP</code> ساخته و load می‌شود — یعنی bytes-down-the-wire waste.
+</div>
+
+<h2 id="heritage-inventory">۸. فهرست کامل میراث تبدیل</h2>
+
+<p>این فهرستی از همهٔ چیزهایی است که در یک قالب WordPress-first وجود نداشتند:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>مورد</th>
+      <th>فایل</th>
+      <th>چرا میراث است</th>
+      <th>推荐 وضعیت</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>H1</td>
+      <td><code>window.TKA_WP</code> (۶ کلید تکراری)</td>
+      <td><code>inc/front-data.php:470-538</code></td>
+      <td>پل بین demo JS و WordPress. ۶ از ۸ کلید با SSR تکراری.</td>
+      <td><span class="badge badge-refactor">REFACTOR</span> shrink to {fallback, catUrl}</td>
+    </tr>
+    <tr>
+      <td>H2</td>
+      <td><code>data.js</code> (demo dataset در JS)</td>
+      <td><code>assets/js/data.js</code></td>
+      <td>دیتاست دمو که بعد از import نیاز نیست ولی هنوز load می‌شود.</td>
+      <td><span class="badge badge-remove">REMOVE</span> gate on <code>tka_fallback_demo</code></td>
+    </tr>
+    <tr>
+      <td>H3</td>
+      <td><code>app.js</code> rails renderers</td>
+      <td><code>assets/js/app.js:95-155</code></td>
+      <td>رندرر demo که با SSR guard skip می‌کند. dead code در storefront.</td>
+      <td><span class="badge badge-refactor">REFACTOR</span> فقط hero wiring + timers باقی بماند</td>
+    </tr>
+    <tr>
+      <td>H4</td>
+      <td>مرور درختی /categories/ (JS-only)</td>
+      <td><code>page-categories.php:633-636</code> + <code>app.js:168-225</code></td>
+      <td>تنها بخش SEO-blind. داده در PHP هست ولی render به JS سپرده شده.</td>
+      <td><span class="badge badge-remove">CRITICAL</span> SSR کنید</td>
+    </tr>
+    <tr>
+      <td>H5</td>
+      <td>دو نسخه از demo dataset</td>
+      <td><code>assets/js/data.js</code> + <code>inc/demo/data.php</code></td>
+      <td>همان داده در JS و PHP. بعد از import، JS نسخه مرده است.</td>
+      <td><span class="badge badge-remove">REMOVE</span> data.js بعد از import</td>
+    </tr>
+    <tr>
+      <td>H6</td>
+      <td><code>main.js</code> sections 1-4 (demo bridge)</td>
+      <td><code>assets/js/main.js:1-190</code></td>
+      <td>path rewrite + TKA_WP merge + link fixer — پل بین demo و WP.</td>
+      <td><span class="badge badge-refactor">REFACTOR</span> اگر TKA_WP shrink شود</td>
+    </tr>
+    <tr>
+      <td>H7</td>
+      <td>default <code>tka_fallback_demo</code> متناقض</td>
+      <td><code>front-data.php:432</code> (false) vs <code>cat-data.php:315</code> (true)</td>
+      <td>همون key، دو default مختلف. ناسازگاری پنهان.</td>
+      <td><span class="badge badge-remove">FIX</span> align به false</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="legitimate">۹. کدهای legitimate (نه میراث)</h2>
+
+<p>برای انصاف، این چیزها legitimate هستند و در یک قالب WordPress-first هم می‌بودند:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>مورد</th>
+      <th>فایل</th>
+      <th>چرا legitimate</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>window.TKA_LIVE</code></td>
+      <td><code>functions.php:179-191</code></td>
+      <td>config برای live-search (URL، min chars، labels). استاندارد.</td>
+    </tr>
+    <tr>
+      <td><code>window.TKA_BASE</code></td>
+      <td><code>functions.php:157</code></td>
+      <td>theme URI برای path rewrite. استاندارد.</td>
+    </tr>
+    <tr>
+      <td><code>window.TKA_CART_URL</code> / <code>TKA_CHECKOUT_URL</code></td>
+      <td><code>functions.php:135-138</code></td>
+      <td>URL‌های WC. استاندارد.</td>
+    </tr>
+    <tr>
+      <td><code>main.js</code> بخش‌های ۵+ (back-to-top, drawers, wishlist, cart, PDP)</td>
+      <td><code>main.js:190-808</code></td>
+      <td>تعاملات استاندارد WP theme JS.</td>
+    </tr>
+    <tr>
+      <td><code>app.js</code> <code>startTimers()</code></td>
+      <td><code>app.js:42-57</code></td>
+      <td>تایمر شمارش معکوس — نیاز به JS دارد چون real-time است.</td>
+    </tr>
+    <tr>
+      <td><code>inc/front-ssr.php</code> (کل فایل)</td>
+      <td><code>inc/front-ssr.php</code></td>
+      <td>SSR renderer — این <strong>خودِ WordPress-first approach</strong> است.</td>
+    </tr>
+    <tr>
+      <td><code>inc/cache.php</code> (لایهٔ cache)</td>
+      <td><code>inc/cache.php</code></td>
+      <td>cache با event invalidation — طراحی درست.</td>
+    </tr>
+    <tr>
+      <td>WooCommerce hooks (<code>inc/wc-hooks.php</code>)</td>
+      <td><code>inc/wc-hooks.php</code></td>
+      <td>standard WC main query + unhook duplicates.</td>
+    </tr>
+    <tr>
+      <td>AJAX/REST endpoints (live-search, wishlist)</td>
+      <td><code>inc/ajax-search.php</code>, <code>inc/rest-search.php</code>, <code>inc/wishlist.php</code></td>
+      <td>standard WP AJAX/REST.</td>
+    </tr>
+    <tr>
+      <td><code>inc/demo-import.php</code> (demo importer)</td>
+      <td><code>inc/demo-import.php</code></td>
+      <td>idempotent، separate settings-only variant، standard WP theme pattern.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="wordpress-first">۱۰. اگر از صفر WordPress-first می‌ساختیم</h2>
+
+<p>این سناریوی فرضی شماست:</p>
+
+<div class="card">
+  <h4>سناریوی WordPress-first:</h4>
+  <ol>
+    <li>قالب را برای WordPress/WooCommerce از صفر می‌نوشتید.</li>
+    <li>دیتای دمو را در تنظیمات/داده‌های وردپرس تعریف می‌کردید (نه در یک فایل JS).</li>
+    <li>بعد از نصب، کاربر با یک کلیک دمو را import می‌کرد.</li>
+    <li>از آن لحظه، WordPress منبع اصلی اطلاعات بود.</li>
+  </ol>
+
+  <h4>تفاوت‌های معماری:</h4>
+
+  <div class="arch-diagram">
+<pre>  ┌─────────────────────────────────────────────────────┐
+  │           معماری فعلی (Demo-first)                    │
+  │                                                       │
+  │  WordPress → PHP → ┬→ SSR HTML                       │
+  │                    └→ TKA_WP JSON → main.js → app.js │
+  │                                                       │
+  │  data.js (demo) ──────────────────→ app.js fallback  │
+  └───────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────┐
+  │           معماری WordPress-first (فرضی)               │
+  │                                                       │
+  │  WordPress → PHP → SSR HTML (تنها مسیر)              │
+  │                                                       │
+  │  JS فقط برای: click handlers, AJAX, slider, timer   │
+  │  JS config: {ajaxUrl, nonce, cartUrl} (کوچک)        │
+  └───────────────────────────────────────────────────────┘
+</pre>
+  </div>
+
+  <h4>چه چیزهایی حذف می‌شد:</h4>
+  <ul>
+    <li><strong><code>data.js</code></strong> — کامل حذف. بعد از import، WordPress منبع داده است.</li>
+    <li><strong><code>app.js</code> rails renderers</strong> — حذف. SSR کافی است.</li>
+    <li><strong><code>TKA_WP.products/stories/brands/hero/grid/strip</code></strong> — حذف. SSR آن‌ها را render می‌کند.</li>
+    <li><strong><code>main.js</code> sections 1-4</strong> — حذف. path rewrite + TKA_WP merge نیاز نیست.</li>
+    <li><strong>مرور درختی /categories/ JS renderer</strong> — حذف. SSR آن را render می‌کند.</li>
+    <li><strong><code>inc/demo/data.php</code></strong> — ممکن است بماند (برای importer) ولی بدون تکرار با JS.</li>
+  </ul>
+
+  <h4>چه چیزهایی باقی می‌ماند:</h4>
+  <ul>
+    <li><code>inc/front-ssr.php</code> (SSR renderer) — <strong>این خودِ WordPress-first است</strong></li>
+    <li><code>main.js</code> بخش‌های ۵+ (تعاملات)</li>
+    <li>یک <code>window.TKA_CONFIG = {ajaxUrl, nonce, cartUrl}</code> کوچک</li>
+    <li><code>app.js</code> فقط <code>startTimers()</code> + hero slider dots</li>
+    <li>کل لایهٔ cache، WC hooks، AJAX/REST endpoints</li>
+  </ul>
+
+  <h4>صرفه‌جویی:</h4>
+  <ul>
+    <li>~۱۵KB gzip در هر homepage (data.js + app.js rails + TKA_WP تکراری)</li>
+    <li>~۲ HTTP request کمتر</li>
+    <li>سادگی معماری: ۱ مسیر داده به‌جای ۳</li>
+    <li>SEO بهتر برای /categories/ tree</li>
+  </ul>
+</div>
+
+<h2 id="recommendations">۱۱. توصیه‌ها و اولویت‌بندی</h2>
+
+<p>این توصیه‌ها بر اساس «منفعت vs ریسک» مرتب شده‌اند. هیچ‌کدام <strong>الزامی</strong> نیستند — قالب کار می‌کند. ولی اگر بخواهید معماری را تمیز کنید:</p>
+
+<h3>اولویت ۱ — کم‌ریسک، منفعت بالا (Quick Wins)</h3>
+
+<div class="finding refactor">
+  <h4>Q1 — Gate کردن data.js + app.js روی fallback <span class="badge badge-keep">LOW RISK</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>functions.php:152-166</code></dd>
+
+    <dt>تغییر:</dt>
+    <dd>
+      فقط وقتی <code>tka_fallback_demo=true</code> یا <code>!tka_demo_imported</code>، <code>data.js</code> را load کنید.
+      <code>app.js</code> فقط برای PDP gallery و homepage hero wiring لازم است — می‌توان آن را به یک فایل کوچک‌تر تقسیم کرد.
+    </dd>
+
+    <dt>منفعت:</dt>
+    <dd>~۸.۶KB gzip + ۲ HTTP request کمتر در هر homepage (storefront واقعی).</dd>
+
+    <dt>ریسک:</dt>
+    <dd>کم. فقط وقتی fallback فعال است، data.js load می‌شود. اگر کاربر fallback را خاموش کند و data.js نباشد، app.js با SSR کار می‌کند.</dd>
+
+    <dt>توصیه:</dt>
+    <dd><span class="badge badge-keep">DO IT</span> — کم‌ریسک، منفعت روشن.</dd>
+  </dl>
+</div>
+
+<div class="finding refactor">
+  <h4>Q2 — Shrink کردن TKA_WP در storefront <span class="badge badge-keep">LOW RISK</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>inc/front-data.php:544-566</code></dd>
+
+    <dt>تغییر:</dt>
+    <dd>
+      وقتی <code>tka_demo_imported=true</code> و <code>tka_fallback_demo=false</code>، فقط <code>{fallback, catUrl}</code> emit کنید.
+      ۶ کلید تکراری حذف می‌شوند.
+    </dd>
+
+    <dt>منفعت:</dt>
+    <dd>~۱۲-۱۴KB کمتر در هر homepage (storefront واقعی).</dd>
+
+    <dt>ریسک:</dt>
+    <dd>کم. app.js با SSR guard کار می‌کند. اگر TKA_WP.products نباشد، <code>main.js:63</code> skip می‌شود.</dd>
+
+    <dt>توصیه:</dt>
+    <dd><span class="badge badge-keep">DO IT</span> — کم‌ریسک، منفعت روشن.</dd>
+  </dl>
+</div>
+
+<div class="finding refactor">
+  <h4>Q3 — Align کردن default tka_fallback_demo <span class="badge badge-keep">LOW RISK</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>inc/cat-data.php:315</code></dd>
+
+    <dt>تغییر:</dt>
+    <dd><code>get_theme_mod('tka_fallback_demo', true)</code> → <code>false</code></dd>
+
+    <dt>منفعت:</dt>
+    <dd>consistency. در storefront واقعی، /categories/ هم مثل homepage fallback را خاموش می‌کند.</dd>
+
+    <dt>ریسک:</dt>
+    <dd>کم. فقط وقتی <code>tka_fallback_demo</code> تنظیم نشده، default تغییر می‌کند.</dd>
+
+    <dt>توصیه:</dt>
+    <dd><span class="badge badge-keep">DO IT</span> — یک‌خطی.</dd>
+  </dl>
+</div>
+
+<h3>اولویت ۲ — ریسک متوسط، منفعت بالا</h3>
+
+<div class="finding remove">
+  <h4>R1 — SSR کردن مرور درختی /categories/ <span class="badge badge-refactor">MEDIUM RISK</span></h4>
+  <dl>
+    <dt>محل:</dt>
+    <dd><code>page-categories.php:633-636</code> + <code>app.js:168-225</code> + <code>inc/cat-data.php</code></dd>
+
+    <dt>تغییر:</dt>
+    <dd>
+      PHP renderer بنویسید که همان markup <code>app.js</code> را تولید کند (crail, cpanel, cgroup, ctile).
+      <code>app.js</code> فقط به event handlers (click, accordion, search) کاهش می‌یابد.
+    </dd>
+
+    <dt>منفعت:</dt>
+    <dd>
+      <ul>
+        <li><strong>SEO:</strong> crawlerها کل درخت دسته را می‌بینند</li>
+        <li>صفحه بدون JS هم کار می‌کند</li>
+        <li><code>TKA_WP.categories</code> در /categories/ حذف می‌شود (~۵-۱۰KB)</li>
+      </ul>
+    </dd>
+
+    <dt>ریسک:</dt>
+    <dd>متوسط. باید PHP renderer دقیقاً همان markup app.js را تولید کند. تست بصری لازم است.</dd>
+
+    <dt>توصیه:</dt>
+    <dd><span class="badge badge-refactor">DO IT — ولی با تست بصری</span>. این تنها مورد SEO-blind است.</dd>
+  </dl>
+</div>
+
+<h3>اولویت ۳ — ریسک بالا، فقط اگر refactor بزرگ انجام می‌دهید</h3>
+
+<div class="finding refactor">
+  <h4>R2 — حذف کامل data.js و app.js rails renderers <span class="badge badge-remove">HIGH RISK</span></h4>
+  <dl>
+    <dt>تغییر:</dt>
+    <dd>
+      حذف <code>data.js</code> کامل. حذف <code>app.js</code> rails renderers. فقط <code>startTimers()</code> و hero wiring باقی بماند.
+      این یک refactor بزرگ است که کل معماری demo-first را به WordPress-first تبدیل می‌کند.
+    </dd>
+
+    <dt>منفعت:</dt>
+    <dd>سادگی معماری. ~۱۵KB gzip کمتر. ۱ مسیر داده به‌جای ۳.</dd>
+
+    <dt>ریسک:</dt>
+    <dd>بالا. <code>main.js</code> sections 1-4 باید rewrite شوند. <code>app.js</code> باید split شود.
+      fallback mode (وقتی import نشده) ممکن است خراب شود.</dd>
+
+    <dt>توصیه:</dt>
+    <dd><span class="badge badge-optional">DEFER</span> — فقط اگر زمان کافی برای تست کامل دارید. برای Production فعلاً Q1+Q2 کافی است.</dd>
+  </dl>
+</div>
+
+<h2 id="risk-matrix">۱۲. ماتریس ریسک و منفعت</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>توصیه</th>
+      <th>منفعت</th>
+      <th>ریسک</th>
+      <th>اولویت</th>
+      <th>اقدام</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Q1: Gate data.js+app.js</td>
+      <td>~۸.۶KB gzip + ۲ HTTP کمتر</td>
+      <td>کم</td>
+      <td>۱</td>
+      <td><span class="badge badge-keep">DO IT</span></td>
+    </tr>
+    <tr>
+      <td>Q2: Shrink TKA_WP</td>
+      <td>~۱۲-۱۴KB کمتر</td>
+      <td>کم</td>
+      <td>۱</td>
+      <td><span class="badge badge-keep">DO IT</span></td>
+    </tr>
+    <tr>
+      <td>Q3: Align fallback default</td>
+      <td>consistency</td>
+      <td>خیلی کم</td>
+      <td>۱</td>
+      <td><span class="badge badge-keep">DO IT</span></td>
+    </tr>
+    <tr>
+      <td>R1: SSR /categories/ tree</td>
+      <td>SEO + accessibility</td>
+      <td>متوسط</td>
+      <td>۲</td>
+      <td><span class="badge badge-refactor">DO IT با تست</span></td>
+    </tr>
+    <tr>
+      <td>R2: حذف کامل data.js/app.js</td>
+      <td>سادگی معماری</td>
+      <td>بالا</td>
+      <td>۳</td>
+      <td><span class="badge badge-optional">DEFER</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="conclusion">۱۳. نتیجه‌گیری</h2>
+
+<div class="card">
+  <h4>پاسخ به سؤال اصلی شما:</h4>
+  <p>
+    <strong>بله، قالب شما میراث قابل‌توجهی از تبدیل HTML→WordPress دارد.</strong>
+    مهم‌ترین آن‌ها:
+  </p>
+  <ol>
+    <li><code>TKA_WP</code> یک پل بین demo JS و WordPress است که در storefront واقعی، ۶ از ۸ کلیدش تکراری با SSR است.</li>
+    <li><code>data.js</code> بعد از import دمو دیگر نیاز ندارد ولی هنوز load می‌شود.</li>
+    <li><code>app.js</code> rails renderers در storefront واقعی dead code هستند (SSR guard).</li>
+    <li>مرور درختی /categories/ کاملاً JS-rendered است (SEO-blind) — <strong>تنها مورد بحرانی</strong>.</li>
+  </ol>
+
+  <h4>آیا این یک «اشتباه تبدیل» است؟</h4>
+  <p>
+    <strong>نه کاملاً.</strong> این الگو (demo-first → WordPress overlay) در قالب‌های تجاری رایج است
+    و کار می‌کند. ولی اگر هدف شما یک قالب WordPress-first حرفه‌ای است، این لایه‌ها ساده می‌شدند.
+  </p>
+
+  <h4>آیا باید الان تغییر کند؟</h4>
+  <p>
+    <strong>برای Production فعلی: نه.</strong> قالب کار می‌کند، SEO برای homepage/shop/PDP درست است
+    (همه SSR هستند)، و fallback mode کار می‌کند. ولی:
+  </p>
+  <ul>
+    <li><strong>Q1+Q2+Q3</strong> (کم‌ریسک) را می‌توانید الان انجام دهید — ~۲۰KB کمتر در هر homepage.</li>
+    <li><strong>R1</strong> (SSR /categories/ tree) را قبل از Production انجام دهید — SEO واقعی.</li>
+    <li><strong>R2</strong> (حذف کامل) را به نسخهٔ بعد موکول کنید.</li>
+  </ul>
+
+  <h4>نکتهٔ نهایی:</h4>
+  <p>
+    این گزارش <strong>هیچ کدی را تغییر نداد</strong>. فقط نقشهٔ معماری و «میراث» را شناسایی کرد.
+    تصمیم refactor با شماست — بر اساس منفعت vs ریسک و زمان موجود.
+  </p>
+</div>
+
+<div class="callout success">
+  <strong>نقاط قوت قالب (برای انصاف):</strong>
+  <ul>
+    <li>SSR برای homepage rails، shop، category، PDP — همه درست</li>
+    <li>لایهٔ cache با event invalidation — طراحی درست</li>
+    <li>WooCommerce hooks استاندارد</li>
+    <li> AJAX/REST endpoints با throttle و cache</li>
+    <li>Demo importer idempotent با separate settings variant</li>
+    <li>صفر cron، صفر HTTP خروجی</li>
+  </ul>
+  این‌ها نشان می‌دهد بخش‌های اصلی قالب WordPress-first طراحی شده‌اند. میراث تبدیل فقط در
+  «لایهٔ پل demo→WP» (TKA_WP + data.js + app.js renderers) متمرکز است.
+</div>
+
+<div class="footer">
+  <p>
+    این گزارش بر اساس ممیزی استاتیک کد (commit <code>f4c265b</code>) نوشته شده است.
+    هیچ runtime measurement انجام نشده. اعداد حجم از گزارش v0.19.0 (که با اندازه‌گیری واقعی بود) گرفته شده‌اند.
+  </p>
+  <p style="margin-top:12px;">
+    <strong>هیچ فایلی در این ممیزی تغییر نکرده است.</strong><br>
+    <strong>این گزارش فقط شناسایی است — تصمیم refactor با شماست.</strong>
+  </p>
+</div>
+
+</div>
+</body>
+</html>

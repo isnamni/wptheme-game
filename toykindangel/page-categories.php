@@ -22,7 +22,7 @@
  * @package ToyKindAngel
  */
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+        exit;
 }
 
 
@@ -630,16 +630,32 @@ function toykindangel_cats_page_popular_data_uncached() {
                                 <input type="search" id="catSearch" placeholder="<?php esc_attr_e( 'جستجوی سریع در دسته‌ها…', 'toykindangel' ); ?>">
                         </label>
 
-                        <div class="cpage cthub-cpage">
-                                <aside class="crail" id="catRail" aria-label="<?php esc_attr_e( 'دسته‌های اصلی', 'toykindangel' ); ?>"></aside>
-                                <div class="cpanel" id="catPanel" aria-label="<?php esc_attr_e( 'زیردسته‌ها', 'toykindangel' ); ?>"></div>
-                        </div>
-
-                        <noscript>
-                                <div class="tka-cats-noscript">
-                                        <?php esc_html_e( 'برای مشاهده مرور درختی دسته‌بندی‌ها، جاوااسکریپت مرورگر را فعال کنید؛ تا آن زمان از کارت‌های دسته‌بندی بالا استفاده کنید.', 'toykindangel' ); ?>
+                        <?php
+                        /*
+                         * v0.21.0 refactor — the tree is now server-rendered by
+                         * toykindangel_ssr_categories_tree() (inc/front-ssr.php).
+                         * Previously these containers were empty and painted by
+                         * app.js from window.TKA_WP.categories (SEO-blind). Now
+                         * the full tree with real hrefs is in the HTML; JS only
+                         * wires the rail switch, accordion and live filter.
+                         */
+                        $tka_tree_html = toykindangel_ssr_categories_tree();
+                        if ( '' !== $tka_tree_html ) :
+                                echo $tka_tree_html; // phpcs:ignore WordPress.Security.EscapeOutput -- escaped inside the SSR helper.
+                        else :
+                                ?>
+                                <div class="cpage cthub-cpage">
+                                        <aside class="crail" id="catRail" aria-label="<?php esc_attr_e( 'دسته‌های اصلی', 'toykindangel' ); ?>"></aside>
+                                        <div class="cpanel" id="catPanel" aria-label="<?php esc_attr_e( 'زیردسته‌ها', 'toykindangel' ); ?>"></div>
                                 </div>
-                        </noscript>
+                                <noscript>
+                                        <div class="tka-cats-noscript">
+                                                <?php esc_html_e( 'هنوز دسته‌بندی‌ای ساخته نشده است.', 'toykindangel' ); ?>
+                                        </div>
+                                </noscript>
+                                <?php
+                        endif;
+                        ?>
                 </div>
         </section>
 

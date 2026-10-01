@@ -1,16 +1,21 @@
 <?php
 /**
- * Categories-browser page data (Step 4 — phase 1).
+ * Categories-browser data (Step 4 — phase 1).
  *
- * Builds the two-column category browser (demo categories.html) dataset:
- *   window.TKA_WP = { categories, catLinks, catByName, productImgs, … }
+ * v0.21.0 refactor — the bulky window.TKA_WP payload (categories,
+ * catLinks, catByName, productImgs) is no longer shipped to JS. The
+ * full category tree is server-rendered by toykindangel_ssr_categories_tree()
+ * (inc/front-ssr.php) directly from toykindangel_cats_data(). JS only
+ * needs two URLs (catUrl, searchUrl) for the drawer/tree interactions.
  *
- * Data source priority:
- *   1. product_cat            (WooCommerce product categories — production)
- *   2. tka_store_cat          (theme fallback taxonomy — no-WC installs / test)
- *   3. demo sample data       (data.js stays untouched when no terms exist)
+ * Data source priority (unchanged):
+ *   1. product_cat   (WooCommerce product categories — production)
+ *   2. tka_store_cat (theme fallback taxonomy — no-WC installs / test)
+ *   3. empty         (the SSR helper returns an empty string and the
+ *      template shows a "no categories yet" state — no demo fallback)
  *
- * Tree mapping (mirrors the demo contract in app.js renderCategories):
+ * Tree mapping (consumed by the SSR helper, mirrors the original demo
+ * contract so the rendered markup matches app.js 1:1):
  *   top-level term          → rail item   { name, img }
  *   child term w/ children  → group       { title, items[] }
  *   child term w/o children → item inside an implicit "زیردسته‌ها" group
@@ -114,20 +119,20 @@ function toykindangel_term_link( $term ) {
  * @return array|null Null when no terms exist (demo fallback keeps showing).
  */
 function toykindangel_cats_data() {
-	static $tka_local = null;
-	if ( null !== $tka_local ) {
-		return $tka_local;
-	}
+        static $tka_local = null;
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
 
-	$tka_local = toykindangel_cache_get( 'cats_tree' );
-	if ( null === $tka_local ) {
-		$tka_local = toykindangel_cats_data_uncached();
-		if ( null !== $tka_local ) {
-			toykindangel_cache_set( 'cats_tree', $tka_local, 12 * HOUR_IN_SECONDS );
-		}
-	}
+        $tka_local = toykindangel_cache_get( 'cats_tree' );
+        if ( null === $tka_local ) {
+                $tka_local = toykindangel_cats_data_uncached();
+                if ( null !== $tka_local ) {
+                        toykindangel_cache_set( 'cats_tree', $tka_local, 12 * HOUR_IN_SECONDS );
+                }
+        }
 
-	return $tka_local;
+        return $tka_local;
 }
 
 /**
@@ -299,27 +304,22 @@ function toykindangel_cats_data_uncached() {
 }
 
 /**
- * Print window.TKA_WP for the categories page, just before main.js.
+ * Print a small window.TKA_WP config for the /categories/ page.
  *
- * Main.js applies the dataset onto the untouched demo data before
- * app.js renders the browser (same override pattern as the front page).
+ * v0.21.0 refactor — the full categories tree is now server-rendered by
+ * toykindangel_ssr_categories_tree() (inc/front-ssr.php), so the bulky
+ * categories/catLinks/catByName/productImgs payload is no longer shipped
+ * to JS. Only the handful of URLs the interactions actually need remain.
  */
 function toykindangel_localize_cats_data() {
         if ( ! is_page( 'categories' ) ) {
                 return;
         }
 
-        $tka_data = toykindangel_cats_data();
-
         $tka_payload = array(
-                'fallback'  => wp_validate_boolean( get_theme_mod( 'tka_fallback_demo', true ) ),
                 'catUrl'    => toykindangel_categories_url(),
                 'searchUrl' => home_url( '/' ),
         );
-
-        if ( $tka_data ) {
-                $tka_payload = array_merge( $tka_payload, $tka_data );
-        }
 
         wp_add_inline_script(
                 'toykindangel-main',

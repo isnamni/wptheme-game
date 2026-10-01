@@ -101,13 +101,18 @@ function toykindangel_content_width() {
 add_action( 'after_setup_theme', 'toykindangel_content_width', 0 );
 
 /**
- * Enqueue styles and scripts — exact mirror of the demo pipeline:
- *   demo.css  → untouched demo stylesheet (tokens + components)
- *   main.css  → WordPress compatibility layer
- *   icons.svg → SVG sprite, printed inline at wp_body_open (inc/icons.php)
- *   data.js   → demo dataset (local paths remapped via window.TKA_BASE)
- *   app.js    → demo logic (hero slider, product rows, timers)
- *   main.js   → WordPress glue (back-to-top, admin-bar offset…)
+ * Enqueue styles and scripts — WordPress-first asset pipeline.
+ *
+ * v0.21.0 refactor — the demo dataset (data.js) and demo renderers are
+ * gone; every section is server-rendered. The script chain is now:
+ *   app.js    → interactions only (hero slider, PDP gallery, countdown
+ *               timers); reads from the DOM, never from a demo dataset.
+ *   main.js   → WordPress glue (cats-tree interactions, back-to-top,
+ *               drawers, wishlist, cart, PDP, sticky header, …).
+ *   live-search.js → header searchbox dropdown.
+ *   wc.js     → WooCommerce glue (qty steppers, mini-cart drawer).
+ *
+ * CSS chain unchanged: base → demo → main → responsive → wc-pages/pdp.
  */
 function toykindangel_scripts() {
         // WordPress standard header stylesheet (theme header only).
@@ -139,39 +144,50 @@ function toykindangel_scripts() {
         );
 
         /*
-         * 0.17.0 — demo payload gating (audit P2-7): the demo dataset and the
-         * demo application logic are only shipped where demo-rendered mounts
-         * exist. main.js handles the WP glue everywhere; its TKA usage is
-         * guarded by `if (T && B)` and app.js renderers guard their containers
-         * (#home / #catRail / .hero), so the PDP only needs app.js for the
-         * gallery wiring (#galleryTrack / #galleryThumbs) — not the dataset.
+         * v0.21.0 refactor — WordPress-first script loading.
+         *
+         * Previously the homepage and /categories/ pages also loaded a demo
+         * dataset (data.js) and the full demo renderer (app.js) so JS could
+         * paint sections from window.TKA. All those sections are now server-
+         * rendered by inc/front-ssr.php, so:
+         *   - data.js is no longer enqueued at all (the file is kept on disk
+         *     only as a historical reference for the demo-importer source).
+         *   - app.js is loaded only where its three real interactions are
+         *     needed: hero slider (homepage), gallery (PDP), timers (any page
+         *     with [data-timer]). It no longer reads window.TKA.
+         *   - main.js is the WordPress glue layer, loaded everywhere.
          */
-        $tka_needs_dataset = is_front_page() || is_page( 'categories' ) || is_page_template( 'page-categories.php' );
-        $tka_needs_app     = $tka_needs_dataset || is_singular( 'product' );
+        $tka_needs_app = is_front_page()
+                || is_page( 'categories' )
+                || is_page_template( 'page-categories.php' )
+                || is_singular( 'product' );
 
-        if ( $tka_needs_dataset ) {
-                // 2) Demo dataset + base-URI remap for the local demo images.
-                wp_enqueue_script( 'toykindangel-data', TOYKINDANGEL_URI . '/assets/js/data.js', array(), TOYKINDANGEL_VERSION, true );
-                wp_add_inline_script(
-                        'toykindangel-data',
-                        'window.TKA_BASE=' . wp_json_encode( TOYKINDANGEL_URI ) . ';',
-                        'before'
-                );
-
-                // 3) Demo application logic (dataset-driven).
-                wp_enqueue_script( 'toykindangel-app', TOYKINDANGEL_URI . '/assets/js/app.js', array( 'toykindangel-data' ), TOYKINDANGEL_VERSION, true );
-        } elseif ( $tka_needs_app ) {
-                // Product page: gallery wiring only — the demo dataset stays out.
+        if ( $tka_needs_app ) {
                 wp_enqueue_script( 'toykindangel-app', TOYKINDANGEL_URI . '/assets/js/app.js', array(), TOYKINDANGEL_VERSION, true );
         }
 
-        // 4) WordPress glue layer (always last in the theme chain).
+        // WordPress glue layer (always last in the theme chain).
         wp_enqueue_script(
                 'toykindangel-main',
                 TOYKINDANGEL_URI . '/assets/js/main.js',
                 $tka_needs_app ? array( 'toykindangel-app' ) : array(),
                 TOYKINDANGEL_VERSION,
                 true
+        );
+        wp_add_inline_script(
+                'toykindangel-main',
+                'window.TKA_BASE=' . wp_json_encode( TOYKINDANGEL_URI ) . ';',
+                'before'
+        );
+        /*
+         * v0.21.0 — a tiny global config so the cats-drawer search (which
+         * runs on every page via footer.php) can jump to the WP search page
+         * without needing the full homepage/categories TKA_WP payload.
+         */
+        wp_add_inline_script(
+                'toykindangel-main',
+                'window.TKA_WP=Object.assign({searchUrl:' . wp_json_encode( home_url( '/' ) ) . '}, window.TKA_WP||{});',
+                'before'
         );
 
         // 5) Live search (header searchbox dropdown) — REST-first, ajax fallback.

@@ -64,7 +64,6 @@ add_action( 'wp_head', 'toykindangel_preload_assets', 2 );
  */
 function toykindangel_defer_scripts( $tag, $handle ) {
         $defer = array(
-                'toykindangel-data',
                 'toykindangel-app',
                 'toykindangel-main',
         );

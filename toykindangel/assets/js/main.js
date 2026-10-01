@@ -1,193 +1,116 @@
 /**
  * ToyKind Angel — WordPress glue layer.
- * (demo logic itself lives in app.js — untouched)
  *
- *  1) Remaps the demo's relative asset paths to the real theme URI.
- *  2) Applies the server-provided dataset (window.TKA_WP — built by
- *     inc/front-data.php from Customizer + WooCommerce) onto the demo
- *     dataset BEFORE app.js renders at DOMContentLoaded.
- *  3) After render, fixes links the demo hardcodes (categories.html, "#").
- *  4) Back-to-top button.
+ * v0.21.0 refactor — this file used to be the "demo bridge": it merged
+ * window.TKA_WP onto window.TKA (demo dataset) before app.js rendered,
+ * then fixed the demo's hardcoded href="#" links after render. All of
+ * that is gone now that every section is server-rendered by PHP with
+ * real hrefs. What remains is genuine WordPress theme JS:
+ *
+ *   - /categories/ tree browser interactions (rail switch, accordion,
+ *     live filter) — the tree HTML itself is server-rendered by
+ *     toykindangel_ssr_categories_tree(); JS only toggles visibility
+ *     and filters tiles.
+ *   - Back-to-top button.
+ *   - PDP glue (back/share/fav).
+ *   - Drawers (menu, categories, minicart).
+ *   - Wishlist (localStorage + AJAX render).
+ *   - Cart steppers + add-to-cart fragments.
+ *   - Variable-product chip selector.
+ *   - Rail scroll arrows.
+ *   - Sticky header.
+ *
+ * No dependency on window.TKA (demo dataset) remains.
  */
 (function () {
         'use strict';
 
-        var T = window.TKA;
-        var B = window.TKA_BASE;
-        var WP = window.TKA_WP;
-
-        /* ---------- 1) Demo path rewrite ("assets/img/…" → TKA_BASE + path) ---------- */
-        if (T && B) {
-                var fix = function (p) {
-                        return (typeof p === 'string' && p.indexOf('assets/') === 0) ? B + '/' + p : p;
-                };
-                ['hero', 'grid'].forEach(function (k) {
-                        (T.banners[k] || []).forEach(function (b) { b.img = fix(b.img); });
-                });
-                if (T.banners.strip) { T.banners.strip.img = fix(T.banners.strip.img); }
-                T.stories.forEach(function (s) { s.img = fix(s.img); });
-                T.catIcons.forEach(function (s, i, a) { a[i] = fix(s); });
-                T.categories.forEach(function (c) { c.img = fix(c.img); });
-        }
-
-        /* ---------- 2) Apply the WordPress dataset (Step 3) ----------
-         * Every section is replaced ONLY when real WP data exists; empty
-         * sections keep showing the demo sample while "fallback" is on.  */
-        if (T && WP) {
-                var fallback = WP.fallback !== false;
-
-                if (WP.strip) { T.banners.strip = WP.strip; }
-                if (WP.hero && WP.hero.length) { T.banners.hero = WP.hero; }
-                if (WP.grid && WP.grid.length) { T.banners.grid = WP.grid; }
-                if (WP.stories && WP.stories.length) { T.stories = WP.stories; }
-                if (WP.brands && WP.brands.length) { T.brands = WP.brands; }
-
-                /* Categories browser (Step 4): real WP terms replace the
-                 * demo tree only when at least one top-level term exists
-                 * (an empty browser would break app.js paint(0)). */
-                if (WP.categories && WP.categories.length) {
-                        T.categories = WP.categories.map(function (c, i) {
-                                return {
-                                        name: c.name,
-                                        groups: c.groups || [],
-                                        /* Rail icon: term thumbnail, falling back
-                                         * to the local demo icon set. */
-                                        img: c.img || T.catIcons[i % T.catIcons.length]
-                                };
-                        });
-                }
-                if (WP.productImgs && WP.productImgs.length) {
-                        T.productImgs = WP.productImgs;
-                }
-
-                if (WP.products) {
-                        ['amazing', 'newest', 'best'].forEach(function (k) {
-                                if (WP.products[k] && WP.products[k].length) {
-                                        T.products[k] = WP.products[k];
-                                } else if (!fallback) {
-                                        T.products[k] = [];
-                                }
-                        });
-                }
-
-                if (!fallback) {
-                        if (!WP.stories) { T.stories = []; }
-                        if (!WP.brands) { T.brands = []; }
-                        if (!WP.hero) { T.banners.hero = []; }
-                        if (!WP.grid) { T.banners.grid = []; }
-                        if (!WP.products || !WP.products.amazing) { T.products.amazing = []; }
-                        if (!WP.products || !WP.products.newest) { T.products.newest = []; }
-                        if (!WP.products || !WP.products.best) { T.products.best = []; }
-                }
-        }
+        var WP = window.TKA_WP || {};
 
         document.addEventListener('DOMContentLoaded', function () {
-                /* ---------- 3) Fix hardcoded demo links after render ---------- */
-                var catUrl = WP && WP.catUrl ? WP.catUrl : '';
-                if (catUrl) {
-                        // Stories: app.js hardcodes href="categories.html".
-                        var storyLinks = (WP && WP.stories) || [];
-                        var storyAnchors = document.querySelectorAll('#storyRow a.story');
-                        [].forEach.call(storyAnchors, function (a, i) {
-                                a.href = (storyLinks[i] && storyLinks[i].href) ? storyLinks[i].href : catUrl;
-                        });
-
-                        // "مشاهده همه" cards at the end of each rail.
-                        [].forEach.call(document.querySelectorAll('.morecard[href="#"]'), function (a) {
-                                a.href = catUrl;
-                        });
-
-                        // Brand tiles (demo hardcodes "#").
-                        var brandLinks = (WP && WP.brands) || [];
-                        [].forEach.call(document.querySelectorAll('#brandRow a.brand'), function (a, i) {
-                                if (brandLinks[i] && brandLinks[i].href) { a.href = brandLinks[i].href; }
-                        });
-                }
-
-                /* ---------- 4) Categories browser glue (Step 4) ----------
-                 * app.js paints the two-column browser but leaves every
-                 * tile/link href as "#". Real URLs are attached here:
-                 *   - positional mapping while a category is painted
-                 *     (rail item i → catLinks[i], group j → groups[j])
-                 *   - label matching for live-search results
-                 * A MutationObserver re-applies it on every repaint
-                 * (rail switch / accordion / search) — no demo edits. */
+                /* ---------- 1) /categories/ tree browser interactions ----------
+                 * The tree is server-rendered (inc/front-ssr.php) with all
+                 * panels in the DOM. JS only:
+                 *   - switches the visible .cpanel__page on rail click,
+                 *   - toggles .cgroup--open on group-head click (accordion),
+                 *   - filters .ctile by name on #catSearch input,
+                 *   - deep-links #cat-N to the matching rail item,
+                 *   - jumps to WP search on Enter. */
                 var rail = document.getElementById('catRail');
                 var catPanel = document.getElementById('catPanel');
-                if (rail && catPanel && WP && WP.catLinks && WP.catLinks.length) {
+                if (rail && catPanel) {
+                        var pages = catPanel.querySelectorAll('.cpanel__page');
 
-                        var fixPanelLinks = function () {
-                                var onBtn = rail.querySelector('.crail__item.on');
-                                var idx = onBtn ? +onBtn.dataset.i : 0;
-                                var data = WP.catLinks[idx] || null;
-                                var call = catPanel.querySelector('a.call');
-                                var groups = catPanel.querySelectorAll('.cgroup');
-
-                                if (groups.length && data) {
-                                        /* Normal mode: call → top-term archive,
-                                         * tiles → child terms (last tile of each
-                                         * group is the demo's "همه کالاها" card). */
-                                        if (call && call.textContent.indexOf('مشاهده همه') > -1) {
-                                                call.href = data.url || WP.catUrl || '#';
-                                        }
-                                        var gi = 0;
-                                        [].forEach.call(groups, function (g) {
-                                                var gd = data.groups && data.groups[gi++];
-                                                if (!gd) { return; }
-                                                [].forEach.call(g.querySelectorAll('a.ctile'), function (a, k) {
-                                                        a.href = (k < gd.urls.length && gd.urls[k]) ? gd.urls[k] : (gd.url || '#');
-                                                });
-                                        });
-                                } else if (call && call.querySelector('small')) {
-                                        /* Search mode: header shows a <small> count —
-                                         * match tiles by their visible label. */
-                                        [].forEach.call(catPanel.querySelectorAll('a.ctile'), function (a) {
-                                                var lb = a.querySelector('.ctile__lb');
-                                                var name = lb ? lb.textContent : '';
-                                                if (WP.catByName && WP.catByName[name]) {
-                                                        a.href = WP.catByName[name];
-                                                }
-                                        });
-                                }
+                        var showPage = function (i) {
+                                [].forEach.call(pages, function (p, k) {
+                                        p.classList.toggle('on', k === i);
+                                });
+                                catPanel.scrollTop = 0;
                         };
 
-                        if ('MutationObserver' in window) {
-                                var panelMo = new MutationObserver(fixPanelLinks);
-                                panelMo.observe(catPanel, { childList: true });
-                        }
-                        fixPanelLinks();
-
-                        /* Deep link: /categories/#cat-N opens that rail item
-                         * (app.js painted index 0 — clicking re-runs its own
-                         * paint handler, keeping behaviour 1:1). */
-                        var hashM = /^#cat-(\d+)$/.exec(location.hash || '');
-                        if (hashM && rail.children[hashM[1]]) {
-                                rail.children[hashM[1]].click();
-                        }
-
-                        /* Keep the hash in sync when the user switches category. */
+                        /* Rail click → switch visible panel + sync hash. */
                         rail.addEventListener('click', function (e) {
                                 var btn = e.target.closest('.crail__item');
                                 if (!btn || !btn.dataset.i) { return; }
+                                var prev = rail.querySelector('.crail__item.on');
+                                if (prev) { prev.classList.remove('on'); }
+                                btn.classList.add('on');
+                                try { btn.scrollIntoView({ block: 'nearest' }); } catch (err) {}
+                                showPage(+btn.dataset.i);
                                 try {
                                         history.replaceState(null, '', '#cat-' + btn.dataset.i);
                                 } catch (err) { /* ignore */ }
                         });
-                }
 
-                /* Enter in the browser search jumps to the WP search page
-                 * (the demo input only filters the tree). */
-                var catSearch = document.getElementById('catSearch');
-                if (catSearch && WP && WP.searchUrl) {
-                        catSearch.addEventListener('keydown', function (e) {
-                                if (e.key === 'Enter' && catSearch.value.trim()) {
-                                        window.location.href = WP.searchUrl + '?s=' +
-                                                encodeURIComponent(catSearch.value.trim());
-                                }
+                        /* Accordion: click on .cgroup__head toggles that group. */
+                        catPanel.addEventListener('click', function (e) {
+                                var head = e.target.closest('.cgroup__head');
+                                if (!head) { return; }
+                                var grp = head.parentNode;
+                                var open = grp.classList.contains('cgroup--open');
+                                [].forEach.call(catPanel.querySelectorAll('.cgroup'), function (g) {
+                                        g.classList.remove('cgroup--open');
+                                });
+                                if (!open) { grp.classList.add('cgroup--open'); }
                         });
+
+                        /* Live filter: hide tiles whose label doesn't match.
+                         * Restores the full tree when the input is cleared. */
+                        var search = document.getElementById('catSearch');
+                        if (search) {
+                                search.addEventListener('input', function () {
+                                        var q = search.value.trim();
+                                        if (!q) {
+                                                [].forEach.call(catPanel.querySelectorAll('.ctile'), function (t) {
+                                                        t.style.display = '';
+                                                });
+                                                return;
+                                        }
+                                        var ql = q.toLowerCase();
+                                        [].forEach.call(catPanel.querySelectorAll('.ctile'), function (t) {
+                                                var lb = t.querySelector('.ctile__lb');
+                                                var name = lb ? lb.textContent.toLowerCase() : '';
+                                                t.style.display = name.indexOf(ql) > -1 ? '' : 'none';
+                                        });
+                                });
+
+                                /* Enter → jump to WP search page. */
+                                search.addEventListener('keydown', function (e) {
+                                        if (e.key === 'Enter' && search.value.trim() && WP.searchUrl) {
+                                                window.location.href = WP.searchUrl + '?s=' +
+                                                        encodeURIComponent(search.value.trim());
+                                        }
+                                });
+                        }
+
+                        /* Deep link: /categories/#cat-N opens that rail item. */
+                        var hashM = /^#cat-(\d+)$/.exec(location.hash || '');
+                        if (hashM && rail.children[+hashM[1]]) {
+                                rail.children[+hashM[1]].click();
+                        }
                 }
 
-                /* ---------- 5) Back to top ---------- */
+                /* ---------- 2) Back to top ---------- */
                 var btn = document.getElementById('tka-backtop');
                 if (btn) {
                         var toggleVisibility = function () {
