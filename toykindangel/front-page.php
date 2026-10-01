@@ -11,7 +11,7 @@
  * @package ToyKindAngel
  */
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+        exit;
 }
 
 
@@ -151,7 +151,7 @@ else :
         </section>
         <?php endif; ?>
 
-        <!-- دسته‌بندی‌های اصلی فروشگاه (سبک اسنپ‌شاپ) — TKA 0.18.0 -->
+        <!-- دسته‌بندی‌های اصلی فروشگاه — TKA 0.18.0 -->
         <?php
         /*
          * v0.20.0 audit fix C1 — moved to toykindangel_ssr_catgrid() (inc/front-ssr.php).

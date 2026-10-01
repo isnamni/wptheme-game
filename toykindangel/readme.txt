@@ -1,9 +1,9 @@
 === ToyKind Angel ===
-Contributors: toykindangel
+Contributors: sina aminzadeh
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.21.0
+Stable tag: 0.21.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: e-commerce, rtl-language-support, custom-logo, custom-menu, featured-images, translation-ready
@@ -27,6 +27,29 @@ Tags: e-commerce, rtl-language-support, custom-logo, custom-menu, featured-image
 4. راهنمای کامل: README.fa.md در بسته
 
 == Changelog ==
+
+= 0.21.1 =
+* افزودن آیکون حساب کاربری به هدر دسکتاپ (کنار سبد خرید) — وقتی کاربر لاگین نیست → صفحهٔ ورود/عضویت، وقتی لاگین هست → داشبورد حساب کاربری. در موبایل پنهان است چون bottomnav همان کار را می‌کند.
+* رفع باگ بنر بالای هدر (topstrip): عکس حالا سمت سرور رندر می‌شود (قبلاً خالی بود). وقتی کاربر پایین اسکرول می‌کند، بنر به‌صورت نرم محو می‌شود و فضای خالی نمی‌ماند.
+* حذف تمام اشاره‌های نام «اسنپ»/«اسنپ‌شاپ» و «کپی‌شده» از کامنت‌های کد و مستندات.
+* تغییر نام طراح قالب به «sina aminzadeh» در style.css و readme.txt.
+* به‌روزرسانی grid هدر دسکتاپ برای ۵ ستون (لوگو | جستجو | علاقه‌مندی | حساب | سبد).
+
+= 0.21.0 =
+* Refactor معماری WordPress-first: حذف data.js از runtime، حذف demo renderers از app.js، حذف demo bridge از main.js، SSR کردن categories tree، shrink کردن TKA_WP از ~15KB به ~80 بایت.
+
+= 0.20.1 =
+* رفع باگ HPOS در ویجت داشبورد (wp_count_posts → wc_get_orders paginate).
+* رفع تشخیص افزونهٔ Yoast (WPSEO_VERSION به‌جای WPSEO_Frontend حذف‌شده).
+* افزودن throttle و cache به endpoint عمومی wishlist.
+
+= 0.20.0 =
+* رفع N+1 در homepage catgrid، /categories/ SSR، footer drawer، archive subcategories.
+* رفع باگ correctness در شمارش low-stock (سقف ۲۰۰ حذف شد).
+* بازنویسی order_total_sum با SQL مستقیم (حذف wc_get_orders limit=-1).
+* حذف تکرار Product JSON-LD با WooCommerce core.
+* batch کردن related products در PDP.
+
 = 0.17.0 =
 * فاز ۱ و ۲ سند ممیزی agent-skills (docs/theme-audit-agent-skills.html) کامل بسته شد — تمام موارد P1 و P2 و «ابزار و تضمین کیفیت»:
 * هم‌ترازی ۹ قالب ووکامرس با هستهٔ ۱۱٫۲ (هوک‌به‌هوک: cart-empty، form-checkout، orders، navigation و…) — طراحی/کلاس‌ها بایت‌به‌بایت همان قبلی
@@ -41,7 +64,7 @@ Tags: e-commerce, rtl-language-support, custom-logo, custom-menu, featured-image
 = 0.16.0 =
 * رفع خرابی فونت در فروشگاه/دسته‌بندی/صفحهٔ محصول: قاعدهٔ .woocommerce (که ووکامرس روی <body> هم اعمال می‌کند) با font-family:inherit باعث می‌شد فونت بدنه به Times New Roman برگردد — اصلاح شد و فونت پایه روی html هم ست می‌شود
 * سیستم چیدمان استاندارد: گاتر یکنواخت ۱۶px موبایل / ۲۴px دسکتاپ، کانتینر ۱۳۲۰px، حذف فریم خاکستری ۱۲/۲۰px دور صفحهٔ محصول و فروشگاه
-* اسلایدر اصلی صفحهٔ اول در دسکتاپ تمام‌عرض شد (الگوی اسنپ‌شاپ/دیجی‌کالا) با ارتفاع مهارشده — بخش‌های بزرگ‌تر از قاب حذف شد
+* اسلایدر اصلی صفحهٔ اول در دسکتاپ تمام‌عرض شد با ارتفاع مهارشده — بخش‌های بزرگ‌تر از قاب حذف شد
 * هدر چسبان فشرده: هنگام اسکرول هدر فشرده و سایه می‌گیرد و برگشت نرم دارد؛ بدون فضای خالی بنر
 * صفحهٔ محصول حرفه‌ای شد: بخش «مشخصات محصول» (جدول واقعی از ویژگی‌ها/وزن/ابعاد/SKU)، سکشن «توضیحات محصول»، «دیدگاه‌ها» کارت‌شده با شمارنده، تب‌های انکری و دکمه‌های اشتراک‌گذاری
 * گالری چسبان صفحهٔ محصول مهار شد تا روی بخش‌های پایینی سُر نخورد

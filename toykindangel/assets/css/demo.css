@@ -1,7 +1,7 @@
 @charset "utf-8";
 /* =========================================================
    فرشته مهربون — نسخه موبایل
-   کپی‌شده از طراحی اسنپ‌شاپ با توکن‌های واقعی آن:
+   طراحی اختصاصی قالب فرشته مهربون با توکن‌های واقعی:
      رنگ اصلی   #b400ae  (primary)
      رنگ روشن   #f7e5f5  (primary-light)
      خطا        #cc1d33  ·  موفقیت #22a958  ·  هشدار #febc00
@@ -59,7 +59,7 @@ input{font:inherit}
 :focus{outline:none}
 .num{direction:ltr;display:inline-block;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
 
-/* آیکن‌ها (سبک واقعی اسنپ‌شاپ: توپر با currentColor) */
+/* آیکن‌ها (توپر با currentColor) */
 .ic{width:1em;height:1em;fill:currentColor;display:inline-block;vertical-align:middle;flex:none}
 .ic-o{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 
@@ -82,9 +82,14 @@ input{font:inherit}
 .promo-strip .marquee span{display:inline-block;animation:slide 20s linear infinite}
 @keyframes slide{0%{transform:translateX(-35%)}100%{transform:translateX(35%)}}
 
-/* بنر تمام‌عرض بالای صفحه */
-.topstrip{display:block;width:100%}
+/* بنر تمام‌عرض بالای صفحه — وقتی عکس ندارد، کل عنصر هیچ ارتفاعی نمی‌گیرد
+   (header.php آن را فقط وقتی tka_strip_img تنظیم شده چاپ می‌کند).
+   وقتی کاربر پایین اسکرول می‌کند (body.tka-scrolled)، بنر محو می‌شود
+   تا فضای آن خالی نماند و هدر در top:0 بچسبد. */
+.topstrip{display:block;width:100%;max-height:120px;overflow:hidden;transition:max-height .25s ease,opacity .2s ease}
+.topstrip:empty{display:none}
 .topstrip img{width:100%;height:auto;display:block}
+body.tka-scrolled .topstrip{max-height:0 !important;opacity:0;pointer-events:none}
 
 /* =========================================================
    هدر
@@ -98,6 +103,9 @@ input{font:inherit}
 .icon-btn{width:36px;height:36px;flex:none;display:grid;place-items:center;border-radius:var(--r-md);color:var(--gray-800);position:relative}
 .icon-btn:active{background:var(--gray-100)}
 .icon-btn .ic{font-size:22px}
+/* آیکون حساب کاربری فقط در دسکتاپ/تبلت (responsive.css آن را فعال می‌کند).
+   در موبایل، bottomnav همین کار را انجام می‌دهد. */
+.icon-btn--account{display:none}
 .badge-count{
   position:absolute;top:2px;left:1px;min-width:16px;height:16px;padding:0 4px;
   border-radius:9px;background:var(--primary);color:#fff;font-size:10px;font-weight:700;
@@ -133,7 +141,7 @@ input{font:inherit}
 
 /* =========================================================
    ردیف دسته‌بندی‌ها (مشابه استوری اینستاگرام)
-   دقیقاً طبق CSS اسنپ‌شاپ: آیکن ۱۰۴×۱۰۴ · شعاع ۸px · فاصله ۸px
+   دقیقاً طبق طراحی: آیکن ۱۰۴×۱۰۴ · شعاع ۸px · فاصله ۸px
    ========================================================= */
 .stories{
   display:flex;gap:var(--sp-xs);overflow-x:auto;padding:0 var(--pad);
@@ -298,7 +306,7 @@ input{font:inherit}
 
 /* =========================================================
    PAGE: دسته‌بندی‌ها
-   مقادیر اندازه‌گیری‌شده از اسکرین‌شات واقعی snappshop.ir/categories
+   مقادیر اندازه‌گیری‌شده از طراحی واقعی صفحه دسته‌بندی‌ها
    با عرض ۳۹۰px (۲۰۲۶):
      هدر              ۵۲px · پس‌زمینه gray-100
      ستون راست        ۹۲px · سطر ۹۲px · آیکن ۴۴px · برچسب ۱۲px

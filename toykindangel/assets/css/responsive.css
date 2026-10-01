@@ -48,18 +48,19 @@
   .tka-toast{bottom:24px}
 
   /* =========================================================
-     هدر: یک ردیفه — لوگو | جستجو | علاقه‌مندی | سبد
+     هدر: یک ردیفه — لوگو | جستجو | علاقه‌مندی | حساب | سبد
      (RTL: لوگو راست، آیکن‌ها چپ — مثل اپ‌های فروشگاهی ایرانی)
      ========================================================= */
   .header{
     display:grid;
-    grid-template-columns:auto minmax(0,1fr) auto auto;
+    grid-template-columns:auto minmax(0,1fr) auto auto auto;
     align-items:center;
     gap:var(--sp-s);
     padding:12px var(--pad);
   }
   .header__row{display:contents}
   .header .icon-btn--menu{display:none}
+  .header .icon-btn--account{display:grid} /* فقط در دسکتاپ/تبلت؛ موبایل bottomnav را دارد */
   .logo{grid-column:1;grid-row:1}
   .logo img{height:38px}
   .logo__txt{font-size:18px}
@@ -67,8 +68,10 @@
   .header__search .searchbox{height:44px;background:var(--gray-100);border:1px solid var(--gray-200)}
   .header__search .searchbox:focus-within{border-color:var(--primary-medium);background:var(--white)}
   .header__search .searchbox input{font-size:13.5px}
-  .header__row a.icon-btn:nth-last-child(2){grid-column:3;grid-row:1}
-  .header__row a.icon-btn:last-child{grid-column:4;grid-row:1}
+  /* سه آیکن سمت چپ (RTL): علاقه‌مندی → حساب → سبد */
+  .header__row .icon-btn:nth-last-child(3){grid-column:3;grid-row:1}
+  .header__row .icon-btn:nth-last-child(2){grid-column:4;grid-row:1}
+  .header__row .icon-btn:last-child{grid-column:5;grid-row:1}
   .icon-btn{width:40px;height:40px}
   .icon-btn .ic{font-size:24px}
   .icon-btn:hover{background:var(--gray-100);color:var(--primary)}
@@ -136,7 +139,7 @@
   }
   .offer .offer__track{padding-inline:0}
 
-  /* اسلایدر هیرو: TKA 0.16.0 (18-b) — تمام‌عرض (الگوی اسنپ‌شاپ/دیجی‌کالا)
+  /* اسلایدر هیرو: TKA 0.16.0 (18-b) — تمام‌عرض
      با ارتفاع مهارشده تا بخش بزرگ‌تر از قاب نشود */
   .hero{max-width:none;padding-inline:0;margin-inline:0;border-radius:0}
   .hero__slide{aspect-ratio:auto;height:clamp(320px,30vw,420px)}
@@ -144,6 +147,10 @@
 
   /* بنر نوار بالا: کنترل ارتفاع در عرض‌های بزرگ */
   .topstrip img{max-height:170px;object-fit:cover;width:100%}
+  /* وقتی کاربر اسکرول کرد، بنر محو شود (mobile-first rule در demo.css با
+     max-height:0 اجرا می‌شود؛ اینجا ارتفاع دسکتاپ را برای transition ست می‌کنیم). */
+  .topstrip{max-height:180px} /* کمی بیشتر از تصویر برای حاشیهٔ transition */
+  body.tka-scrolled .topstrip{max-height:0}
 
   /* بنرها ۲×۲ (۴ بنر دمو) — TKA fix #19 */
   .banners{grid-template-columns:repeat(2,1fr)}

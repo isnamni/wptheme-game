@@ -131,6 +131,23 @@
                         });
                 }
 
+                /* ---------- 2b) topstrip hide-on-scroll ----------
+                 * وقتی کاربر پایین اسکرول می‌کند، بنر بالای هدر محو می‌شود
+                 * تا فضای آن خالی نماند و هدر در top:0 بچسبد. وقتی به بالا
+                 * برگردد، بنر دوباره ظاهر می‌شود. */
+                var topstrip = document.getElementById('topStrip');
+                if (topstrip) {
+                        var toggleTopstrip = function () {
+                                if (window.scrollY > 10) {
+                                        document.body.classList.add('tka-scrolled');
+                                } else {
+                                        document.body.classList.remove('tka-scrolled');
+                                }
+                        };
+                        window.addEventListener('scroll', toggleTopstrip, { passive: true });
+                        toggleTopstrip();
+                }
+
                 /* ---------- 6) PDP glue (Step 5) ----------
                  * The demo pdp__bar buttons are wired here instead of
                  * inline handlers (cleaner + CSP friendly):

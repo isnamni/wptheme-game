@@ -5,7 +5,7 @@
  * @package ToyKindAngel
  */
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+        exit;
 }
 
 
@@ -23,8 +23,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <div class="app app--padded"<?php echo is_front_page() ? ' id="home"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 
-        <!-- بنر تمام‌عرض بالای صفحه (تصویر از Customizer/دیتاست دمو) -->
-        <a class="topstrip" id="topStrip" href="<?php echo esc_url( get_theme_mod( 'tka_strip_link', home_url( '/' ) ) ); ?>" aria-label="<?php esc_attr_e( 'بنر ویژه فروشگاه', 'toykindangel' ); ?>"></a>
+        <?php
+        /*
+         * بنر تمام‌عرض بالای صفحه — تصویر از Customizer (tka_strip_img).
+         * v0.21.1: عکس حالا مستقیماً سمت سرور رندر می‌شود (قبلاً app.js
+         * از دیتاست دمو آن را می‌ریخت، ولی در refactor v0.21.0 آن مسیر حذف
+         * شد و بنر خالی می‌ماند). وقتی تصویری تنظیم نشده، کل .topstrip
+         * چاپ نمی‌شود تا فضای خالی نیفتد.
+         * v0.21.1: وقتی کاربر پایین اسکرول می‌کند، بنر با CSS sticky هدر
+         * محو می‌شود (به‌جای جا ماندن فضای خالی) — پیاده‌سازی در main.js.
+         */
+        $tka_strip_img   = get_theme_mod( 'tka_strip_img' );
+        $tka_strip_link  = get_theme_mod( 'tka_strip_link', home_url( '/' ) );
+        $tka_strip_html  = '';
+        if ( $tka_strip_img ) :
+                $tka_strip_html = '<a class="topstrip" id="topStrip" href="' . esc_url( $tka_strip_link ) . '" aria-label="' . esc_attr__( 'بنر ویژه فروشگاه', 'toykindangel' ) . '">'
+                        . '<img src="' . esc_url( $tka_strip_img ) . '" alt="' . esc_attr__( 'بنر ویژه فروشگاه', 'toykindangel' ) . '" loading="eager" decoding="async">'
+                        . '</a>';
+        endif;
+        echo $tka_strip_html; // phpcs:ignore WordPress.Security.EscapeOutput -- escaped above.
+        ?>
 
         <!-- نوار اطلاع‌رسانی -->
         <div class="promo-strip">
@@ -52,6 +70,20 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <a class="icon-btn" href="<?php echo esc_url( $tka_wish_url ? $tka_wish_url : home_url( '/' ) ); ?>" aria-label="<?php esc_attr_e( 'علاقه‌مندی‌ها', 'toykindangel' ); ?>">
                                 <svg class="ic" aria-hidden="true"><use href="#i-heart"></use></svg>
                                 <span class="tka-fav-badge num" id="tka-fav-badge" hidden aria-hidden="true">0</span>
+                        </a>
+                        <?php
+                        /*
+                         * آیکون حساب کاربری (دسکتاپ/تبلت) — در موبایل با CSS پنهان است
+                         * چون bottomnav همان کار را می‌کند.
+                         * وقتی کاربر لاگین نیست → صفحهٔ ورود/عضویت ووکامرس.
+                         * وقتی لاگین هست → داشبورد حساب کاربری (سفارش‌ها، دانلودها، …).
+                         */
+                        $tka_is_logged_in = is_user_logged_in();
+                        $tka_account_href = $tka_is_logged_in ? toykindangel_account_url() : ( function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : wp_login_url() );
+                        $tka_account_label = $tka_is_logged_in ? __( 'حساب کاربری', 'toykindangel' ) : __( 'ورود و عضویت', 'toykindangel' );
+                        ?>
+                        <a class="icon-btn icon-btn--account" href="<?php echo esc_url( $tka_account_href ); ?>" aria-label="<?php echo esc_attr( $tka_account_label ); ?>" title="<?php echo esc_attr( $tka_account_label ); ?>">
+                                <svg class="ic" aria-hidden="true"><use href="#i-user"></use></svg>
                         </a>
                         <button type="button" class="icon-btn" data-tka-drawer="minicart" aria-expanded="false" aria-controls="tka-minicart-drawer" aria-label="<?php esc_attr_e( 'سبد خرید', 'toykindangel' ); ?>">
                                 <svg class="ic" aria-hidden="true"><use href="#i-cart"></use></svg>
