@@ -32,9 +32,9 @@ if ( ! function_exists( 'toykindangel_fa_digits' ) ) {
          * @return string
          */
         function toykindangel_fa_digits( $str ) {
-		$en = array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' );
-		$fa = array( '۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹' );
-		return str_replace( $en, $fa, (string) $str );
+                $en = array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' );
+                $fa = array( '۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹' );
+                return str_replace( $en, $fa, (string) $str );
         }
 }
 
@@ -47,17 +47,46 @@ if ( ! function_exists( 'toykindangel_fa_num' ) ) {
          * plain words never change. Idempotent: already-Persian text passes
          * through untouched.
          *
+         * v0.21.2 fix: HTML numeric character references (&#x062A;,
+         * &#1580;, &amp;…) are now preserved — their inner hex/decimal
+         * digits are no longer Persianized. Without this, WooCommerce
+         * price HTML that contains entities (e.g. when a SEO/filter
+         * plugin escapes the currency symbol «تومان» → &#x062A;…)
+         * would be corrupted into &#x۰۶۲A; which the browser cannot
+         * decode, showing raw entity text in the DOM.
+         *
          * @param string $text Input (may contain HTML).
          * @return string
          */
         function toykindangel_fa_num( $text ) {
-		return preg_replace_callback(
-		'/\d+(?:,\d+)*/',
-		static function ( $m ) {
-				return toykindangel_fa_digits( str_replace( ',', '٬', $m[0] ) );
-			},
-		(string) $text
-	);
+                $text = (string) $text;
+
+                /*
+                 * Single-pass Persianization that protects HTML entities.
+                 *
+                 * The regex matches either:
+                 *   (A) an HTML entity (&#x062A; &#1580; &amp; …) — returned
+                 *       verbatim, digits inside never Persianized; or
+                 *   (B) a digit run with optional thousands separators —
+                 *       Persianized (0-9 → ۰-۹, , → ٬).
+                 *
+                 * Without branch (A), the digit-run regex would reach into
+                 * the hex/decimal digits of an entity (&#x062A; → &#x۰۶۲A;)
+                 * and corrupt it so the browser can no longer decode it.
+                 * That showed up as raw `&#x۰۶۲A;…` text in price HTML.
+                 */
+                return preg_replace_callback(
+                        '/&[#a-zA-Z0-9]+;|\d+(?:,\d+)*/',
+                        static function ( $m ) {
+                                /* Branch A: HTML entity — return as-is. */
+                                if ( '&' === substr( $m[0], 0, 1 ) ) {
+                                        return $m[0];
+                                }
+                                /* Branch B: digit run — Persianize. */
+                                return toykindangel_fa_digits( str_replace( ',', '٬', $m[0] ) );
+                        },
+                        $text
+                );
         }
 }
 
@@ -109,8 +138,8 @@ function toykindangel_gregorian_to_jalali( $gy, $gm, $gd ) {
         $days %= 1461;
 
         if ( $days > 365 ) {
-		$jy += (int) ( ( $days - 1 ) / 365 );
-		$days = ( $days - 1 ) % 365; // phpcs:ignore Squiz.Operators.IncrementDecrementUsage.Found -- Jalali math, not a standalone decrement
+                $jy += (int) ( ( $days - 1 ) / 365 );
+                $days = ( $days - 1 ) % 365; // phpcs:ignore Squiz.Operators.IncrementDecrementUsage.Found -- Jalali math, not a standalone decrement
         }
 
         $jm = ( $days < 186 ) ? 1 + (int) ( $days / 31 ) : 7 + (int) ( ( $days - 186 ) / 30 );
@@ -142,16 +171,16 @@ function toykindangel_jalali_is_leap( $jy ) {
  */
 function toykindangel_jdate( $format, $timestamp = null ) {
         if ( null === $timestamp || ! is_numeric( $timestamp ) ) {
-		$timestamp = time();
+                $timestamp = time();
         }
         $timestamp = (int) $timestamp;
 
         /* Machine-readable formats keep the Gregorian/Unix value. */
         if ( 'U' === $format ) {
-		return (string) $timestamp;
+                return (string) $timestamp;
         }
         if ( 'c' === $format || 'r' === $format ) {
-		return toykindangel_jdate_wp_dt( $timestamp )->format( $format );
+                return toykindangel_jdate_wp_dt( $timestamp )->format( $format );
         }
 
         $dt = toykindangel_jdate_wp_dt( $timestamp );
@@ -168,7 +197,7 @@ function toykindangel_jdate( $format, $timestamp = null ) {
         $h24     = (int) $dt->format( 'G' );
         $h12     = $h24 % 12;
         if ( 0 === $h12 ) {
-		$h12 = 12;
+                $h12 = 12;
         }
         $doy     = ( $jm <= 6 ) ? ( ( $jm - 1 ) * 31 + $jd ) : ( 186 + ( $jm - 7 ) * 30 + $jd );
         $leap    = toykindangel_jalali_is_leap( $jy ) ? 1 : 0;
@@ -177,94 +206,94 @@ function toykindangel_jdate( $format, $timestamp = null ) {
         $out = '';
         $len = strlen( $format );
         for ( $i = 0; $i < $len; $i++ ) {
-		$ch = $format[ $i ];
+                $ch = $format[ $i ];
 
-		if ( '\\' === $ch && $i + 1 < $len ) { /* Escaped literal. */
-				$out .= $format[ ++$i ];
-				continue;
-			}
+                if ( '\\' === $ch && $i + 1 < $len ) { /* Escaped literal. */
+                                $out .= $format[ ++$i ];
+                                continue;
+                        }
 
-		switch ( $ch ) {
-				case 'd':
-				$out .= toykindangel_fa_digits( sprintf( '%02d', $jd ) );
-						break;
-				case 'j':
-				$out .= toykindangel_fa_digits( $jd );
-						break;
-				case 'S': /* English ordinal suffix — none in Persian. */
-						break;
-				case 'l':
-				$out .= $weekdays[ $dow ];
-						break;
-				case 'D':
-				$out .= $weekdays_short[ $dow ];
-						break;
-				case 'N': /* ISO: 1=شنبه … 7=جمعه. */
-				$out .= (string) ( $j_dow + 1 );
-						break;
-				case 'w': /* 0=شنبه. */
-				$out .= (string) $j_dow;
-						break;
-				case 'z':
-				$out .= toykindangel_fa_digits( $doy );
-						break;
-				case 'F':
-				$out .= $months[ $jm - 1 ];
-						break;
-				case 'M':
-				$out .= mb_substr( $months[ $jm - 1 ], 0, 3 );
-						break;
-				case 'm':
-				$out .= toykindangel_fa_digits( sprintf( '%02d', $jm ) );
-						break;
-				case 'n':
-				$out .= toykindangel_fa_digits( $jm );
-						break;
-				case 't':
-				$out .= toykindangel_fa_digits( $month_days );
-						break;
-				case 'Y':
-				$out .= toykindangel_fa_digits( $jy );
-						break;
-				case 'y':
-				$out .= toykindangel_fa_digits( sprintf( '%02d', $jy % 100 ) );
-						break;
-				case 'a':
-				$out .= ( $h24 < 12 ) ? 'ق.ظ' : 'ب.ظ';
-						break;
-				case 'A':
-				$out .= ( $h24 < 12 ) ? 'قبل از ظهر' : 'بعد از ظهر';
-						break;
-				case 'g':
-				$out .= toykindangel_fa_digits( $h12 );
-						break;
-				case 'G':
-				$out .= toykindangel_fa_digits( $h24 );
-						break;
-				case 'h':
-				$out .= toykindangel_fa_digits( sprintf( '%02d', $h12 ) );
-						break;
-				case 'H':
-				$out .= toykindangel_fa_digits( sprintf( '%02d', $h24 ) );
-						break;
-				case 'i':
-				$out .= toykindangel_fa_digits( $dt->format( 'i' ) );
-						break;
-				case 's':
-				$out .= toykindangel_fa_digits( $dt->format( 's' ) );
-						break;
-				case 'L':
-				$out .= toykindangel_fa_digits( $leap );
-						break;
-				case 'e':
-					case 'P':
-					case 'O':
-					case 'T':
-					case 'Z':
-				$out .= $dt->format( $ch );
-						break;
-				default:
-				$out .= $ch;
+                switch ( $ch ) {
+                                case 'd':
+                                $out .= toykindangel_fa_digits( sprintf( '%02d', $jd ) );
+                                                break;
+                                case 'j':
+                                $out .= toykindangel_fa_digits( $jd );
+                                                break;
+                                case 'S': /* English ordinal suffix — none in Persian. */
+                                                break;
+                                case 'l':
+                                $out .= $weekdays[ $dow ];
+                                                break;
+                                case 'D':
+                                $out .= $weekdays_short[ $dow ];
+                                                break;
+                                case 'N': /* ISO: 1=شنبه … 7=جمعه. */
+                                $out .= (string) ( $j_dow + 1 );
+                                                break;
+                                case 'w': /* 0=شنبه. */
+                                $out .= (string) $j_dow;
+                                                break;
+                                case 'z':
+                                $out .= toykindangel_fa_digits( $doy );
+                                                break;
+                                case 'F':
+                                $out .= $months[ $jm - 1 ];
+                                                break;
+                                case 'M':
+                                $out .= mb_substr( $months[ $jm - 1 ], 0, 3 );
+                                                break;
+                                case 'm':
+                                $out .= toykindangel_fa_digits( sprintf( '%02d', $jm ) );
+                                                break;
+                                case 'n':
+                                $out .= toykindangel_fa_digits( $jm );
+                                                break;
+                                case 't':
+                                $out .= toykindangel_fa_digits( $month_days );
+                                                break;
+                                case 'Y':
+                                $out .= toykindangel_fa_digits( $jy );
+                                                break;
+                                case 'y':
+                                $out .= toykindangel_fa_digits( sprintf( '%02d', $jy % 100 ) );
+                                                break;
+                                case 'a':
+                                $out .= ( $h24 < 12 ) ? 'ق.ظ' : 'ب.ظ';
+                                                break;
+                                case 'A':
+                                $out .= ( $h24 < 12 ) ? 'قبل از ظهر' : 'بعد از ظهر';
+                                                break;
+                                case 'g':
+                                $out .= toykindangel_fa_digits( $h12 );
+                                                break;
+                                case 'G':
+                                $out .= toykindangel_fa_digits( $h24 );
+                                                break;
+                                case 'h':
+                                $out .= toykindangel_fa_digits( sprintf( '%02d', $h12 ) );
+                                                break;
+                                case 'H':
+                                $out .= toykindangel_fa_digits( sprintf( '%02d', $h24 ) );
+                                                break;
+                                case 'i':
+                                $out .= toykindangel_fa_digits( $dt->format( 'i' ) );
+                                                break;
+                                case 's':
+                                $out .= toykindangel_fa_digits( $dt->format( 's' ) );
+                                                break;
+                                case 'L':
+                                $out .= toykindangel_fa_digits( $leap );
+                                                break;
+                                case 'e':
+                                        case 'P':
+                                        case 'O':
+                                        case 'T':
+                                        case 'Z':
+                                $out .= $dt->format( $ch );
+                                                break;
+                                default:
+                                $out .= $ch;
                 }
         }
 
@@ -279,12 +308,12 @@ if ( ! function_exists( 'toykindangel_jdate_wp_dt' ) ) {
          * @return DateTimeImmutable
          */
         function toykindangel_jdate_wp_dt( $timestamp ) {
-		static $tz = null;
-		if ( null === $tz ) {
-				$tz = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
-			}
-		$dt = new DateTimeImmutable( '@' . (int) $timestamp );
-		return $dt->setTimezone( $tz );
+                static $tz = null;
+                if ( null === $tz ) {
+                                $tz = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
+                        }
+                $dt = new DateTimeImmutable( '@' . (int) $timestamp );
+                return $dt->setTimezone( $tz );
         }
 }
 
@@ -307,28 +336,28 @@ if ( ! function_exists( 'toykindangel_jalali_post_date' ) ) {
          * @return string
          */
         function toykindangel_jalali_post_date( $the_date, $format = '', $post = 0, $gmt = false, $kind = 'date' ) {
-		if ( is_admin() && ! wp_doing_ajax() ) {
-				return $the_date;
-			}
-		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-				return $the_date;
-			}
-		if ( is_feed() ) {
-				return $the_date; /* RFC date formats must stay Gregorian. */
-			}
+                if ( is_admin() && ! wp_doing_ajax() ) {
+                                return $the_date;
+                        }
+                if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+                                return $the_date;
+                        }
+                if ( is_feed() ) {
+                                return $the_date; /* RFC date formats must stay Gregorian. */
+                        }
 
-		if ( '' === $format ) {
-				$format = ( 'time' === $kind )
-						? get_option( 'time_format', 'g:i a' )
-						: get_option( 'date_format', 'F j, Y' );
-			}
+                if ( '' === $format ) {
+                                $format = ( 'time' === $kind )
+                                                ? get_option( 'time_format', 'g:i a' )
+                                                : get_option( 'date_format', 'F j, Y' );
+                        }
 
-		$timestamp = get_post_timestamp( $post );
-		if ( false === $timestamp || null === $timestamp ) {
-				return $the_date;
-			}
+                $timestamp = get_post_timestamp( $post );
+                if ( false === $timestamp || null === $timestamp ) {
+                                return $the_date;
+                        }
 
-		return toykindangel_jdate( $format, $timestamp );
+                return toykindangel_jdate( $format, $timestamp );
         }
 }
 
@@ -370,7 +399,7 @@ add_filter( 'get_the_time', 'toykindangel_jalali_the_time', 10, 3 );
  */
 function toykindangel_jalali_post_time( $time, $format = '', $gmt = false, $post = 0 ) {
         if ( 'U' === $format || 'u' === $format ) {
-		return $time; /* Unix output must stay numeric. */
+                return $time; /* Unix output must stay numeric. */
         }
         return toykindangel_jalali_post_date( $time, $format, $post, $gmt, 'date' );
 }
@@ -385,10 +414,10 @@ add_filter( 'get_post_time', 'toykindangel_jalali_post_time', 10, 4 );
  */
 function toykindangel_order_date_jalali( $order, $format = '' ) {
         if ( ! $order || ! is_callable( array( $order, 'get_date_created' ) ) || ! $order->get_date_created() ) {
-		return '';
+                return '';
         }
         if ( '' === $format ) {
-		$format = get_option( 'date_format', 'F j, Y' );
+                $format = get_option( 'date_format', 'F j, Y' );
         }
         return toykindangel_jdate( $format, $order->get_date_created()->getTimestamp() );
 }
