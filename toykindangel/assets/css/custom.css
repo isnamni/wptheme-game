@@ -1459,13 +1459,15 @@ body.tka-ig-lock{overflow:hidden !important;}
   }
 }
 
-/* ---------- ۵) اصلاح نمایش قیمت در کارت محصول ---------- */
-/* قیمت: nowrap + ellipsis + LTR (مثل کارت جشنواره) */
+/* ---------- ۵) اصلاح نمایش قیمت در کارت محصول ----------
+ * v0.22.2: همه کارت‌ها (جشنواره + جدیدترین + پرفروش + آرشیو) همان
+ * سبک کارت جشنواره را دارند: direction:rtl، عرض کافی، قیمت کامل.
+ * مشکل قبلی: کارت معمولی 90px داشت و قیمت ellipsis می‌شد (رند می‌شد). */
 .pcard__price{
   white-space:nowrap !important;
   overflow:hidden !important;
   text-overflow:ellipsis !important;
-  direction:ltr !important;
+  direction:rtl !important;
   unicode-bidi:isolate !important;
   max-width:100% !important;
   display:flex !important;
@@ -1480,13 +1482,13 @@ body.tka-ig-lock{overflow:hidden !important;}
 }
 .pcard__price small{
   flex-shrink:0 !important;
-  margin-right:auto !important;
 }
 .pcard__old{
   white-space:nowrap !important;
   overflow:hidden !important;
   text-overflow:ellipsis !important;
   max-width:100% !important;
+  direction:rtl !important;
 }
 .pcard__prices{
   min-width:0 !important;
@@ -1504,6 +1506,19 @@ body.tka-ig-lock{overflow:hidden !important;}
   overflow:hidden !important;
   word-break:break-word !important;
   overflow-wrap:break-word !important;
+}
+
+/* موبایل: همه کارت‌های ریل همان عرض ۱۵۰px کارت جشنواره را دارند */
+@media (max-width:767px){
+  .plist__track .pcard-wrap,
+  .tka-pgrid .pcard-wrap{
+    flex:0 0 150px !important;
+    width:150px !important;
+  }
+  .plist__track .pcard,
+  .tka-pgrid .pcard{
+    padding:8px !important;
+  }
 }
 
 /* ---------- ۶) فوتر موبایل: نمایش شبکه‌های اجتماعی ---------- */
@@ -1541,6 +1556,15 @@ body.tka-ig-lock{overflow:hidden !important;}
 /* ---------- ۷) فلش‌های اسلایدر hero (دسکتاپ) ---------- */
 .hero{
   position:relative;
+  overflow:visible !important; /* v0.22.2: جلوگیری از overflow:hidden که اسکرول را بلاک می‌کند */
+}
+/* v0.22.2: در دسکتاپ از transform استفاده می‌کنیم (نه scrollTo) */
+@media (min-width:768px){
+  .hero__track{
+    overflow:hidden !important;
+    scroll-snap-type:none !important;
+    transition:transform .35s ease !important;
+  }
 }
 .hero__arrow{
   position:absolute;
@@ -1576,5 +1600,55 @@ body.tka-ig-lock{overflow:hidden !important;}
 @media (min-width:768px){
   .hero__arrow{
     display:flex;
+  }
+}
+
+/* ---------- ۸) بنرهای ۴ تایی: بدون فضای خالی ---------- */
+/* v0.22.2: ارتفاع بنر از aspect-rature به ارتفاع ثابت تغییر کرد
+ * تا فضای خالی زیر تصویر نباشد. تصویر ۱۰۰٪ ارتفاع را پر می‌کند. */
+@media (max-width:767px){
+  .banner{
+    aspect-ratio:auto !important;
+    height:90px !important;
+  }
+  .banner img{
+    width:100%;
+    height:100% !important;
+    object-fit:cover;
+    object-position:center;
+  }
+}
+@media (min-width:768px){
+  .banner{
+    aspect-ratio:auto !important;
+    height:160px !important;
+  }
+  .banner img{
+    width:100%;
+    height:100% !important;
+    object-fit:cover;
+    object-position:center;
+  }
+}
+
+/* ---------- ۹) استوری‌ها: تراز با هدر در مانیتورهای واید ---------- */
+@media (min-width:768px){
+  .tka-igbar{
+    padding-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    padding-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+  }
+  .stories{
+    padding-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    padding-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+  }
+}
+
+/* ---------- ۱۰) بنر بالای هدر (topstrip): ارتفاع ثابت ---------- */
+@media (min-width:768px){
+  .topstrip img{
+    width:100%;
+    height:100px !important;
+    object-fit:cover;
+    object-position:center;
   }
 }

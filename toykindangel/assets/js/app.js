@@ -44,11 +44,11 @@
   }
 
   /* ---------- اسلایدر بنر بالا (hero) ----------
-   * v0.22.1: HTML از سمت سرور می‌آید. JS:
-   *   - dots را هماهنگ می‌کند با اسکرول
-   *   - فلش‌های چپ/راست (دسکتاپ) برای ناوبری دستی
-   *   - autoplay با interval قابل تنظیم از Customizer (data-hero-interval)
-   *   - touch/swipe در موبایل خودکار کار می‌کند (scroll-snap + overflow:auto)
+   * v0.22.2: HTML از سمت سرور می‌آید. JS:
+   *   - فلش‌های چپ/راست (دسکتاپ) با transform:translateX (قابل‌اعتمادتر از scrollTo)
+   *   - dots هماهنگ با slide فعال
+   *   - autoplay با interval قابل تنظیم از Customizer
+   *   - touch/swipe در موبایل با scroll-snap + overflow:auto
    * اگر بنری نباشد یا فقط یک slide باشد، کاری نمی‌کند. */
   function hero() {
     var el = document.querySelector(".hero");
@@ -60,44 +60,61 @@
     if (!track || !track.children.length) return;
 
     var count = track.children.length;
-    if (count <= 1) return; /* با یک slide فلش/autoplay نمی‌خواهیم */
+    if (count <= 1) return;
 
     var items = dots ? dots.children : [];
+    var current = 0;
 
-    /* dot فعال را بر اساس اسکرول آپدیت کن */
-    function updateDots() {
-      if (!track.clientWidth) return;
-      var i = Math.round(track.scrollLeft / track.clientWidth);
+    /* نشان دادن slide i با transform */
+    function goTo(i) {
+      i = ((i % count) + count) % count;
+      current = i;
+      var slideWidth = track.clientWidth;
+      /* در دسکتاپ از transform استفاده کن (قابل‌اعتمادتر)، در موبایل از scrollTo */
+      if (window.innerWidth >= 768) {
+        track.style.transform = "translateX(" + (-i * slideWidth) + "px)";
+      } else {
+        track.scrollTo({ left: i * slideWidth, behavior: "smooth" });
+      }
+      /* dot فعال */
       for (var k = 0; k < items.length; k++) {
         items[k].classList.toggle("on", k === i);
       }
     }
-    track.addEventListener("scroll", updateDots, { passive: true });
-
-    /* ناوبری به slide بعدی/قبلی */
-    function goTo(i) {
-      if (!track.clientWidth) return;
-      /* wrap-around: بعد از آخرین → اولین، قبل از اولین → آخرین */
-      i = ((i % count) + count) % count;
-      track.scrollTo({ left: i * track.clientWidth, behavior: "smooth" });
-    }
-    function next() { goTo(Math.round(track.scrollLeft / track.clientWidth) + 1); }
-    function prev() { goTo(Math.round(track.scrollLeft / track.clientWidth) - 1); }
+    function next() { goTo(current + 1); }
+    function prev() { goTo(current - 1); }
 
     if (nextBtn) nextBtn.addEventListener("click", function(e){ e.preventDefault(); next(); });
     if (prevBtn) prevBtn.addEventListener("click", function(e){ e.preventDefault(); prev(); });
 
-    /* autoplay: interval از data-hero-interval خوانده می‌شود (Customizer) */
+    /* در موبایل: dot را با اسکرول هماهنگ کن */
+    if (window.innerWidth < 768) {
+      track.addEventListener("scroll", function() {
+        if (!track.clientWidth) return;
+        var i = Math.round(track.scrollLeft / track.clientWidth);
+        if (i !== current) {
+          current = i;
+          for (var k = 0; k < items.length; k++) {
+            items[k].classList.toggle("on", k === i);
+          }
+        }
+      }, { passive: true });
+    }
+
+    /* resize: transform را دوباره محاسبه کن */
+    window.addEventListener("resize", function() {
+      goTo(current);
+    });
+
+    /* autoplay */
     var interval = parseInt(el.getAttribute("data-hero-interval"), 10);
     if (interval > 0) {
       var timer = setInterval(next, interval);
-      /* وقتی کاربر با موس روی اسلایدر می‌رود، autoplay متوقف شود */
       el.addEventListener("mouseenter", function(){ clearInterval(timer); });
       el.addEventListener("mouseleave", function(){
         clearInterval(timer);
         timer = setInterval(next, interval);
       });
-      /* وقتی کاربر touch می‌کند هم متوقف شود (موبایل) */
       el.addEventListener("touchstart", function(){ clearInterval(timer); }, { passive: true });
       el.addEventListener("touchend", function(){
         clearInterval(timer);
