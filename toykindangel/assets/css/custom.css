@@ -893,7 +893,12 @@ form.variations_form.cart .single_add_to_cart_button:disabled{opacity:.55 !impor
     max-width:1360px !important;
     margin:16px auto !important;
     border-radius:16px !important;
+    overflow:visible !important; /* v0.22.4: visible نه hidden — track با transform کار کند */
+  }
+  /* track خودش overflow:hidden دارد تا slide‌های خارج از viewport دیده نشوند */
+  body.home .hero .hero__track{
     overflow:hidden !important;
+    border-radius:16px !important;
   }
 
   /* سرصفحهٔ سکشن‌ها: خط زیرین مثل طرح */
