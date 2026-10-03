@@ -893,13 +893,16 @@ form.variations_form.cart .single_add_to_cart_button:disabled{opacity:.55 !impor
     max-width:1360px !important;
     margin:16px auto !important;
     border-radius:16px !important;
-    overflow:visible !important; /* v0.22.4: visible نه hidden — track با transform کار کند */
+    overflow:visible !important;
   }
-  /* track خودش overflow:hidden دارد تا slide‌های خارج از viewport دیده نشوند */
+  /* v0.22.5: track overflow-x:auto (نه hidden) تا scrollTo کار کند */
   body.home .hero .hero__track{
-    overflow:hidden !important;
+    overflow-x:auto !important;
+    scroll-snap-type:x mandatory !important;
     border-radius:16px !important;
+    scrollbar-width:none !important;
   }
+  body.home .hero .hero__track::-webkit-scrollbar{display:none !important}
 
   /* سرصفحهٔ سکشن‌ها: خط زیرین مثل طرح */
   body.home .section__head{
@@ -1541,16 +1544,16 @@ body.tka-ig-lock{overflow:hidden !important;}
 /* ---------- ۷) فلش‌های اسلایدر hero (دسکتاپ) ---------- */
 .hero{
   position:relative;
-  overflow:visible !important; /* v0.22.2: جلوگیری از overflow:hidden که اسکرول را بلاک می‌کند */
+  overflow:visible !important;
 }
-/* v0.22.2: در دسکتاپ از transform استفاده می‌کنیم (نه scrollTo) */
-@media (min-width:768px){
-  .hero__track{
-    overflow:hidden !important;
-    scroll-snap-type:none !important;
-    transition:transform .35s ease !important;
-  }
+/* v0.22.5: track همیشه overflow-x:auto + scroll-snap (هم موبایل هم دسکتاپ).
+ * transform حذف شد چون در RTL جهت اشتباه داشت. */
+.hero__track{
+  overflow-x:auto !important;
+  scroll-snap-type:x mandatory !important;
+  scrollbar-width:none !important;
 }
+.hero__track::-webkit-scrollbar{display:none !important}
 .hero__arrow{
   position:absolute;
   top:50%;

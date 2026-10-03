@@ -1,13 +1,13 @@
 /* =========================================================
    فرشته مهربون — تعاملات سمت کلاینت (نسخهٔ WordPress-first)
    ---------------------------------------------------------
-   v0.21.0 refactor — این فایل قبلاً رندرر کامل دمو بود
+   v0.22.5: این فایل قبلاً رندرر کامل دمو بود
    (renderHome / renderCategories / pcard / catTile از روی
    window.TKA). همهٔ رندررها حذف شدند چون هم‌اکنون PHP/SSR
    همان HTML را با دادهٔ واقعی WooCommerce می‌سازد.
 
    فقط سه تعامل واقعی که به JavaScript نیاز دارند باقی مانده‌اند:
-     1) hero()        — wiring اسلایدر بنر (dots + autoplay بر اساس DOM)
+     1) hero()        — wiring اسلایدر بنر (scrollTo + autoplay)
      2) gallery()     — wiring گالری صفحه محصول (thumbs از DOM)
      3) startTimers() — تایمر شمارش معکوس تا نیمه‌شب
 
@@ -44,12 +44,15 @@
   }
 
   /* ---------- اسلایدر بنر بالا (hero) ----------
-   * v0.22.2: HTML از سمت سرور می‌آید. JS:
-   *   - فلش‌های چپ/راست (دسکتاپ) با transform:translateX (قابل‌اعتمادتر از scrollTo)
-   *   - dots هماهنگ با slide فعال
-   *   - autoplay با interval قابل تنظیم از Customizer
-   *   - touch/swipe در موبایل با scroll-snap + overflow:auto
-   * اگر بنری نباشد یا فقط یک slide باشد، کاری نمی‌کند. */
+   * v0.22.5: همیشه از scrollTo استفاده می‌کنیم (هم موبایل هم دسکتاپ).
+   * transform در RTL جهت اشتباه داشت (slide‌ها در RTL از راست به چپ
+   * چیده می‌شوند ولی transform:translateX منفی آن‌ها را به چپ می‌برد
+   * که در RTL یعنی slide بعدی، نه قبلی). scrollTo با scroll-snap
+   * در RTL درست کار می‌کند.
+   *
+   * CSS: track همیشه overflow-x:auto + scroll-snap-type:x mandatory.
+   * .hero overflow:visible (برای فلش‌ها).
+   */
   function hero() {
     var el = document.querySelector(".hero");
     if (!el) return;
@@ -65,18 +68,13 @@
     var items = dots ? dots.children : [];
     var current = 0;
 
-    /* نشان دادن slide i با transform */
     function goTo(i) {
       i = ((i % count) + count) % count;
       current = i;
       var slideWidth = track.clientWidth;
-      /* در دسکتاپ از transform استفاده کن (قابل‌اعتمادتر)، در موبایل از scrollTo */
-      if (window.innerWidth >= 768) {
-        track.style.transform = "translateX(" + (-i * slideWidth) + "px)";
-      } else {
+      if (slideWidth > 0) {
         track.scrollTo({ left: i * slideWidth, behavior: "smooth" });
       }
-      /* dot فعال */
       for (var k = 0; k < items.length; k++) {
         items[k].classList.toggle("on", k === i);
       }
@@ -87,24 +85,17 @@
     if (nextBtn) nextBtn.addEventListener("click", function(e){ e.preventDefault(); next(); });
     if (prevBtn) prevBtn.addEventListener("click", function(e){ e.preventDefault(); prev(); });
 
-    /* در موبایل: dot را با اسکرول هماهنگ کن */
-    if (window.innerWidth < 768) {
-      track.addEventListener("scroll", function() {
-        if (!track.clientWidth) return;
-        var i = Math.round(track.scrollLeft / track.clientWidth);
-        if (i !== current) {
-          current = i;
-          for (var k = 0; k < items.length; k++) {
-            items[k].classList.toggle("on", k === i);
-          }
+    /* dot را با اسکرول هماهنگ کن (هم موبایل هم دسکتاپ) */
+    track.addEventListener("scroll", function() {
+      if (!track.clientWidth) return;
+      var i = Math.round(track.scrollLeft / track.clientWidth);
+      if (i !== current) {
+        current = i;
+        for (var k = 0; k < items.length; k++) {
+          items[k].classList.toggle("on", k === i);
         }
-      }, { passive: true });
-    }
-
-    /* resize: transform را دوباره محاسبه کن */
-    window.addEventListener("resize", function() {
-      goTo(current);
-    });
+      }
+    }, { passive: true });
 
     /* autoplay */
     var interval = parseInt(el.getAttribute("data-hero-interval"), 10);

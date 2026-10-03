@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
         exit;
 }
 
-define( 'TOYKINDANGEL_VERSION', '0.22.4' );
+define( 'TOYKINDANGEL_VERSION', '0.22.5' );
 define( 'TOYKINDANGEL_DIR', get_template_directory() );
 define( 'TOYKINDANGEL_URI', get_template_directory_uri() );
 
