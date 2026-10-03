@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <head>
         <meta charset="<?php bloginfo( 'charset' ); ?>">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-        <meta name="theme-color" content="#b400ae">
+        <meta name="theme-color" content="<?php echo esc_attr( get_theme_mod( 'tka_color_primary', '#b400ae' ) ); ?>">
         <?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>

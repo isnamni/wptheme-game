@@ -324,5 +324,70 @@ function toykindangel_customize_register( $wp_customize ) {
                         'type'        => 'checkbox',
                 )
         );
+
+        // ---------- Section: Design / Colors ----------
+        $wp_customize->add_section(
+                'tka_colors',
+                array(
+                        'title' => __( 'طراحی و رنگ‌بندی', 'toykindangel' ),
+                        'panel' => 'tka_shop_panel',
+                )
+        );
+
+        $tka_color_fields = array(
+                'tka_color_primary'        => array( __( 'رنگ اصلی', 'toykindangel' ), '#b400ae' ),
+                'tka_color_primary_light'  => array( __( 'رنگ اصلی — روشن', 'toykindangel' ), '#f7e5f5' ),
+                'tka_color_primary_medium' => array( __( 'رنگ اصلی — متوسط', 'toykindangel' ), '#cd63c6' ),
+                'tka_color_primary_dark'   => array( __( 'رنگ اصلی — تیره', 'toykindangel' ), '#a600a9' ),
+                'tka_color_cart'           => array( __( 'رنگ دکمه سبد خرید / افزودن به سبد', 'toykindangel' ), '#b400ae' ),
+        );
+
+        foreach ( $tka_color_fields as $id => $field ) {
+                $wp_customize->add_setting(
+                        $id,
+                        array(
+                                'default'           => $field[1],
+                                'sanitize_callback' => 'sanitize_hex_color',
+                                'transport'         => 'refresh',
+                        )
+                );
+                $wp_customize->add_control(
+                        new WP_Customize_Color_Control(
+                                $wp_customize,
+                                $id,
+                                array(
+                                        'label'   => $field[0],
+                                        'section' => 'tka_colors',
+                                )
+                        )
+                );
+        }
 }
 add_action( 'customize_register', 'toykindangel_customize_register' );
+
+/**
+ * Emit dynamic CSS variables from the Customizer color settings.
+ *
+ * v0.22.0 — the Colors section lets the shop owner override the primary
+ * palette (and the cart-button color) without editing CSS. The variables
+ * are injected into <head> after demo.css so they win the cascade.
+ */
+function toykindangel_customizer_css() {
+        $tka_primary        = get_theme_mod( 'tka_color_primary', '#b400ae' );
+        $tka_primary_light  = get_theme_mod( 'tka_color_primary_light', '#f7e5f5' );
+        $tka_primary_medium = get_theme_mod( 'tka_color_primary_medium', '#cd63c6' );
+        $tka_primary_dark   = get_theme_mod( 'tka_color_primary_dark', '#a600a9' );
+        $tka_cart           = get_theme_mod( 'tka_color_cart', '#b400ae' );
+
+        echo "<style id=\"tka-customizer-colors\">\n";
+        echo ':root{';
+        echo '--primary:' . esc_attr( $tka_primary ) . ';';
+        echo '--primary-light:' . esc_attr( $tka_primary_light ) . ';';
+        echo '--primary-medium:' . esc_attr( $tka_primary_medium ) . ';';
+        echo '--primary-dark:' . esc_attr( $tka_primary_dark ) . ';';
+        echo "}\n";
+        /* Cart button color override. */
+        echo '.pcard__atc,.tka-atc,.btn-primary{background:' . esc_attr( $tka_cart ) . ';}';
+        echo "</style>\n";
+}
+add_action( 'wp_head', 'toykindangel_customizer_css', 100 );

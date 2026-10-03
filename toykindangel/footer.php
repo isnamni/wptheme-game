@@ -5,7 +5,7 @@
  * @package ToyKindAngel
  */
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+        exit;
 }
 
 
@@ -82,7 +82,7 @@ $tka_footer_seo_default = 'فروشگاه اسباب‌بازی فرشته مه�
                                 </li>
                         </ul>
                 </div>
-                <div class="footer__col footer__col--desktop">
+                <div class="footer__col">
                         <h5><?php esc_html_e( 'همراه شوید', 'toykindangel' ); ?></h5>
                         <div class="footer__social">
                                 <?php

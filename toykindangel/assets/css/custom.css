@@ -1367,3 +1367,173 @@ body.tka-ig-lock{overflow:hidden !important;}
 }
 .tka-igview__zone--next{left:0; width:62%;}
 .tka-igview__zone--prev{right:0; width:38%;}
+
+/* ==========================================================
+   v0.22.0 — هم‌ترازی هدر/اسلایدر/بنرها + اصلاحات قیمت و فوتر
+   ========================================================== */
+
+/* ---------- ۱) هم‌تراز کردن هدر، منو، اسلایدر، بنرها در دسکتاپ ---------- */
+@media (min-width:768px){
+  .header{
+    padding-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    padding-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+  }
+  .promo-strip,
+  .topstrip{
+    padding-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    padding-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+  }
+  .hero{
+    margin-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    margin-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+  }
+  .banners{
+    margin-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    margin-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+  .stories{
+    margin-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    margin-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+  .brands{
+    margin-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    margin-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+}
+
+/* ---------- ۲) اسلایدر hero: رفع کشیدگی + crop از وسط ---------- */
+@media (min-width:768px){
+  .hero__slide{
+    aspect-ratio:4/1 !important;
+    height:auto !important;
+    max-height:420px;
+  }
+  .hero__slide img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center center !important;
+  }
+}
+.hero__slide img{
+  object-position:center center !important;
+}
+
+/* ---------- ۳) بنر بالای هدر (topstrip): تمام‌عرض در دسکتاپ ---------- */
+@media (min-width:768px){
+  .topstrip{
+    max-width:none !important;
+    margin-left:0 !important;
+    margin-right:0 !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+  .topstrip img{
+    width:100%;
+    max-height:170px;
+    object-fit:cover;
+    object-position:center;
+  }
+}
+
+/* ---------- ۴) بنرهای ۴ تایی: ارتفاع کمتر در دسکتاپ ---------- */
+@media (min-width:768px){
+  .banner{
+    aspect-ratio:3/1 !important;
+    max-height:200px;
+  }
+  .banner img{
+    object-position:center center;
+  }
+}
+@media (min-width:1100px){
+  .banner{
+    aspect-ratio:4/1 !important;
+    max-height:160px;
+  }
+}
+
+/* ---------- ۵) اصلاح نمایش قیمت در کارت محصول ---------- */
+/* قیمت: nowrap + ellipsis + LTR (مثل کارت جشنواره) */
+.pcard__price{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  direction:ltr !important;
+  unicode-bidi:isolate !important;
+  max-width:100% !important;
+  display:flex !important;
+  align-items:baseline !important;
+  justify-content:flex-start !important;
+  gap:3px !important;
+}
+.pcard__price span{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+.pcard__price small{
+  flex-shrink:0 !important;
+  margin-right:auto !important;
+}
+.pcard__old{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  max-width:100% !important;
+}
+.pcard__prices{
+  min-width:0 !important;
+  overflow:hidden !important;
+}
+.pcard,
+.pcard-wrap{
+  min-width:0 !important;
+  overflow:hidden !important;
+}
+.pcard__name{
+  -webkit-line-clamp:2 !important;
+  line-clamp:2 !important;
+  -webkit-box-orient:vertical !important;
+  overflow:hidden !important;
+  word-break:break-word !important;
+  overflow-wrap:break-word !important;
+}
+
+/* ---------- ۶) فوتر موبایل: نمایش شبکه‌های اجتماعی ---------- */
+@media (max-width:767px){
+  .footer__social{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:12px;
+  }
+  .footer__social a{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:var(--primary-light);
+    color:var(--primary);
+    border-radius:99px;
+    padding:7px 14px;
+    font-size:12.5px;
+    font-weight:700;
+    transition:background .15s,color .15s;
+  }
+  .footer__social a:hover{
+    background:var(--primary);
+    color:#fff;
+  }
+  .footer__social .ic{
+    font-size:var(--fs-md);
+  }
+  .footer__col{
+    display:block !important;
+  }
+}

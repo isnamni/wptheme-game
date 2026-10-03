@@ -114,10 +114,6 @@ else :
         <section class="section">
                 <div class="section__head">
                         <span class="section__title"><?php esc_html_e( 'جدیدترین محصولات', 'toykindangel' ); ?></span>
-                        <div class="timer timer--light">
-                                <span class="timer__label"><?php esc_html_e( 'زمان باقیمانده:', 'toykindangel' ); ?></span>
-                                <span class="timer__digits" data-timer></span>
-                        </div>
                 </div>
                 <div class="plist__track" id="newestTrack"><?php echo toykindangel_ssr_rail( toykindangel_ssr_products()['newest'] ); // phpcs:ignore WordPress.Security.EscapeOutput -- pcard markup ?></div>
         </section>
@@ -131,10 +127,6 @@ else :
                                 <svg class="ic" aria-hidden="true"><use href="#i-cat-stars"></use></svg>
                                 <?php esc_html_e( 'پرفروش‌ترین‌ها', 'toykindangel' ); ?>
                         </span>
-                        <div class="timer timer--light">
-                                <span class="timer__label"><?php esc_html_e( 'زمان باقیمانده:', 'toykindangel' ); ?></span>
-                                <span class="timer__digits" data-timer></span>
-                        </div>
                 </div>
                 <div class="plist__track" id="bestTrack"><?php echo toykindangel_ssr_rail( toykindangel_ssr_products()['best'] ); // phpcs:ignore WordPress.Security.EscapeOutput -- pcard markup ?></div>
         </section>
