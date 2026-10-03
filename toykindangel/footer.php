@@ -60,8 +60,8 @@ $tka_footer_seo_default = 'فروشگاه اسباب‌بازی فرشته مه�
                         <?php endif; ?>
                 </div>
 
-                <?php /* ستون اطلاعات تماس و شبکه‌های اجتماعی — فقط دسکتاپ (responsive.css) */ ?>
-                <div class="footer__col footer__col--desktop">
+                <?php /* ستون اطلاعات تماس و شبکه‌های اجتماعی */ ?>
+                <div class="footer__col">
                         <h5><?php esc_html_e( 'اطلاعات تماس', 'toykindangel' ); ?></h5>
                         <ul class="footer__contact-list">
                                 <li>
