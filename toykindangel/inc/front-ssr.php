@@ -55,6 +55,24 @@ function toykindangel_ssr_img( $src, $alt = '' ) {
 }
 
 /**
+ * Eager-loaded img for above-the-fold hero slides.
+ *
+ * v0.22.3: hero slides use transform:translateX in desktop, so slides 2+
+ * are off-screen but must be loaded immediately — loading="lazy" would
+ * skip them until the user scrolls, leaving blank slides.
+ *
+ * @param string $src Image URL.
+ * @param string $alt Alt text.
+ * @return string
+ */
+function toykindangel_ssr_img_eager( $src, $alt = '' ) {
+        if ( ! $src ) {
+                return '';
+        }
+        return '<img src="' . esc_url( $src ) . '" alt="' . esc_attr( $alt ) . '" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">';
+}
+
+/**
  * Story row SSR (categories as stories) — matches app.js renderHome().
  *
  * @return string
@@ -133,7 +151,7 @@ function toykindangel_ssr_hero() {
                 }
 
                 $tka_link  = get_theme_mod( "tka_hero_{$i}_link", '#' );
-                $tka_track .= '<a class="hero__slide" href="' . esc_url( $tka_link ) . '">' . toykindangel_ssr_img( $tka_img, get_bloginfo( 'name' ) . ' — ' . __( 'پیشنهاد ویژه', 'toykindangel' ) ) . '</a>';
+                $tka_track .= '<a class="hero__slide" href="' . esc_url( $tka_link ) . '">' . toykindangel_ssr_img_eager( $tka_img, get_bloginfo( 'name' ) . ' — ' . __( 'پیشنهاد ویژه', 'toykindangel' ) ) . '</a>';
                 $tka_dots  .= '<i class="' . ( 0 === $tka_n ? 'on' : '' ) . '"></i>';
                 $tka_n++;
         }

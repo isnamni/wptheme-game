@@ -568,11 +568,23 @@
 
                         /* Delegated open/close triggers. */
                         document.addEventListener('click', function (e) {
-                                var t = e.target.closest('[data-tka-drawer]');
+                                var t = e.target.closest ? e.target.closest('[data-tka-drawer]') : null;
                                 if (t) { open(t.getAttribute('data-tka-drawer'), t); return; }
                                 if (!openDrawer) { return; }
-                                if (e.target.closest('[data-tka-close]')) { close(); return; }
-                                if (backdrop && e.target === backdrop) { close(); }
+                                /* v0.22.3: closest روی SVG ممکن است نباشد — fallback با parent walk */
+                                var closeTarget = e.target.closest ? e.target.closest('[data-tka-close]') : null;
+                                if (!closeTarget && e.target) {
+                                        var node = e.target;
+                                        while (node && node !== document) {
+                                                if (node.hasAttribute && node.hasAttribute('data-tka-close')) {
+                                                        closeTarget = node;
+                                                        break;
+                                                }
+                                                node = node.parentNode;
+                                        }
+                                }
+                                if (closeTarget) { close(); return; }
+                                if (backdrop && (e.target === backdrop || backdrop.contains(e.target))) { close(); }
                         });
 
                         /* Escape closes; Tab is trapped inside the open drawer. */

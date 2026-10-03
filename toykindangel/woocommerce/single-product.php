@@ -75,29 +75,29 @@ $tka_bc_terms = array();
 if ( $product ) {
         $tka_cats = get_the_terms( $tka_id, 'product_cat' );
         if ( $tka_cats && ! is_wp_error( $tka_cats ) ) {
-		$tka_main = null;
-		foreach ( $tka_cats as $tka_cat ) {
-				if ( 'uncategorized' !== $tka_cat->slug ) {
-				$tka_main = $tka_cat;
-				break;
-				}
-			}
-		if ( ! $tka_main && $tka_cats ) {
-				$tka_main = $tka_cats[0];
-			}
-		if ( $tka_main ) {
-				$tka_chain     = array_reverse( get_ancestors( $tka_main->term_id, 'product_cat' ) );
-				$tka_bc_terms  = array();
-				foreach ( $tka_chain as $tka_anc_id ) {
-				$tka_anc = get_term( $tka_anc_id, 'product_cat' );
-				if ( $tka_anc && ! is_wp_error( $tka_anc ) ) {
-					$tka_bc_terms[] = $tka_anc;
-					}
-					}
-				$tka_bc_terms[] = $tka_main;
-				/* Demo order: leaf → root (the root is rendered as text). */
-				$tka_bc_terms = array_reverse( $tka_bc_terms );
-			}
+                $tka_main = null;
+                foreach ( $tka_cats as $tka_cat ) {
+                                if ( 'uncategorized' !== $tka_cat->slug ) {
+                                $tka_main = $tka_cat;
+                                break;
+                                }
+                        }
+                if ( ! $tka_main && $tka_cats ) {
+                                $tka_main = $tka_cats[0];
+                        }
+                if ( $tka_main ) {
+                                $tka_chain     = array_reverse( get_ancestors( $tka_main->term_id, 'product_cat' ) );
+                                $tka_bc_terms  = array();
+                                foreach ( $tka_chain as $tka_anc_id ) {
+                                $tka_anc = get_term( $tka_anc_id, 'product_cat' );
+                                if ( $tka_anc && ! is_wp_error( $tka_anc ) ) {
+                                        $tka_bc_terms[] = $tka_anc;
+                                        }
+                                        }
+                                $tka_bc_terms[] = $tka_main;
+                                /* Demo order: leaf → root (the root is rendered as text). */
+                                $tka_bc_terms = array_reverse( $tka_bc_terms );
+                        }
         }
 }
 
@@ -130,11 +130,11 @@ $tka_warranty = get_theme_mod( 'tka_warranty_text', __( 'گارانتی سلام
 $tka_stock_row = '';
 if ( $product ) {
         if ( ! $product->is_in_stock() ) {
-		$tka_stock_row = array( 'ok' => false, 'text' => __( 'فعلاً ناموجود', 'toykindangel' ) );
+                $tka_stock_row = array( 'ok' => false, 'text' => __( 'فعلاً ناموجود', 'toykindangel' ) );
         } elseif ( $product->is_on_backorder( 1 ) ) {
-		$tka_stock_row = array( 'ok' => true, 'text' => __( 'پیش‌خرید — به‌زودی شارژ می‌شود', 'toykindangel' ) );
+                $tka_stock_row = array( 'ok' => true, 'text' => __( 'پیش‌خرید — به‌زودی شارژ می‌شود', 'toykindangel' ) );
         } else {
-		$tka_stock_row = array( 'ok' => true, 'text' => __( 'موجود در انبار فروشگاه', 'toykindangel' ) );
+                $tka_stock_row = array( 'ok' => true, 'text' => __( 'موجود در انبار فروشگاه', 'toykindangel' ) );
         }
 }
 
@@ -144,74 +144,74 @@ $tka_specs = array();
 if ( $product ) {
         /* دسته‌بندی: همان زنجیرهٔ بردکرامب، این‌بار ریشه → برگ. */
         if ( $tka_bc_terms ) {
-		$tka_cat_names = array();
-		foreach ( array_reverse( $tka_bc_terms ) as $tka_cat ) {
-				$tka_cat_names[] = $tka_cat->name;
-			}
-		$tka_specs[] = array(
-		'k' => __( 'دسته‌بندی', 'toykindangel' ),
-		'v' => implode( ' › ', $tka_cat_names ),
-		);
+                $tka_cat_names = array();
+                foreach ( array_reverse( $tka_bc_terms ) as $tka_cat ) {
+                                $tka_cat_names[] = $tka_cat->name;
+                        }
+                $tka_specs[] = array(
+                'k' => __( 'دسته‌بندی', 'toykindangel' ),
+                'v' => implode( ' › ', $tka_cat_names ),
+                );
         }
 
         /* برند (اولین تکسونومی برند موجود). */
         foreach ( array( 'product_brand', 'tka_brand' ) as $tka_brand_tax ) {
-		$tka_brand_terms = get_the_terms( $tka_id, $tka_brand_tax );
-		if ( $tka_brand_terms && ! is_wp_error( $tka_brand_terms ) ) {
-				$tka_specs[] = array(
-						'k' => __( 'برند', 'toykindangel' ),
-						'v' => $tka_brand_terms[0]->name,
-				);
-				break;
+                $tka_brand_terms = get_the_terms( $tka_id, $tka_brand_tax );
+                if ( $tka_brand_terms && ! is_wp_error( $tka_brand_terms ) ) {
+                                $tka_specs[] = array(
+                                                'k' => __( 'برند', 'toykindangel' ),
+                                                'v' => $tka_brand_terms[0]->name,
+                                );
+                                break;
                 }
         }
 
         foreach ( $product->get_attributes() as $tka_attr ) {
-		if ( ! $tka_attr instanceof WC_Product_Attribute || ! $tka_attr->get_visible() ) {
-				continue;
-			}
-		if ( $tka_attr->is_taxonomy() ) {
-				$tka_vals = wc_get_product_terms( $tka_id, $tka_attr->get_name(), array( 'fields' => 'names' ) );
-			} else {
-			$tka_vals = $tka_attr->get_options();
-			}
-		if ( empty( $tka_vals ) ) {
-				continue;
-			}
-		$tka_specs[] = array(
-		'k' => wc_attribute_label( $tka_attr->get_name() ),
-		'v' => implode( '، ', (array) $tka_vals ),
-		);
+                if ( ! $tka_attr instanceof WC_Product_Attribute || ! $tka_attr->get_visible() ) {
+                                continue;
+                        }
+                if ( $tka_attr->is_taxonomy() ) {
+                                $tka_vals = wc_get_product_terms( $tka_id, $tka_attr->get_name(), array( 'fields' => 'names' ) );
+                        } else {
+                        $tka_vals = $tka_attr->get_options();
+                        }
+                if ( empty( $tka_vals ) ) {
+                                continue;
+                        }
+                $tka_specs[] = array(
+                'k' => wc_attribute_label( $tka_attr->get_name() ),
+                'v' => implode( '، ', (array) $tka_vals ),
+                );
         }
         if ( $product->has_weight() ) {
-		$tka_weight_v = wc_format_weight( $product->get_weight() );
-		$tka_specs[] = array(
-		'k' => __( 'وزن', 'toykindangel' ),
-		'v' => function_exists( 'toykindangel_fa_num' ) ? toykindangel_fa_num( $tka_weight_v ) : $tka_weight_v,
-		);
+                $tka_weight_v = wc_format_weight( $product->get_weight() );
+                $tka_specs[] = array(
+                'k' => __( 'وزن', 'toykindangel' ),
+                'v' => function_exists( 'toykindangel_fa_num' ) ? toykindangel_fa_num( $tka_weight_v ) : $tka_weight_v,
+                );
         }
         if ( $product->has_dimensions() ) {
-		/* wc_format_dimensions «&times;» HTML-entity برمی‌گرداند؛ برای esc_html به نویسهٔ واقعی تبدیل می‌شود. */
-		$tka_dims_v = str_replace( '&times;', '×', wc_format_dimensions( $product->get_dimensions( false ) ) );
-		$tka_specs[] = array(
-		'k' => __( 'ابعاد بسته‌بندی', 'toykindangel' ),
-		'v' => function_exists( 'toykindangel_fa_num' ) ? toykindangel_fa_num( $tka_dims_v ) : $tka_dims_v,
-		);
+                /* wc_format_dimensions «&times;» HTML-entity برمی‌گرداند؛ برای esc_html به نویسهٔ واقعی تبدیل می‌شود. */
+                $tka_dims_v = str_replace( '&times;', '×', wc_format_dimensions( $product->get_dimensions( false ) ) );
+                $tka_specs[] = array(
+                'k' => __( 'ابعاد بسته‌بندی', 'toykindangel' ),
+                'v' => function_exists( 'toykindangel_fa_num' ) ? toykindangel_fa_num( $tka_dims_v ) : $tka_dims_v,
+                );
         }
         if ( $product->get_sku() ) {
-		$tka_specs[] = array(
-		'k' => __( 'کد محصول', 'toykindangel' ),
-		'v' => $product->get_sku(),
-		);
+                $tka_specs[] = array(
+                'k' => __( 'کد محصول', 'toykindangel' ),
+                'v' => $product->get_sku(),
+                );
         }
 
         /* برچسب‌ها. */
         $tka_tag_terms = get_the_terms( $tka_id, 'product_tag' );
         if ( $tka_tag_terms && ! is_wp_error( $tka_tag_terms ) ) {
-		$tka_specs[] = array(
-		'k' => __( 'برچسب‌ها', 'toykindangel' ),
-		'v' => implode( '، ', wp_list_pluck( $tka_tag_terms, 'name' ) ),
-		);
+                $tka_specs[] = array(
+                'k' => __( 'برچسب‌ها', 'toykindangel' ),
+                'v' => implode( '، ', wp_list_pluck( $tka_tag_terms, 'name' ) ),
+                );
         }
 }
 
@@ -566,7 +566,7 @@ continue; }
                          */
                         foreach ( $tka_related as $tka_rel ) {
                                 if ( $tka_rel instanceof WC_Product ) {
-								echo toykindangel_pcard_wrap( $tka_rel ); // phpcs:ignore WordPress.Security.EscapeOutput -- theme-generated markup contains inline SVG (wp_kses_post would strip it).
+                                                                echo toykindangel_pcard_wrap( $tka_rel ); // phpcs:ignore WordPress.Security.EscapeOutput -- theme-generated markup contains inline SVG (wp_kses_post would strip it).
                                 }
                         }
                         ?>
@@ -582,6 +582,13 @@ continue; }
                         <small class="num"><?php echo esc_html( toykindangel_fmt( $tka_regular ) ); ?></small>
                         <?php endif; ?>
                 </div>
+                <?php
+                /*
+                 * v0.22.3: در موبایل، نوار چسبان پایین همیشه دکمهٔ «افزودن به سبد»
+                 * نشان می‌دهد (نه «مشاهده و خرید»). برای محصول ساده: AJAX add-to-cart.
+                 * برای محصول متغیر/غیرقابل‌خرید: لینک به فرم بالای صفحه.
+                 */
+                ?>
                 <?php if ( $tka_is_simple && $tka_purchasable ) : ?>
                 <a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>"
                         data-quantity="1"
@@ -593,7 +600,10 @@ continue; }
                         <?php esc_html_e( 'افزودن به سبد خرید', 'toykindangel' ); ?>
                 </a>
                 <?php else : ?>
-                <a class="btn-primary tka-cta-alt" href="#pricebox-top"><?php esc_html_e( 'مشاهده و خرید', 'toykindangel' ); ?></a>
+                <a class="btn-primary tka-atc" href="#pricebox-top">
+                        <svg class="ic" style="width:20px;height:20px" aria-hidden="true"><use href="#i-cart"></use></svg>
+                        <?php esc_html_e( 'افزودن به سبد خرید', 'toykindangel' ); ?>
+                </a>
                 <?php endif; ?>
         </div>
 

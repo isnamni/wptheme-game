@@ -22,7 +22,7 @@
    ========================================================== */
 
 /* ۱-۱) رفع باگ جهت قیمت در همهٔ عرض‌ها: «تومان» سمت چپِ مبلغ */
-section.offer .pcard__price{
+section.offer .pcard__price, .plist__track .pcard__price, .tka-pgrid .pcard__price{
   direction:rtl !important;
 }
 
@@ -86,7 +86,7 @@ section.offer .pcard__price{
   }
 
   /* کارت: کادر سفید ۱۵۰ پیکسلی */
-  section.offer .pcard-wrap{
+  section.offer .pcard-wrap, .plist__track .pcard-wrap, .tka-pgrid .pcard-wrap{
     flex:0 0 150px !important;
     width:150px !important;
     display:flex !important;
@@ -95,8 +95,8 @@ section.offer .pcard__price{
     border-radius:12px !important;
     box-shadow:0 1px 2px rgba(0,0,0,.08) !important;
   }
-  section.offer .pcard-wrap:hover{transform:none !important;}
-  section.offer .pcard{
+  section.offer .pcard-wrap:hover, .plist__track .pcard-wrap:hover, .tka-pgrid .pcard-wrap:hover{transform:none !important;}
+  section.offer .pcard, .plist__track .pcard, .tka-pgrid .pcard{
     flex:1 1 auto !important;
     display:flex !important;
     flex-direction:column !important;
@@ -105,10 +105,10 @@ section.offer .pcard__price{
     background:transparent !important;
     box-shadow:none !important;
   }
-  section.offer .pcard:hover{transform:none !important; box-shadow:none !important;}
+  section.offer .pcard:hover, .plist__track .pcard:hover, .tka-pgrid .pcard:hover{transform:none !important; box-shadow:none !important;}
 
   /* بج تخفیف: قرص قرمز بالا-راست */
-  section.offer .pcard__off{
+  section.offer .pcard__off, .plist__track .pcard__off, .tka-pgrid .pcard__off{
     top:8px !important;
     right:8px !important;
     left:auto !important;
@@ -119,7 +119,7 @@ section.offer .pcard__price{
     z-index:3 !important;
   }
   /* چیپ جشنواره: تنها در بالا، زیر بج اگر بج هست */
-  section.offer .pcard__festival{
+  section.offer .pcard__festival, .plist__track .pcard__festival, .tka-pgrid .pcard__festival{
     top:8px !important;
     right:8px !important;
     background:#a21caf !important;
@@ -129,18 +129,18 @@ section.offer .pcard__price{
     border-radius:4px !important;
     box-shadow:none !important;
   }
-  section.offer .pcard__off + .pcard__festival{
+  section.offer .pcard__off + .pcard__festival, .plist__track .pcard__off + .pcard__festival, .tka-pgrid .pcard__off + .pcard__festival{
     top:30px !important;
   }
 
   /* تصویر مربع */
-  section.offer .pcard__media{
+  section.offer .pcard__media, .plist__track .pcard__media, .tka-pgrid .pcard__media{
     border-radius:8px !important;
     margin-bottom:8px !important;
   }
 
   /* نام محصول: دو خط ثابت برای تراز کارت‌ها */
-  section.offer .pcard__name{
+  section.offer .pcard__name, .plist__track .pcard__name, .tka-pgrid .pcard__name{
     font-size:11px !important;
     font-weight:700 !important;
     color:#111827 !important;
@@ -151,34 +151,34 @@ section.offer .pcard__price{
   }
 
   /* قیمت‌ها: مبلغ راست، «تومان» چپ */
-  section.offer .pcard__prices{
+  section.offer .pcard__prices, .plist__track .pcard__prices, .tka-pgrid .pcard__prices{
     padding:0 !important; /* حذف padding-left:44px */
     margin-top:0 !important;
   }
-  section.offer .pcard__old{
+  section.offer .pcard__old, .plist__track .pcard__old, .tka-pgrid .pcard__old{
     font-size:10px !important;
     color:#9ca3af !important;
     min-height:13px !important;
   }
-  section.offer .pcard__price{
+  section.offer .pcard__price, .plist__track .pcard__price, .tka-pgrid .pcard__price{
     display:flex !important;
     align-items:center !important;
     justify-content:space-between !important;
     direction:rtl !important;
   }
-  section.offer .pcard__price span{
+  section.offer .pcard__price span, .plist__track .pcard__price span, .tka-pgrid .pcard__price span{
     font-size:12px !important;
     font-weight:900 !important;
     color:#111827 !important;
   }
-  section.offer .pcard__price small{
+  section.offer .pcard__price small, .plist__track .pcard__price small, .tka-pgrid .pcard__price small{
     font-size:9px !important;
     font-weight:400 !important;
     color:#6b7280 !important;
   }
 
   /* دکمه: فول‌عرض داخل کارت */
-  section.offer .pcard__atc{
+  section.offer .pcard__atc, .plist__track .pcard__atc, .tka-pgrid .pcard__atc{
     position:static !important;
     flex:0 0 auto !important;
     width:100% !important;
@@ -200,11 +200,11 @@ section.offer .pcard__price{
     box-shadow:none !important;
     white-space:nowrap !important;
   }
-  section.offer .pcard__atc .ic{width:16px !important; height:16px !important;}
-  section.offer .pcard__atc:hover{background:#86198f !important; transform:none !important;}
-  section.offer .pcard__atc.added{background:#22a06b !important;}
+  section.offer .pcard__atc .ic, .plist__track .pcard__atc .ic, .tka-pgrid .pcard__atc .ic{width:16px !important; height:16px !important;}
+  section.offer .pcard__atc:hover, .plist__track .pcard__atc:hover, .tka-pgrid .pcard__atc:hover{background:#86198f !important; transform:none !important;}
+  section.offer .pcard__atc.added, .plist__track .pcard__atc.added, .tka-pgrid .pcard__atc.added{background:#22a06b !important;}
   /* دکمهٔ آیکنی محصولات ساده: متن «خرید» مثل طرح */
-  section.offer .pcard__atc.add_to_cart_button::after{
+  section.offer .pcard__atc.add_to_cart_button::after, .plist__track .pcard__atc.add_to_cart_button::after, .tka-pgrid .pcard__atc.add_to_cart_button::after{
     content:"خرید";
     font-size:11px;
     font-weight:700;
@@ -1460,35 +1460,15 @@ body.tka-ig-lock{overflow:hidden !important;}
 }
 
 /* ---------- ۵) اصلاح نمایش قیمت در کارت محصول ----------
- * v0.22.2: همه کارت‌ها (جشنواره + جدیدترین + پرفروش + آرشیو) همان
- * سبک کارت جشنواره را دارند: direction:rtl، عرض کافی، قیمت کامل.
- * مشکل قبلی: کارت معمولی 90px داشت و قیمت ellipsis می‌شد (رند می‌شد). */
-.pcard__price{
-  white-space:nowrap !important;
-  overflow:hidden !important;
-  text-overflow:ellipsis !important;
-  direction:rtl !important;
-  unicode-bidi:isolate !important;
-  max-width:100% !important;
-  display:flex !important;
-  align-items:baseline !important;
-  justify-content:flex-start !important;
-  gap:3px !important;
-}
-.pcard__price span{
-  white-space:nowrap !important;
-  overflow:hidden !important;
-  text-overflow:ellipsis !important;
-}
-.pcard__price small{
-  flex-shrink:0 !important;
-}
+ * v0.22.3: استایل کارت جشنواره (section 2 بالا) اکنون برای همه
+ * کارت‌ها اعمال می‌شود. این بخش فقط nowrap + ellipsis اضافه می‌کند
+ * تا قیمت از کارت بیرون نزند. */
+.pcard__price,
+.pcard__price span,
 .pcard__old{
   white-space:nowrap !important;
   overflow:hidden !important;
   text-overflow:ellipsis !important;
-  max-width:100% !important;
-  direction:rtl !important;
 }
 .pcard__prices{
   min-width:0 !important;
@@ -1651,4 +1631,42 @@ body.tka-ig-lock{overflow:hidden !important;}
     object-fit:cover;
     object-position:center;
   }
+}
+
+/* ---------- ۱۱) صفحه محصول موبایل: bottomnav hidden + دکمه افزودن به سبد ثابت ---------- */
+/* v0.22.3: در موبایل، صفحه محصول bottomnav ندارد؛ به‌جای آن نوار چسبان
+ * پایین دکمهٔ «افزودن به سبد خرید» نشان می‌دهد. دکمهٔ افزودن به سبد
+ * درون صفحه هم hidden می‌شود تا فقط نوار چسبان استفاده شود. */
+@media (max-width:767px){
+  body.single-product .bottomnav{
+    display:none !important;
+  }
+  body.single-product .app--padded{
+    padding-bottom:0 !important;
+  }
+  /* دکمهٔ افزودن به سبد درون صفحه در موبایل hidden */
+  body.single-product .pricebox .tka-atc,
+  body.single-product .woocommerce form.cart .single_add_to_cart_button{
+    display:none !important;
+  }
+  /* نوار چسبان: همیشه دکمهٔ «افزودن به سبد» نشان بدهد */
+  .pdp__cta .tka-cta-alt{
+    display:none !important; /* دکمهٔ «مشاهده و خرید» دیگر استفاده نمی‌شود */
+  }
+}
+/* در دسکتاپ، نوار چسبان hidden */
+@media (min-width:768px){
+  .pdp__cta{
+    display:none !important;
+  }
+}
+
+/* ---------- ۱۲) اسلایدر: اطمینان از نمایش همه تصاویر ---------- */
+/* v0.22.3: تصاویر اسلایدر باید همیشه visible باشند، حتی وقتی با transform
+ * جابجا می‌شوند. */
+.hero__slide{
+  overflow:visible !important;
+}
+.hero__slide img{
+  opacity:1 !important;
 }
