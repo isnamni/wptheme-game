@@ -198,6 +198,29 @@ function toykindangel_customize_register( $wp_customize ) {
                 );
         }
 
+        /* v0.22.1: تنظیم زمان تعویض اسلایدر (autoplay interval) */
+        $wp_customize->add_setting(
+                'tka_hero_interval',
+                array(
+                        'default'           => 4500,
+                        'sanitize_callback' => 'absint',
+                )
+        );
+        $wp_customize->add_control(
+                'tka_hero_interval',
+                array(
+                        'label'       => __( 'فاصلهٔ زمانی تعویض اسلایدها (میلی‌ثانیه)', 'toykindangel' ),
+                        'description' => __( 'مثلاً ۴۵۰۰ = ۴.۵ ثانیه. ۰ = غیرفعال کردن تعویض خودکار.', 'toykindangel' ),
+                        'section'     => 'tka_banners',
+                        'type'        => 'number',
+                        'input_attrs' => array(
+                                'min'  => 0,
+                                'max'  => 20000,
+                                'step' => 500,
+                        ),
+                )
+        );
+
         // ---------- Section: Homepage toggles ----------
         $wp_customize->add_section(
                 'tka_homepage',

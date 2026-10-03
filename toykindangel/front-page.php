@@ -67,9 +67,16 @@ else :
 
         <!-- اسلایدر بنرها -->
         <?php if ( get_theme_mod( 'tka_show_slider', true ) && $tka_hero['track'] ) : ?>
-        <section class="hero">
+        <section class="hero" data-hero-interval="<?php echo esc_attr( get_theme_mod( 'tka_hero_interval', 4500 ) ); ?>">
                 <div class="hero__track"><?php echo $tka_hero['track']; // phpcs:ignore WordPress.Security.EscapeOutput -- built with esc_url()/esc_attr() ?></div>
                 <div class="hero__dots"><?php echo $tka_hero['dots']; // phpcs:ignore WordPress.Security.EscapeOutput -- static <i> tags ?></div>
+                <?php /* فلش‌های ناوبری (فقط دسکتاپ با CSS نمایش داده می‌شوند) */ ?>
+                <button type="button" class="hero__arrow hero__arrow--prev" aria-label="<?php esc_attr_e( 'اسلاید قبلی', 'toykindangel' ); ?>">
+                        <svg class="ic" aria-hidden="true"><use href="#i-chev-right"></use></svg>
+                </button>
+                <button type="button" class="hero__arrow hero__arrow--next" aria-label="<?php esc_attr_e( 'اسلاید بعدی', 'toykindangel' ); ?>">
+                        <svg class="ic" aria-hidden="true"><use href="#i-chev-left"></use></svg>
+                </button>
         </section>
         <?php endif; ?>
 

@@ -44,41 +44,66 @@
   }
 
   /* ---------- اسلایدر بنر بالا (hero) ----------
-   * HTML از سمت سرور می‌آید (inc/front-ssr.php). JS فقط:
-   *   - dots را می‌سازد (تعداد slideها از DOM خوانده می‌شود، نه از dataset)
-   *   - اسکرول را با dot فعال هماهنگ می‌کند
-   *   - autoplay هر ۴.۵ ثانیه
-   * اگر بنری نباشد، کاری نمی‌کند. */
+   * v0.22.1: HTML از سمت سرور می‌آید. JS:
+   *   - dots را هماهنگ می‌کند با اسکرول
+   *   - فلش‌های چپ/راست (دسکتاپ) برای ناوبری دستی
+   *   - autoplay با interval قابل تنظیم از Customizer (data-hero-interval)
+   *   - touch/swipe در موبایل خودکار کار می‌کند (scroll-snap + overflow:auto)
+   * اگر بنری نباشد یا فقط یک slide باشد، کاری نمی‌کند. */
   function hero() {
     var el = document.querySelector(".hero");
     if (!el) return;
     var track = el.querySelector(".hero__track");
     var dots = el.querySelector(".hero__dots");
+    var prevBtn = el.querySelector(".hero__arrow--prev");
+    var nextBtn = el.querySelector(".hero__arrow--next");
     if (!track || !track.children.length) return;
 
-    /* dots را فقط اگر خالی است بساز (SSR ممکن است خودش ساخته باشد). */
-    if (dots && !dots.children.length) {
-      var n = track.children.length;
-      var html = "";
-      for (var i = 0; i < n; i++) {
-        html += '<i class="' + (i === 0 ? "on" : "") + '"></i>';
-      }
-      dots.innerHTML = html;
-    }
+    var count = track.children.length;
+    if (count <= 1) return; /* با یک slide فلش/autoplay نمی‌خواهیم */
+
     var items = dots ? dots.children : [];
-    track.addEventListener("scroll", function () {
+
+    /* dot فعال را بر اساس اسکرول آپدیت کن */
+    function updateDots() {
       if (!track.clientWidth) return;
       var i = Math.round(track.scrollLeft / track.clientWidth);
-      for (var k = 0; k < items.length; k++) items[k].classList.toggle("on", k === i);
-    });
-    var idx = 0;
-    var count = track.children.length;
-    if (count <= 1) return; /* autoplay فقط وقتی بیش از یک slide باشد. */
-    setInterval(function () {
+      for (var k = 0; k < items.length; k++) {
+        items[k].classList.toggle("on", k === i);
+      }
+    }
+    track.addEventListener("scroll", updateDots, { passive: true });
+
+    /* ناوبری به slide بعدی/قبلی */
+    function goTo(i) {
       if (!track.clientWidth) return;
-      idx = (idx + 1) % count;
-      track.scrollTo({ left: idx * track.clientWidth, behavior: "smooth" });
-    }, 4500);
+      /* wrap-around: بعد از آخرین → اولین، قبل از اولین → آخرین */
+      i = ((i % count) + count) % count;
+      track.scrollTo({ left: i * track.clientWidth, behavior: "smooth" });
+    }
+    function next() { goTo(Math.round(track.scrollLeft / track.clientWidth) + 1); }
+    function prev() { goTo(Math.round(track.scrollLeft / track.clientWidth) - 1); }
+
+    if (nextBtn) nextBtn.addEventListener("click", function(e){ e.preventDefault(); next(); });
+    if (prevBtn) prevBtn.addEventListener("click", function(e){ e.preventDefault(); prev(); });
+
+    /* autoplay: interval از data-hero-interval خوانده می‌شود (Customizer) */
+    var interval = parseInt(el.getAttribute("data-hero-interval"), 10);
+    if (interval > 0) {
+      var timer = setInterval(next, interval);
+      /* وقتی کاربر با موس روی اسلایدر می‌رود، autoplay متوقف شود */
+      el.addEventListener("mouseenter", function(){ clearInterval(timer); });
+      el.addEventListener("mouseleave", function(){
+        clearInterval(timer);
+        timer = setInterval(next, interval);
+      });
+      /* وقتی کاربر touch می‌کند هم متوقف شود (موبایل) */
+      el.addEventListener("touchstart", function(){ clearInterval(timer); }, { passive: true });
+      el.addEventListener("touchend", function(){
+        clearInterval(timer);
+        if (interval > 0) timer = setInterval(next, interval);
+      }, { passive: true });
+    }
   }
 
   /* ---------- گالری صفحه محصول ----------

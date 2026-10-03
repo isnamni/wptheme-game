@@ -1537,3 +1537,44 @@ body.tka-ig-lock{overflow:hidden !important;}
     display:block !important;
   }
 }
+
+/* ---------- ۷) فلش‌های اسلایدر hero (دسکتاپ) ---------- */
+.hero{
+  position:relative;
+}
+.hero__arrow{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:10;
+  width:44px;
+  height:44px;
+  border:none;
+  border-radius:50%;
+  background:rgba(255,255,255,.9);
+  color:var(--gray-800);
+  display:none; /* در موبایل پنهان */
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  transition:background .15s,color .15s,opacity .15s;
+}
+.hero__arrow .ic{
+  font-size:22px;
+}
+.hero__arrow:hover{
+  background:var(--primary);
+  color:#fff;
+}
+.hero__arrow--prev{
+  right:12px; /* RTL: قبلی = راست */
+}
+.hero__arrow--next{
+  left:12px; /* RTL: بعدی = چپ */
+}
+@media (min-width:768px){
+  .hero__arrow{
+    display:flex;
+  }
+}
