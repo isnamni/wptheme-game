@@ -175,6 +175,13 @@ function toykindangel_cat_add_fields() {
                 <input type="number" id="tka_story_order" name="tka_story_order" min="0" max="99" value="0">
         </div>
         <div class="form-field">
+                <label for="tka_story_link"><?php esc_html_e( 'لینک سفارشی استوری (اختیاری)', 'toykindangel' ); ?></label>
+                <input type="url" id="tka_story_link" name="tka_story_link" value="" placeholder="<?php esc_attr_e( 'خالی = لینک همین دسته‌بندی', 'toykindangel' ); ?>">
+        </div>
+        <div class="form-field">
+                <label><input type="checkbox" name="tka_story_new_tab" value="1"> <?php esc_html_e( 'باز شدن لینک استوری در تب جدید', 'toykindangel' ); ?></label>
+        </div>
+        <div class="form-field">
                 <label for="tka_rail_order"><?php esc_html_e( 'ترتیب در ریل دسته‌بندی‌ها', 'toykindangel' ); ?></label>
                 <input type="number" id="tka_rail_order" name="tka_rail_order" min="0" max="99" value="0">
         </div>
@@ -188,9 +195,11 @@ add_action( 'product_cat_add_form_fields', 'toykindangel_cat_add_fields' );
  * @param WP_Term $term Term.
  */
 function toykindangel_cat_edit_fields( $term ) {
-        $tka_is_story = wp_validate_boolean( get_term_meta( $term->term_id, 'tka_is_story', true ) );
-        $tka_story    = (int) get_term_meta( $term->term_id, 'tka_story_order', true );
-        $tka_rail     = (int) get_term_meta( $term->term_id, 'tka_rail_order', true );
+        $tka_is_story   = wp_validate_boolean( get_term_meta( $term->term_id, 'tka_is_story', true ) );
+        $tka_story      = (int) get_term_meta( $term->term_id, 'tka_story_order', true );
+        $tka_story_link = get_term_meta( $term->term_id, 'tka_story_link', true );
+        $tka_new_tab    = wp_validate_boolean( get_term_meta( $term->term_id, 'tka_story_new_tab', true ) );
+        $tka_rail       = (int) get_term_meta( $term->term_id, 'tka_rail_order', true );
         ?>
         <?php wp_nonce_field( 'tka_term_meta', 'tka_term_meta_nonce' ); ?>
         <tr class="form-field">
@@ -205,6 +214,22 @@ function toykindangel_cat_edit_fields( $term ) {
         <tr class="form-field">
                 <th scope="row"><label for="tka_story_order"><?php esc_html_e( 'ترتیب در استوری‌ها', 'toykindangel' ); ?></label></th>
                 <td><input type="number" id="tka_story_order" name="tka_story_order" min="0" max="99" value="<?php echo esc_attr( (string) $tka_story ); ?>"></td>
+        </tr>
+        <tr class="form-field">
+                <th scope="row"><label for="tka_story_link"><?php esc_html_e( 'لینک سفارشی استوری', 'toykindangel' ); ?></label></th>
+                <td>
+                        <input type="url" id="tka_story_link" name="tka_story_link" value="<?php echo esc_attr( $tka_story_link ? $tka_story_link : '' ); ?>" placeholder="<?php esc_attr_e( 'خالی = لینک همین دسته‌بندی', 'toykindangel' ); ?>" style="width:100%">
+                        <p class="description"><?php esc_html_e( 'اگر می‌خواهید استوری به جای صفحه دسته‌بندی، به لینک دیگری (مثلاً یک محصول یا برگه) برود، آن را اینجا وارد کنید.', 'toykindangel' ); ?></p>
+                </td>
+        </tr>
+        <tr class="form-field">
+                <th scope="row"><?php esc_html_e( 'باز شدن در تب جدید', 'toykindangel' ); ?></th>
+                <td>
+                        <label style="display:flex;align-items:center;gap:6px">
+                                <input type="checkbox" name="tka_story_new_tab" value="1" <?php checked( $tka_new_tab ); ?>>
+                                <?php esc_html_e( 'لینک استوری در تب/پنجره جدید باز شود', 'toykindangel' ); ?>
+                        </label>
+                </td>
         </tr>
         <tr class="form-field">
                 <th scope="row"><label for="tka_rail_order"><?php esc_html_e( 'ترتیب در ریل دسته‌بندی‌ها', 'toykindangel' ); ?></label></th>
@@ -259,7 +284,8 @@ function toykindangel_save_term_meta( $term_id ) {
          * and must keep working untouched.
          */
         $tka_has_our_fields = isset( $_POST['tka_is_story'] ) || isset( $_POST['tka_story_order'] )
-                || isset( $_POST['tka_rail_order'] ) || isset( $_POST['tka_brand_order'] );
+                || isset( $_POST['tka_rail_order'] ) || isset( $_POST['tka_brand_order'] )
+                || isset( $_POST['tka_story_link'] ) || isset( $_POST['tka_story_new_tab'] );
         if ( $tka_has_our_fields ) {
                 check_admin_referer( 'tka_term_meta', 'tka_term_meta_nonce' );
         }
@@ -274,6 +300,20 @@ function toykindangel_save_term_meta( $term_id ) {
                 if ( isset( $_POST[ $tka_key ] ) ) {
                         update_term_meta( $term_id, $tka_key, absint( wp_unslash( $_POST[ $tka_key ] ) ) );
                 }
+        }
+        /* v0.22.6: custom story link + new-tab toggle */
+        if ( isset( $_POST['tka_story_link'] ) ) {
+                $tka_link_val = esc_url_raw( wp_unslash( $_POST['tka_story_link'] ) );
+                if ( $tka_link_val ) {
+                        update_term_meta( $term_id, 'tka_story_link', $tka_link_val );
+                } else {
+                        delete_term_meta( $term_id, 'tka_story_link' );
+                }
+        }
+        if ( isset( $_POST['tka_story_new_tab'] ) ) {
+                update_term_meta( $term_id, 'tka_story_new_tab', '1' );
+        } else {
+                delete_term_meta( $term_id, 'tka_story_new_tab' );
         }
 }
 add_action( 'created_term', 'toykindangel_save_term_meta' );
@@ -313,54 +353,54 @@ add_action( 'wp_dashboard_setup', 'toykindangel_dashboard_widget' );
  * @return float
  */
 function toykindangel_order_total_sum( array $tka_statuses, $tka_from_ts ) {
-	global $wpdb;
+        global $wpdb;
 
-	if ( empty( $tka_statuses ) ) {
-		return 0.0;
-	}
+        if ( empty( $tka_statuses ) ) {
+                return 0.0;
+        }
 
-	// Sanitize statuses into a SQL-safe IN list (each entry is 'wc-...').
-	$tka_in_statuses = array();
-	foreach ( $tka_statuses as $tka_status ) {
-		$tka_in_statuses[] = "'" . esc_sql( (string) $tka_status ) . "'";
-	}
-	$tka_status_list = implode( ',', $tka_in_statuses );
-	$tka_date        = gmdate( 'Y-m-d H:i:s', (int) $tka_from_ts );
+        // Sanitize statuses into a SQL-safe IN list (each entry is 'wc-...').
+        $tka_in_statuses = array();
+        foreach ( $tka_statuses as $tka_status ) {
+                $tka_in_statuses[] = "'" . esc_sql( (string) $tka_status ) . "'";
+        }
+        $tka_status_list = implode( ',', $tka_in_statuses );
+        $tka_date        = gmdate( 'Y-m-d H:i:s', (int) $tka_from_ts );
 
-	/*
-	 * HPOS path — sum on the custom orders table directly. The status
-	 * column on wc_orders holds the 'wc-...' string, and date_created_gmt
-	 * is the indexed GMT timestamp column.
-	 */
-	if ( class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' )
-		&& method_exists( '\Automattic\WooCommerce\Utilities\OrderUtil', 'custom_orders_table_usage_is_enabled' )
-		&& \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+        /*
+         * HPOS path — sum on the custom orders table directly. The status
+         * column on wc_orders holds the 'wc-...' string, and date_created_gmt
+         * is the indexed GMT timestamp column.
+         */
+        if ( class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' )
+                && method_exists( '\Automattic\WooCommerce\Utilities\OrderUtil', 'custom_orders_table_usage_is_enabled' )
+                && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
 
-		$tka_sql = $wpdb->prepare(
-			"SELECT SUM(total_amount) FROM {$wpdb->prefix}wc_orders
-			 WHERE status IN (" . $tka_status_list . ")
-			 AND date_created_gmt >= %s",
-			$tka_date
-		);
-		return (float) $wpdb->get_var( $tka_sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- statuses esc_sql'd above, %s prepared.
-	}
+                $tka_sql = $wpdb->prepare(
+                        "SELECT SUM(total_amount) FROM {$wpdb->prefix}wc_orders
+                         WHERE status IN (" . $tka_status_list . ")
+                         AND date_created_gmt >= %s",
+                        $tka_date
+                );
+                return (float) $wpdb->get_var( $tka_sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- statuses esc_sql'd above, %s prepared.
+        }
 
-	/*
-	 * CPT (legacy) fallback — orders live in wp_posts (post_type=shop_order,
-	 * post_status='wc-...') and the order total is in postmeta _order_total.
-	 * One JOIN, no ID materialization.
-	 */
-	$tka_sql = $wpdb->prepare(
-		"SELECT SUM(pm.meta_value + 0)
-		 FROM {$wpdb->postmeta} AS pm
-		 INNER JOIN {$wpdb->posts} AS p ON p.ID = pm.post_id
-		 WHERE pm.meta_key = '_order_total'
-		 AND p.post_type = 'shop_order'
-		 AND p.post_status IN (" . $tka_status_list . ")
-		 AND p.post_date_gmt >= %s",
-		$tka_date
-	);
-	return (float) $wpdb->get_var( $tka_sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- statuses esc_sql'd above, %s prepared.
+        /*
+         * CPT (legacy) fallback — orders live in wp_posts (post_type=shop_order,
+         * post_status='wc-...') and the order total is in postmeta _order_total.
+         * One JOIN, no ID materialization.
+         */
+        $tka_sql = $wpdb->prepare(
+                "SELECT SUM(pm.meta_value + 0)
+                 FROM {$wpdb->postmeta} AS pm
+                 INNER JOIN {$wpdb->posts} AS p ON p.ID = pm.post_id
+                 WHERE pm.meta_key = '_order_total'
+                 AND p.post_type = 'shop_order'
+                 AND p.post_status IN (" . $tka_status_list . ")
+                 AND p.post_date_gmt >= %s",
+                $tka_date
+        );
+        return (float) $wpdb->get_var( $tka_sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- statuses esc_sql'd above, %s prepared.
 }
 
 /**

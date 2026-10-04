@@ -85,7 +85,8 @@ function toykindangel_ssr_stories() {
 
         $tka_html = '';
         foreach ( $tka_stories as $tka_s ) {
-                $tka_html .= '<a class="story" href="' . esc_url( $tka_s['href'] ) . '">';
+                $tka_target = ! empty( $tka_s['new_tab'] ) ? ' target="_blank" rel="noopener noreferrer"' : '';
+                $tka_html .= '<a class="story" href="' . esc_url( $tka_s['href'] ) . '"' . $tka_target . '>';
                 $tka_html .= '<span class="story__img">' . toykindangel_ssr_img( $tka_s['img'], esc_html( $tka_s['name'] ) ) . '</span>';
                 $tka_html .= '<span class="story__label">' . esc_html( $tka_s['name'] ) . '</span></a>';
         }

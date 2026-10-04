@@ -272,10 +272,14 @@ function toykindangel_wc_stories_uncached() {
                         continue;
                 }
                 $thumb_id = get_term_meta( $term->term_id, 'thumbnail_id', true );
-                $out[]    = array(
-                        'name' => $term->name,
-                        'img'  => $thumb_id ? wp_get_attachment_image_url( $thumb_id, 'full' ) : '',
-                        'href' => get_term_link( $term ),
+                /* v0.22.6: custom story link + new-tab toggle (admin-meta.php) */
+                $tka_custom_link = get_term_meta( $term->term_id, 'tka_story_link', true );
+                $tka_new_tab     = wp_validate_boolean( get_term_meta( $term->term_id, 'tka_story_new_tab', true ) );
+                $out[]           = array(
+                        'name'    => $term->name,
+                        'img'     => $thumb_id ? wp_get_attachment_image_url( $thumb_id, 'full' ) : '',
+                        'href'    => $tka_custom_link ? $tka_custom_link : get_term_link( $term ),
+                        'new_tab' => $tka_new_tab,
                 );
         }
 

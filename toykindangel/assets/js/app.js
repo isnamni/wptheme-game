@@ -73,7 +73,9 @@
       current = i;
       var slideWidth = track.clientWidth;
       if (slideWidth > 0) {
-        track.scrollTo({ left: i * slideWidth, behavior: "smooth" });
+        /* v0.22.6: در RTL، scrollLeft منفی است (slide بعدی در چپ است).
+         * بدون علامت منفی، scrollTo کار نمی‌کند. */
+        track.scrollTo({ left: -i * slideWidth, behavior: "smooth" });
       }
       for (var k = 0; k < items.length; k++) {
         items[k].classList.toggle("on", k === i);
@@ -88,7 +90,8 @@
     /* dot را با اسکرول هماهنگ کن (هم موبایل هم دسکتاپ) */
     track.addEventListener("scroll", function() {
       if (!track.clientWidth) return;
-      var i = Math.round(track.scrollLeft / track.clientWidth);
+      /* v0.22.6: در RTL، scrollLeft منفی است — با Math.abs کار می‌کنیم */
+      var i = Math.round(Math.abs(track.scrollLeft) / track.clientWidth);
       if (i !== current) {
         current = i;
         for (var k = 0; k < items.length; k++) {
