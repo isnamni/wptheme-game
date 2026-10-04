@@ -175,13 +175,6 @@ function toykindangel_cat_add_fields() {
                 <input type="number" id="tka_story_order" name="tka_story_order" min="0" max="99" value="0">
         </div>
         <div class="form-field">
-                <label for="tka_story_link"><?php esc_html_e( 'لینک سفارشی استوری (اختیاری)', 'toykindangel' ); ?></label>
-                <input type="url" id="tka_story_link" name="tka_story_link" value="" placeholder="<?php esc_attr_e( 'خالی = لینک همین دسته‌بندی', 'toykindangel' ); ?>">
-        </div>
-        <div class="form-field">
-                <label><input type="checkbox" name="tka_story_new_tab" value="1"> <?php esc_html_e( 'باز شدن لینک استوری در تب جدید', 'toykindangel' ); ?></label>
-        </div>
-        <div class="form-field">
                 <label for="tka_rail_order"><?php esc_html_e( 'ترتیب در ریل دسته‌بندی‌ها', 'toykindangel' ); ?></label>
                 <input type="number" id="tka_rail_order" name="tka_rail_order" min="0" max="99" value="0">
         </div>
@@ -195,11 +188,9 @@ add_action( 'product_cat_add_form_fields', 'toykindangel_cat_add_fields' );
  * @param WP_Term $term Term.
  */
 function toykindangel_cat_edit_fields( $term ) {
-        $tka_is_story   = wp_validate_boolean( get_term_meta( $term->term_id, 'tka_is_story', true ) );
-        $tka_story      = (int) get_term_meta( $term->term_id, 'tka_story_order', true );
-        $tka_story_link = get_term_meta( $term->term_id, 'tka_story_link', true );
-        $tka_new_tab    = wp_validate_boolean( get_term_meta( $term->term_id, 'tka_story_new_tab', true ) );
-        $tka_rail       = (int) get_term_meta( $term->term_id, 'tka_rail_order', true );
+        $tka_is_story = wp_validate_boolean( get_term_meta( $term->term_id, 'tka_is_story', true ) );
+        $tka_story    = (int) get_term_meta( $term->term_id, 'tka_story_order', true );
+        $tka_rail     = (int) get_term_meta( $term->term_id, 'tka_rail_order', true );
         ?>
         <?php wp_nonce_field( 'tka_term_meta', 'tka_term_meta_nonce' ); ?>
         <tr class="form-field">
@@ -214,22 +205,6 @@ function toykindangel_cat_edit_fields( $term ) {
         <tr class="form-field">
                 <th scope="row"><label for="tka_story_order"><?php esc_html_e( 'ترتیب در استوری‌ها', 'toykindangel' ); ?></label></th>
                 <td><input type="number" id="tka_story_order" name="tka_story_order" min="0" max="99" value="<?php echo esc_attr( (string) $tka_story ); ?>"></td>
-        </tr>
-        <tr class="form-field">
-                <th scope="row"><label for="tka_story_link"><?php esc_html_e( 'لینک سفارشی استوری', 'toykindangel' ); ?></label></th>
-                <td>
-                        <input type="url" id="tka_story_link" name="tka_story_link" value="<?php echo esc_attr( $tka_story_link ? $tka_story_link : '' ); ?>" placeholder="<?php esc_attr_e( 'خالی = لینک همین دسته‌بندی', 'toykindangel' ); ?>" style="width:100%">
-                        <p class="description"><?php esc_html_e( 'اگر می‌خواهید استوری به جای صفحه دسته‌بندی، به لینک دیگری (مثلاً یک محصول یا برگه) برود، آن را اینجا وارد کنید.', 'toykindangel' ); ?></p>
-                </td>
-        </tr>
-        <tr class="form-field">
-                <th scope="row"><?php esc_html_e( 'باز شدن در تب جدید', 'toykindangel' ); ?></th>
-                <td>
-                        <label style="display:flex;align-items:center;gap:6px">
-                                <input type="checkbox" name="tka_story_new_tab" value="1" <?php checked( $tka_new_tab ); ?>>
-                                <?php esc_html_e( 'لینک استوری در تب/پنجره جدید باز شود', 'toykindangel' ); ?>
-                        </label>
-                </td>
         </tr>
         <tr class="form-field">
                 <th scope="row"><label for="tka_rail_order"><?php esc_html_e( 'ترتیب در ریل دسته‌بندی‌ها', 'toykindangel' ); ?></label></th>
@@ -284,8 +259,7 @@ function toykindangel_save_term_meta( $term_id ) {
          * and must keep working untouched.
          */
         $tka_has_our_fields = isset( $_POST['tka_is_story'] ) || isset( $_POST['tka_story_order'] )
-                || isset( $_POST['tka_rail_order'] ) || isset( $_POST['tka_brand_order'] )
-                || isset( $_POST['tka_story_link'] ) || isset( $_POST['tka_story_new_tab'] );
+                || isset( $_POST['tka_rail_order'] ) || isset( $_POST['tka_brand_order'] );
         if ( $tka_has_our_fields ) {
                 check_admin_referer( 'tka_term_meta', 'tka_term_meta_nonce' );
         }
@@ -300,20 +274,6 @@ function toykindangel_save_term_meta( $term_id ) {
                 if ( isset( $_POST[ $tka_key ] ) ) {
                         update_term_meta( $term_id, $tka_key, absint( wp_unslash( $_POST[ $tka_key ] ) ) );
                 }
-        }
-        /* v0.22.6: custom story link + new-tab toggle */
-        if ( isset( $_POST['tka_story_link'] ) ) {
-                $tka_link_val = esc_url_raw( wp_unslash( $_POST['tka_story_link'] ) );
-                if ( $tka_link_val ) {
-                        update_term_meta( $term_id, 'tka_story_link', $tka_link_val );
-                } else {
-                        delete_term_meta( $term_id, 'tka_story_link' );
-                }
-        }
-        if ( isset( $_POST['tka_story_new_tab'] ) ) {
-                update_term_meta( $term_id, 'tka_story_new_tab', '1' );
-        } else {
-                delete_term_meta( $term_id, 'tka_story_new_tab' );
         }
 }
 add_action( 'created_term', 'toykindangel_save_term_meta' );

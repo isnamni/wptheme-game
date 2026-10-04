@@ -1376,6 +1376,34 @@ body.tka-ig-lock{overflow:hidden !important;}
 .tka-igview__zone--next{left:0; width:62%;}
 .tka-igview__zone--prev{right:0; width:38%;}
 
+/* v0.22.7: دکمهٔ «باز کردن لینک» در نمایشگر استوری */
+.tka-igview__link{
+  position:absolute;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:5;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:10px 24px;
+  border-radius:99px;
+  background:rgba(255,255,255,.95);
+  color:var(--primary);
+  font-size:13px;
+  font-weight:700;
+  text-decoration:none;
+  box-shadow:0 2px 12px rgba(0,0,0,.2);
+  transition:background .15s,color .15s;
+}
+.tka-igview__link:hover{
+  background:var(--primary);
+  color:#fff;
+}
+.tka-igview__link .ic{
+  font-size:16px;
+}
+
 /* ==========================================================
    v0.22.0 — هم‌ترازی هدر/اسلایدر/بنرها + اصلاحات قیمت و فوتر
    ========================================================== */
