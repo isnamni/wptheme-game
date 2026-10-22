@@ -77,9 +77,6 @@ if ( ! array_key_exists( $tka_sort, $tka_sorts ) ) {
                                 <?php echo esc_html( $tka_title ); ?>
                                 <span class="tka-shophead__count num"><?php echo esc_html( toykindangel_fmt( $tka_count ) ); ?> <?php esc_html_e( 'کالا', 'toykindangel' ); ?></span>
                         </h1>
-                        <?php if ( $tka_desc ) : ?>
-                                <div class="tka-shophead__desc"><?php echo wp_kses_post( wpautop( $tka_desc ) ); ?></div>
-                        <?php endif; ?>
                 </div>
 
                 <?php
@@ -290,6 +287,17 @@ if ( ! array_key_exists( $tka_sort, $tka_sorts ) ) {
 
                         </div>
                 </div>
+
+                <?php
+                /* v0.23.0: توضیحات دسته‌بندی در پایین صفحه (SEO-friendly) */
+                if ( $tka_desc ) :
+                        ?>
+                        <div class="tka-category-description tka-container" style="margin-top:32px;padding:24px;background:#fff;border-radius:12px;">
+                                <?php echo wp_kses_post( wpautop( $tka_desc ) ); ?>
+                        </div>
+                        <?php
+                endif;
+                ?>
         </div>
 </div>
 <?php

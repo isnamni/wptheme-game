@@ -60,30 +60,42 @@ function toykindangel_wc_product_query( $q ) {
                 return;
         }
 
+        /* v0.23.0: محصولات ناموجود همیشه در انتهای لیست */
+        $q->set( 'meta_query', array(
+                'relation' => 'OR',
+                array(
+                        'key'     => '_stock_status',
+                        'value'   => 'outofstock',
+                        'compare' => '!=',
+                ),
+                array(
+                        'key'     => '_stock_status',
+                        'compare' => 'NOT EXISTS',
+                ),
+        ) );
+        $q->set( 'orderby', 'meta_value_num ' . ( $q->get( 'orderby' ) ?: 'date' ) );
+        $q->set( 'order', $q->get( 'order' ) ?: 'DESC' );
+
         $tka_sort = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
         switch ( $tka_sort ) {
                 case 'new':
-                        /* جدیدترین */
                         $q->set( 'meta_key', '' );
                         $q->set( 'orderby', 'date' );
                         $q->set( 'order', 'DESC' );
                         break;
                 case 'cheap':
-                        /* ارزان‌ترین */
                         $q->set( 'meta_key', '_price' );
                         $q->set( 'orderby', 'meta_value_num' );
                         $q->set( 'order', 'ASC' );
                         break;
                 case 'exp':
-                        /* گران‌ترین */
                         $q->set( 'meta_key', '_price' );
                         $q->set( 'orderby', 'meta_value_num' );
                         $q->set( 'order', 'DESC' );
                         break;
                 case '':
                 case 'best':
-                        /* پرفروش‌ترین — the demo default order. */
                         $q->set( 'meta_key', 'total_sales' );
                         $q->set( 'orderby', 'meta_value_num' );
                         $q->set( 'order', 'DESC' );

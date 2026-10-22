@@ -135,12 +135,14 @@
       var b = e.target.closest("button");
       if (!b) return;
       var i = +b.dataset.i;
-      track.scrollTo({ left: i * track.clientWidth, behavior: "smooth" });
+      /* v0.23.0: RTL — scrollLeft منفی */
+      track.scrollTo({ left: -i * track.clientWidth, behavior: "smooth" });
       mark(i);
     });
     track.addEventListener("scroll", function () {
       if (!track.clientWidth) return;
-      mark(Math.round(track.scrollLeft / track.clientWidth));
+      /* v0.23.0: RTL — Math.abs */
+      mark(Math.round(Math.abs(track.scrollLeft) / track.clientWidth));
     });
   }
 

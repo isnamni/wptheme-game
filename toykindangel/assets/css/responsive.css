@@ -425,6 +425,7 @@
   /* ---------- ابعاد دراور ---------- */
   .tka-drawer{width:min(880px,92vw)}
   .tka-drawer--menu{width:min(380px,90vw)}
+  .tka-drawer--minicart{width:min(400px,90vw) !important} /* v0.23.0: سبد خرید باریک‌تر در دسکتاپ */
 
   /* ریل دسته‌ها: ستون ~200px با آیتم‌های افقی (چیدمان صفحهٔ دسکتاپ) */
   .tka-drawer .crail{flex:0 0 200px;width:200px;border-left:1px solid var(--gray-200)}

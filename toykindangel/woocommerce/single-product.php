@@ -34,7 +34,7 @@ if ( ! defined( 'ABSPATH' ) ) {
         exit;
 }
 
-get_header( 'pdp' );
+get_header();
 
 the_post();
 
@@ -327,19 +327,45 @@ $tka_tabs[] = array( 'id' => 'reviews', 't' => __( 'دیدگاه‌ها', 'toyki
         <!-- ============ بدنه ============ -->
         <div class="pdp__body">
 
-                <?php if ( $tka_bc_terms ) : ?>
-                <nav class="breadcrumb" aria-label="<?php esc_attr_e( 'مسیر صفحه', 'toykindangel' ); ?>">
-                        <?php foreach ( $tka_bc_terms as $tka_bi => $tka_bt ) : ?>
-                                <?php if ( count( $tka_bc_terms ) - 1 === $tka_bi ) : ?>
-                                        <span><?php echo esc_html( $tka_bt->name ); ?></span>
-                                <?php else : ?>
-                                        <a href="<?php echo esc_url( get_term_link( $tka_bt ) ); ?>"><?php echo esc_html( $tka_bt->name ); ?></a><span>/</span>
-                                <?php endif; ?>
-                        <?php endforeach; ?>
+                <?php
+                /* v0.23.0: بردکرامب کامل: خانه → فروشگاه → دسته‌ها → محصول */
+                ?>
+                <nav class="pdp__breadcrumb" aria-label="<?php esc_attr_e( 'مسیر صفحه', 'toykindangel' ); ?>">
+                        <a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'خانه', 'toykindangel' ); ?></a>
+                        <span>/</span>
+                        <a href="<?php echo esc_url( toykindangel_categories_url() ); ?>"><?php esc_html_e( 'فروشگاه', 'toykindangel' ); ?></a>
+                        <?php if ( $tka_bc_terms ) : ?>
+                                <?php foreach ( $tka_bc_terms as $tka_bi => $tka_bt ) : ?>
+                                        <span>/</span>
+                                        <a href="<?php echo esc_url( get_term_link( $tka_bt ) ); ?>"><?php echo esc_html( $tka_bt->name ); ?></a>
+                                <?php endforeach; ?>
+                        <?php endif; ?>
+                        <span>/</span>
+                        <span style="color:var(--gray-700)"><?php echo esc_html( $tka_name ); ?></span>
                 </nav>
-                <?php endif; ?>
 
                 <h1 class="pdp__title"><?php echo esc_html( $tka_name ); ?></h1>
+
+                <?php
+                /* v0.23.0: نمایش برند محصول با لوگو و لینک */
+                if ( $product ) {
+                        $tka_brand_tax = taxonomy_exists( 'product_brand' ) ? 'product_brand' : ( taxonomy_exists( 'tka_brand' ) ? 'tka_brand' : '' );
+                        if ( $tka_brand_tax ) {
+                                $tka_brands = get_the_terms( $tka_id, $tka_brand_tax );
+                                if ( $tka_brands && ! is_wp_error( $tka_brands ) ) {
+                                        $tka_brand = $tka_brands[0];
+                                        $tka_brand_thumb = get_term_meta( $tka_brand->term_id, 'thumbnail_id', true );
+                                        $tka_brand_logo = $tka_brand_thumb ? wp_get_attachment_image_url( $tka_brand_thumb, 'thumbnail' ) : '';
+                                        echo '<a class="pdp__brand-link" href="' . esc_url( get_term_link( $tka_brand ) ) . '">';
+                                        if ( $tka_brand_logo ) {
+                                                echo '<img class="pdp__brand-logo" src="' . esc_url( $tka_brand_logo ) . '" alt="' . esc_attr( $tka_brand->name ) . '">';
+                                        }
+                                        echo esc_html( $tka_brand->name );
+                                        echo '</a>';
+                                }
+                        }
+                }
+                ?>
 
                 <div class="rating">
                         <?php if ( $tka_rcount > 0 ) : ?>
@@ -396,7 +422,7 @@ continue; }
                 </div>
 
                 <!-- قیمت -->
-                <div class="pricebox">
+                <div class="pricebox" id="pricebox-top">
                         <?php if ( $tka_off > 0 && $tka_regular > 0 ) : ?>
                         <div class="pricebox__row">
                                 <span class="pricebox__off num"><?php echo esc_html( (string) $tka_off ); ?>%</span>
@@ -622,4 +648,4 @@ continue; }
 </main>
 <?php
 
-get_footer( 'bare' );
+get_footer();
