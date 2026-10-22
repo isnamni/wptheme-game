@@ -1,0 +1,529 @@
+     1→# TKA Architecture & Performance Audit
+     2→
+     3→**قالب مورد ممیزی:** `toykindangel` (نسخه `0.19.0`، شاخه `dev`، commit `96841ad`)
+     4→**منبع:** https://github.com/isnamni/wptheme-game
+     5→**نوع ممیزی:** استاتیک + استنتاج query-count، مستقل، فقط‌خواندنی
+     6→**تاریخ:** ۲۰۲۶-۰۹-۳۰
+     7→**هیچ فایلی تغییر نکرده است.** هیچ push به GitHub انجام نشده است.
+     8→
+     9→---
+    10→
+    11→## Executive Summary
+    12→
+    13→معماری کلی قالب **سالم‌تر از حد انتظار** برای یک قالب ساخته‌شده با AI است. نویسنده (یا AI Agent قبلی) در نسخهٔ `v0.19.0` به‌طور صریح چندین مشکل واقعی را حل کرده است: pipeline تکراری homepage (SSR + JSON) اکنون از یک منبع واحدِ statically-cached می‌خواند (`toykindangel_home_rail_products`)؛ لایهٔ کش دو‌سطحی (static درون-Request + transient بین-Request) با invalidation رویدادمحور برای taxonomies و محصولات پیاده شده (`inc/cache.php`)؛ Live Search اکنون هم throttle دارد (۶۰ درخواست/۱۵ثانیه per-IP) و هم کش ۳ دقیقه‌ای per-term؛ Shop archive از main query استفاده می‌کند (۱۲ محصول/صفحه) نه WP_Query سفارشی.
+    14→
+    15→با این حال، **مشکل بحرانی وجود دارد**: چندین template partial بزرگ (homepage catgrid، صفحهٔ `/categories/`، دراور فوتر، آرشیو دسته) همچنان **N+1 واقعی و بدون کش** دارند که در هر بار بارگذاری اجرا می‌شوند. این موارد توسط ابزار قبلی حل نشده‌اند چون در template files نه در inc/ functions قرار دارند و از wrapper‌های cached عبور می‌کنند.
+    16→
+    17→- **N+1 وجود دارد؟** بله — ۴ محل بحرانی (homepage catgrid، page-categories SSR، archive-product subcats، footer drawer from_menu) + چندین محل کم‌اهمیت‌تر.
+    18→- **Over-fetching وجود دارد؟** خفیف — `window.TKA_WP` (~۱۴-۱۶KB) با SSR HTML هم‌پوشانی دارد ولی منبع query واحد است.
+    19→- **آیا Shop کل catalog را می‌خواند؟** خیر — ۱۲ محصول/صفحه با main query + pagination استاندارد. اما ordering پیش‌فرض `meta_key=total_sales` روی هر بار بازدید JOIN به postmeta می‌زند.
+    20→- **آیا Homepage بیش از نیاز hydrate می‌کند؟** نه برای rails (۳۰ محصول = ۳ ریل × ۱۰، یک‌بار fetch). اما catgrid آن همه top-level دسته را fetch + per-term meta می‌زند بدون کش.
+    21→- **Memory خطرناک است؟** در frontend خیر. در **admin dashboard** بله — `wc_get_orders('limit'=>-1)` تمام order IDهای ماه را در آرایه PHP می‌ریزد.
+    22→- **CPU-heavy operation وجود دارد؟** خفیف — `usort` برندها با `get_term_meta` در comparator؛ rebuild درخت دسته‌ها روی flush cache.
+    23→
+    24→**Verdict کلی:** معماری پایه مستحکم است؛ ایرادات واقعی در **template partials بدون کش** متمرکزند، نه در طراحی هسته. این قابل اصلاح است بدون refactor معماری.
+    25→
+    26→---
+    27→
+    28→## Critical Findings
+    29→
+    30→> «Critical» = مشکلات واقعی و اثبات‌شده که در هر بار بارگذاری صفحه اجرا می‌شوند و با افزایش catalog به‌صورت **خطی یا بدتر** رشد می‌کنند.
+    31→
+    32→### C1 — Homepage «دسته‌بندی‌های فروشگاه» rail: N+1 بدون کش روی هر homepage
+    33→
+    34→- **Severity:** CRITICAL (در catalog بزرگ)
+    35→- **File:** `front-page.php`
+    36→- **Line:** `156-176` (get_terms) + `170-187` (foreach با get_term_meta + wp_get_attachment_image_url)
+    37→- **Problem:**
+    38→  ```php
+    39→  $tka_main_cats = get_terms( array(
+    40→      'taxonomy'   => 'product_cat',
+    41→      'parent'     => 0,
+    42→      'hide_empty' => false,
+    43→      // ❌ NO 'number' => UNBOUNDED — همهٔ top-level دسته‌ها
+    44→  ) );
+    45→  foreach ( $tka_main_cats as $tka_main_cat ) {
+    46→      $tka_main_thumb   = (int) get_term_meta( $tka_main_cat->term_id, 'thumbnail_id', true );
+    47→      $tka_main_img_url = $tka_main_thumb ? wp_get_attachment_image_url( $tka_main_thumb, 'woocommerce_thumbnail' ) : '';
+    48→      // ...
+    49→  }
+    50→  ```
+    51→  `get_terms()` در وردپرس **term meta cache را prime نمی‌کند**. پس هر `get_term_meta` یک query جدا است. `wp_get_attachment_image_url` هم به post + post_meta یک attachment دست می‌زند که در این context primed نیست.
+    52→- **Evidence (code):** بدون wrapper `toykindangel_cache_get`/`cache_set`، برخلاف `toykindangel_wc_stories()` که ۵ خط بالاتر transient-cached است.
+    53→- **Runtime Evidence (تخمین محاسبه‌شده از کد):**
+    54→  - ۱ query `get_terms` + N × (`get_term_meta` + تا ۲ query attachment) = `1 + 3N`
+    55→  - N=20 دسته: ~۶۱ query
+    56→  - N=40 دسته: ~۱۲۱ query
+    57→  - N=200 دسته: ~۶۰۱ query
+    58→- **Impact:** در هر بار بارگذاری homepage، سرد و گرم. با ۵٬۰۰۰ محصول و ~۱۰۰ دستهٔ top-level، homepage ~۳۰۰ query فقط برای این rail می‌زند. در ترافیک همزمان → اشباع MySQL.
+    59→- **Recommended Fix:** (الف) اضافه کردن `'number' => 24` به get_terms؛ (ب) `_prime_term_caches($ids, false)` بعد از get_terms برای priming دسته‌جمعی term meta؛ (ج) wrap کل بلوک در `toykindangel_cache_get('home_catgrid')` با همان الگوی `home_stories`.
+    60→
+    61→### C2 — صفحهٔ `/categories/` SSR grid + popular rail: N+1 بدون transient
+    62→
+    63→- **Severity:** CRITICAL
+    64→- **File:** `page-categories.php`
+    65→- **Line:** `349-374` (SSR grid با `toykindangel_cats_page_children` + `card_media` per top term) و `380-406` (popular rail با `pop_media` per term)
+    66→- **Problem:** چهار تابع helper هر کدام query جدا می‌زنند و **هیچ‌کدام transient-cached نیستند** (برخلاف `toykindangel_cats_data()` در `inc/cat-data.php` که transient `tka_cache_cats_tree` دارد):
+    67→  - `toykindangel_cats_page_top_terms()` (line 51): `get_terms(number=40, meta_query)` — خودش ۱ query ولی `meta_query` روی termmeta می‌زند.
+    68→  - `toykindangel_cats_page_children($term, 4)` (line 104): به‌ازای هر top term یک `get_terms` جدا → **۴۰ query**.
+    69→  - `toykindangel_cats_page_card_media($term)` (line 129): به‌ازای هر top term: `get_term_meta(thumbnail_id)` + در fallback `get_posts(tax_query)` → **۴۰ تا ۸۰ query**.
+    70→  - `toykindangel_cats_page_popular_terms(12)` (line 179): `get_terms(number=40)` سپس foreach با `get_term($term->parent)` per item → **۱۲ تا ۴۰ query**.
+    71→  - `toykindangel_cats_page_pop_media($term)` (line 223): `get_term_meta` per popular term → **۱۲ query**.
+    72→- **Evidence:** grep `cache_get|cache_set|transient` در `page-categories.php` → **۰ match**. ولی `inc/cat-data.php` (که درخت تعاملی same-page را می‌سازد) transient دارد.
+    73→- **Runtime Evidence (تخمین):** ~۱۲۰ تا ۲۰۰ query در هر بار بارگذاری `/categories/`، سرد و گرم.
+    74→- **Impact:** این صفحه معمولاً پر‌بازدید است (لینک از header/nav). با ۱۰۰ top category + ۵ child هر کدام → ~۲۰۰ query стабиль. ناهماهنگی طراحی: نسخهٔ تعاملی (cat-data.php) کش شده ولی نسخهٔ SSR همان صفحه نه.
+    75→- **Recommended Fix:** wrap هر ۵ helper در `toykindangel_cache_get('cats_page_*')` با همان TTL/invalidation `cache.php` (flush روی `created_term/edited_term/delete_term`).
+    76→
+    77→### C3 — Footer category drawer (from_menu branch): N+1 روی هر صفحه
+    78→
+    79→- **Severity:** CRITICAL (وقتی منوی `cats` اختصاص یافته باشد)
+    80→- **File:** `inc/cat-drawer.php`
+    81→- **Line:** `83-149` (`toykindangel_drawer_cats_from_menu`) → `105` (`toykindangel_term_img`)؛ caller: `footer.php:138` روی هر صفحه
+    82→- **Problem:**
+    83→  ```php
+    84→  // cat-drawer.php:99-106
+    85→  foreach ( $tka_items as $tka_item ) {
+    86→      if ( 0 === $tka_parent ) {
+    87→          if ( 'taxonomy' === $tka_item->type && $tka_tax === $tka_item->object ) {
+    88→              $tka_img = toykindangel_term_img( (int) $tka_item->object_id ); // ← N+1
+    89→          }
+    90→      }
+    91→  }
+    92→  ```
+    93→  `toykindangel_term_img()` (`cat-data.php:80`) = `get_term_meta(thumbnail_id)` + `wp_get_attachment_image_url(medium)`. nav-menu items term meta را prime نمی‌کنند.
+    94→- **Evidence:** `toykindangel_drawer_data()` (line 279) و `toykindangel_cats_drawer()` (line 379) **هیچ static/transient ندارند**. branch `from_menu` (line 282) زودتر return می‌کند و هرگز به branch `from_terms` (که از `cats_tree` transient می‌خواند) نمی‌رسد.
+    95→- **Runtime Evidence:** به‌ازای هر top-level taxonomy nav-menu item = ۲ query. منوی `cats` با ۲۰ top cat = ۴۰ query در هر صفحه‌ای از سایت (homepage، PDP، shop، blog، همه).
+    96→- **Impact:** این روی **هر صفحه** اجرا می‌شود نه فقط homepage. اگر ۵۰ صفحه/روز per user × ۴۰ query = ۲۰۰۰ query اضافه per user. با ۱۰۰ user همزمان → فشار قابل‌توجه.
+    97→- **Recommended Fix:** (الف) جمع‌آوری همهٔ term IDs و `_prime_term_caches($ids, false)` یکجا؛ (ج) wrap `toykindangel_drawer_data()` در static per-request + transient با flush روی term change.
+    98→
+    99→### C4 — Archive-product subcategories: N+1 روی هر صفحهٔ دسته
+   100→
+   101→- **Severity:** CRITICAL (در دسته‌های با زیردسته زیاد)
+   102→- **File:** `woocommerce/archive-product.php`
+   103→- **Line:** `93-118` (`get_terms` برای sub-terms + foreach با `get_term_meta(thumbnail_id)` + `wp_get_attachment_image_url`)
+   104→- **Problem:** الگوی دقیقاً مشابه C1 ولی روی هر آرشیو دسته. `get_terms` term meta را prime نمی‌کند.
+   105→- **Evidence:** بدون transient.
+   106→- **Runtime Evidence:** ۱ query get_terms + N × (get_term_meta + تا ۲ attachment query). دسته با ۳۰ زیردسته = ~۹۱ query.
+   107→- **Impact:** صفحهٔ دسته پر‌بازدید است. در catalog بزرگ با دسته‌های عمیق، هر بار خرید کاربر از یک دسته ~۱۰۰ query اضافه می‌زند.
+   108→- **Recommended Fix:** `_prime_term_caches($sub_term_ids, false)` بعد از get_terms.
+   109→
+   110→---
+   111→
+   112→## High Priority
+   113→
+   114→### H1 — Admin Dashboard: `wc_get_orders('limit' => -1)` تمام order IDهای ماه در memory
+   115→
+   116→- **Severity:** HIGH (admin-only، اما در فروشگاه پُر‌تراکنش بحرانی)
+   117→- **File:** `inc/admin-meta.php`
+   118→- **Line:** `313-339` (`toykindangel_order_total_sum`)؛ caller: `361-362` (دو بار: today + month)
+   119→- **Problem:**
+   120→  ```php
+   121→  $tka_ids = wc_get_orders( array(
+   122→      'status'     => $tka_statuses,
+   123→      'date_after' => gmdate( 'Y-m-d H:i:s', (int) $tka_from_ts ),
+   124→      'limit'      => -1,   // ❌ همهٔ orderهای ماه
+   125→      'return'     => 'ids',
+   126→  ) );
+   127→  $tka_in = implode( ',', $tka_ids );   // ❌ IN(... 5000 ids ...)
+   128→  $wpdb->get_var( "SELECT SUM(total_amount) FROM {$wpdb->prefix}wc_orders WHERE id IN ({$tka_in})" );
+   129→  ```
+   130→- **Evidence:** نویسنده در v0.19.0 از hydration همهٔ objects به IDs+aggregate SQL بهبود داده (comment line 354-358) — بهبود واقعی. اما `limit => -1` همچنان ریسک دارد.
+   131→- **Runtime Evidence:** فروشگاه با ۵٬۰۰۰ سفارش/ماه → آرایه PHP با ۵٬۰۰۰ int + SQL string با `IN(1,2,...,5000)` ~۴۰KB. `max_allowed_packet` پیش‌فرض MySQL ۴MB است، خطر مستقیم نیست، ولی query planner روی IN بزرگ کند است و memory PHP رشد می‌کند.
+   132→- **Impact:** dashboard widget کند در فروشگاه پُر‌تراکنش؛ admin که dashboard را باز می‌کند waits چند ثانیه.
+   133→- **Recommended Fix:** حذف `wc_get_orders` و انجام SUM مستقیم در SQL با WHERE روی `date_created` و `status` (هم HPOS هم CPT).
+   134→
+   135→### H2 — Admin: low-stock count با cap مخفی ۲۰۰ — correctness bug
+   136→
+   137→- **Severity:** HIGH (correctness، admin-only)
+   138→- **File:** `inc/admin-meta.php`
+   139→- **Line:** `377-398`
+   140→- **Problem:** `wc_get_products(['limit' => 200, 'return' => 'ids'])` فقط ۲۰۰ محصول manage-stock اول را بررسی می‌کند. اگر فروشگاه ۵٬۰۰۰ محصول manage-stock داشته باشد، ۴٬۸۰۰ محصول نادیده گرفته می‌شوند و شمارش low-stock **اشتباه** است.
+   141→- **Evidence:** نویسنده comment نوشته «Same counting semantics as the previous 200-object hydration» — یعنی cap از قبل هم وجود داشته، اما این یک correctness bug است نه optimization.
+   142→- **Impact:** dashboard عدد low-stock را اشتباه نشان می‌دهد. admin تصمیم خرید اشتباه می‌گیرد.
+   143→- **Recommended Fix:** `wc_get_products` با `limit => -1` برای گرفتن همهٔ IDs (products معمولاً کمتر از orders است) یا SQL مستقیم `SELECT COUNT(*) FROM postmeta WHERE meta_key='_stock' AND meta_value+0 <= threshold`.
+   144→
+   145→### H3 — PDP: rail «محصولات مشابه» ۱۰× wc_get_product بدون transient
+   146→
+   147→- **Severity:** HIGH-MEDIUM
+   148→- **File:** `woocommerce/single-product.php`
+   149→- **Line:** `219` (`wc_get_related_products($id, 10)` → IDs) + `541-547` (foreach با `wc_get_product` per ID)
+   150→- **Problem:** `wc_get_related_products` IDs را برمی‌گرداند (خوب). اما hydration ۱۰ محصول یکی‌یکی با `wc_get_product` در foreach انجام می‌شود، و هر `pcard_wrap` هم ۲ attachment-meta query می‌زند.
+   151→- **Evidence:** بدون transient روی related rail. WC خودش `wc_get_related_products` را transient-cached می‌کند (خوب) ولی hydration نه.
+   152→- **Runtime Evidence:** ~۳۰ query per PDP (۱۰ wc_get_product + ۲۰ attachment). با ۱۰۰ PDP بازدید/روز = ۳٬۰۰۰ query.
+   153→- **Impact:** PDP کندتر از لازم. در ۵٬۰۰۰ محصول با ترافیک، تجمع‌پذیر.
+   154→- **Recommended Fix:** `wc_get_products(['include' => $tka_related, 'limit' => 10])` به‌جای foreach + `wc_get_product` — batch hydration یک‌بار.
+   155→
+   156→### H4 — SEO: تکرار Product JSON-LD با WC core روی PDP
+   157→
+   158→- **Severity:** HIGH (SEO)
+   159→- **File:** `inc/seo-schema.php`
+   160→- **Line:** `199-279` (Product schema در `wp_head`)
+   161→- **Problem:** قالب Product JSON-LD را در `wp_head` چاپ می‌کند، اما `WC_Structured_Data` ووکامرس هم در `wp_footer` Product schema چاپ می‌کند (`woocommerce_structured_data` → `WC()->structured_data->output_structured_data`). قالب هوک WC را `remove_action` نکرده (grep `structured_data` در کل قالب = ۰ match).
+   162→- **Evidence:** وقتی SEO plugin فعال نباشد، Google دو Product schema با field-set متفاوت می‌بیند → Search Console warning «Duplicate Product».
+   163→- **Impact:** در نصب بدون SEO plugin (که برای storefront ایرانی رایج است)، schema duplication.
+   164→- **Recommended Fix:** `remove_action('wp_footer', [WC()->structured_data, 'output_structured_data'], 10)` وقتی `!toykindangel_seo_plugin_active()` و روی PDP.
+   165→
+   166→### H5 — Product card: attachment meta per card (N+1 روی هر listing)
+   167→
+   168→- **Severity:** MEDIUM-HIGH
+   169→- **File:** `inc/product-card.php`
+   170→- **Line:** `76` (`wp_get_attachment_image_url`) + `84` (`wp_get_attachment_metadata`)
+   171→- **Problem:** هر `toykindangel_pcard()` این دو را برای attachment ID تصویر محصول می‌زند. WP_Query اصلی post_meta را prime می‌کند ولی attachment‌ها پست‌های جدا هستند و meta cache آن‌ها primed نیست.
+   172→- **Evidence:** روی shop archive با ۱۲ محصول = ۲۴ attachment-meta query. روی wishlist با ۶۰ محصول = ۱۲۰.
+   173→- **Runtime Evidence:** معمولاً cache hit بعد از اولین load attachment در همان request، ولی در listing اولین بار هر attachment جدید query می‌زند.
+   174→- **Impact:** در صفحه‌های با کارت زیاد (wishlist، search، homepage rails) تجمع‌پذیر.
+   175→- **Recommended Fix:** جمع‌آوری همهٔ attachment IDs در listing و `_prime_post_caches([], $attachment_ids)` یکجا قبل از render.
+   176→
+   177→---
+   178→
+   179→## Medium Priority
+   180→
+   181→### M1 — `cat-data.php` درخت دسته‌بندی: thundering herd روی flush cache
+   182→
+   183→- **File:** `inc/cat-data.php`
+   184→- **Line:** `138-299` (nested 3-level tree builder)
+   185→- **Problem:** transient `tka_cache_cats_tree` (12h TTL) محتویات را کش می‌کند (خوب). ولی وقتی cache flush می‌شود (روی هر `edited_term`)، N request همزمان همه می‌خواهند rebuild کنند چون **lock نیست**. در worst-case (۴۰ top × ۱۰۰ child × ۱۰۰ grandchild) rebuild = هزاران query.
+   186→- **Evidence:** `toykindangel_cache_get` → اگر null، بلافاصله `cache_set` بعد از rebuild. بدون semaphore.
+   187→- **Impact:** وقتی admin یک term را ویرایش می‌کند، چند ثانیه cache سرد است و همهٔ requestهای همزمان rebuild می‌کنند.
+   188→- **Recommended Fix:** pattern "cache stampede lock" — اولین request rebuild می‌کند، بقیه stale یا short-TTL بازمی‌گردند.
+   189→
+   190→### M2 — `festival.php`: ۵۰ `get_posts` در هر homepage
+   191→
+   192→- **File:** `inc/festival.php`
+   193→- **Line:** `81-96` (`toykindangel_festival_ids`)
+   194→- **Problem:** وقتی festival فعال است، `get_posts(post_type=product, meta_key=tka_festival, numberposts=50)` در هر homepage اجرا می‌شود. بدون transient.
+   195→- **Evidence:** caller: `front-data.php:124-129` در `toykindangel_home_rail_products` که خود static-cached است (خوب — یعنی فقط یک‌بار per request) ولی بین-Request کش نمی‌شود.
+   196→- **Impact:** ۱ query اضافی per homepage. کم، ولی با `meta_key` filesort دارد.
+   197→- **Recommended Fix:** transient کوتاه (۱۵ دقیقه) flush روی save_post_product.
+   198→
+   199→### M3 — `inc/front-data.php`: best-sellers با WP_Query + per-post wc_get_product
+   200→
+   201→- **File:** `inc/front-data.php`
+   202→- **Line:** `158-175`
+   203→- **Problem:** `new WP_Query(meta_key=total_sales, posts_per_page=10)` سپس foreach با `wc_get_product($post->ID)` per post. می‌توانست `wc_get_products` با `orderby=>popularity` باشد.
+   204→- **Evidence:** نویسنده این را می‌داند (comment line 157) ولی برای parity با WC transient روی total_sales این الگو را نگه داشته.
+   205→- **Impact:** ۱۰ hydration اضافی per homepage (به‌خاطر static cache فقط یک‌بار per request). کم.
+   206→- **Recommended Fix:** `wc_get_products(['orderby' => 'popularity', 'limit' => 10])`.
+   207→
+   208→### M4 — `inc/front-data.php`: usort برندها با get_term_meta در comparator
+   209→
+   210→- **File:** `inc/front-data.php`
+   211→- **Line:** `392-408`
+   212→- **Problem:** `usort` comparator `get_term_meta` ×۲ در هر مقایسه می‌زند. برای ۱۲ brand ~۷۲ comparison = ~۱۴۴ get_term_meta call. ولی این داخل `toykindangel_wc_brands_uncached` است که transient-cached است (`home_brands`، 12h) — پس فقط روی cache miss اجرا می‌شود.
+   213→- **Evidence:** wrap شده در cache (خوب).
+   214→- **Impact:** کم — فقط cold cache.
+   215→- **Recommended Fix:** pre-fetch همهٔ `tka_brand_order` meta با یک query قبل از sort.
+   216→
+   217→### M5 — `window.TKA_WP` ~۱۴-۱۶KB هم‌پوشان با SSR HTML
+   218→
+   219→- **File:** `inc/front-data.php`
+   220→- **Line:** `470-538` (`toykindangel_front_data`) + `544-566` (emission)
+   221→- **Problem:** روی homepage با SSR فعال، همان داده‌های rail/stories/brands/hero/grid هم در HTML render می‌شوند هم در `window.TKA_WP` JSON. در storefront واقعی (که `tka_fallback_demo=false`)، app.js فقط `fallback` و `catUrl` را استفاده می‌کند، بقیه payload بدون مصرف‌کننده است.
+   222→- **Evidence:** app.js SSR guards (functions.php:144-148 comment) فقط container خالی را fill می‌کنند. در storefront واقعی container خالی نیست.
+   223→- **Runtime Evidence:** ~۱۴-۱۶KB JSON (۳۰ محصول × ~۴۰۰B + ۱۰ story + ۸ brand + ۸ banner). روی mobile = ~۳-۵KB gzipped. بزرگ نیست ولی اضافی.
+   224→- **Impact:** کم. bandwidth + parse time.
+   225→- **Recommended Fix:** وقتی `tka_fallback_demo=false`، payload minimal (`fallback`, `catUrl` فقط) emit کنید.
+   226→
+   227→### M6 — `data.js` (۱۸۸ خط demo dataset) روی هر homepage load می‌شود
+   228→
+   229→- **File:** `functions.php`
+   230→- **Line:** `152-166` (`$tka_needs_dataset` gating)
+   231→- **Problem:** وقتی `is_front_page()`، `data.js` (~۱۵KB) همیشه enqueue می‌شود حتی اگر `tka_fallback_demo=false`. این فقط fallback است.
+   232→- **Evidence:** functions.php:152 فقط صفحه را چک می‌کند، نه setting را.
+   233→- **Impact:** ~۳KB gzipped اضافی per homepage.
+   234→- **Recommended Fix:** `&& toykindangel_front_fallback_enabled()` به شرط اضافه کنید.
+   235→
+   236→---
+   237→
+   238→## Low Priority
+   239→
+   240→### L1 — `seo-schema.php`: ItemList در `wp_head` ۲۴ WC_Product hydrate می‌کند
+   241→
+   242→- **File:** `inc/seo-schema.php`
+   243→- **Line:** `300-337`
+   244→- **Problem:** ItemList schema برای shop/category archive در `wp_head` ساخته می‌شود و ۲۴ محصول را hydrate می‌کند قبل از body. WC request-cache دومی را cache-hit می‌کند ولی اولی TTFB را تأخیر می‌دهد.
+   245→- **Recommended Fix:** move به `wp_footer` (پس از render اصلی).
+   246→
+   247→### L2 — `seo-schema.php`: `brand` field از `product_cat` اول استفاده می‌کند نه `product_brand`
+   248→
+   249→- **File:** `inc/seo-schema.php`
+   250→- **Line:** `256-263`
+   251→- **Problem:** schema `Brand` را از FIRST `product_cat` می‌گیرد در حالی که قالب هم `product_brand` هم `tka_brand` را query می‌کند. نادرست از نظر schema semantics.
+   252→- **Recommended Fix:** استفاده از `product_brand`/`tka_brand`.
+   253→
+   254→### L3 — `seo-schema.php`: SEO-plugin guard ناقص
+   255→
+   256→- **File:** `inc/seo-schema.php`
+   257→- **Line:** `16-18`
+   258→- **Problem:** فقط Yoast/RankMath/AIOSEO را چک می‌کند. SEOPress، The SEO Framework، Slim SEO، Squirrly را نمی‌بیند.
+   259→- **Recommended Fix:** بررسی `class_exists` یا `is_plugin_active` برای لیست گسترده‌تر.
+   260→
+   261→### L4 — `ajax-search.php`: throttle قبل از cache-check اجرا می‌شود
+   262→
+   263→- **File:** `inc/ajax-search.php`
+   264→- **Line:** `283-295` (throttle در `283`، cache در `292`)
+   265→- **Problem:** کاربرهای CGNAT پشت یک IP حتی روی cache-hit throttle slot می‌سوزانند. cache-hit نباید throttle کند.
+   266→- **Recommended Fix:** cache-check اول، throttle فقط روی cache-miss.
+   267→
+   268→### L5 — `header-bare.php` / `footer-bare.php`: dead code
+   269→
+   270→- **File:** `header-bare.php`, `footer-bare.php`
+   271→- **Problem:** هیچ template ای `get_header('bare')` / `get_footer('bare')` صدا نمی‌زند (از v0.16.0 redesign). orphan.
+   272→- **Recommended Fix:** حذف (یا مستندسازی اگر برای آینده نگه داشته شده).
+   273→
+   274→### L6 — `inc/blog.php`: `toykindangel_reading_time_text` per post در loops
+   275→
+   276→- **File:** `inc/blog.php` + caller `ajax-search.php:205`
+   277→- **Problem:** محاسبه reading time per post. bounded (۳ در live search, ۱۲ در blog page). کم.
+   278→- **Recommended Fix:** transient per post یا post_meta cache.
+   279→
+   280→### L7 — `wp_count_posts('shop_order')` در admin under HPOS
+   281→
+   282→- **File:** `inc/admin-meta.php`
+   283→- **Line:** `364`
+   284→- **Problem:** تحت HPOS بدون sync، `wp_count_posts('shop_order')` صفر برمی‌گرداند چون orders در post table نیستند.
+   285→- **Impact:** admin-only، عدد processing-count اشتباه.
+   286→- **Recommended Fix:** `wc_get_orders(['status'=>'wc-processing','return'=>'ids','limit'=>PHP_INT_MAX])` count یا `OrderUtil::custom_orders_table_usage_is_enabled()` branch.
+   287→
+   288→---
+   289→
+   290→## Optimization Opportunities
+   291→
+   292→> این‌ها bug نیستند؛ بهبودهای مهندسی معقول.
+   293→
+   294→| # | Location | Opportunity | Estimated gain |
+   295→|---|----------|------------|---------------|
+   296→| O1 | `inc/cache.php` | افزودن stampede lock (semaphore یا "stale-while-revalidate") | جلوگیری از rebuild همزمان |
+   297→| O2 | `inc/front-data.php:138-146` | `wc_get_products(['include'=>$sale_ids])` به‌جای split | یک‌بار batch hydration |
+   298→| O3 | `inc/cat-data.php` | `_prime_term_caches` بعد از هر `get_terms` | حذف N+1 term-meta |
+   299→| O4 | `inc/product-card.php` | lazy `wp_get_attachment_metadata` (فقط اگر width/height واقعاً لازم است) | کاهش query per card |
+   300→| O5 | `woocommerce/single-product.php:286` + `seo-schema.php:215` | gallery attachment meta را یک‌بار fetch و share | حذف ~۸-۱۶ query تکراری per PDP |
+   301→| O6 | `inc/admin-meta.php:313` | SQL مستقیم SUM با WHERE date/status | حذف PHP array + IN clause |
+   302→| O7 | `inc/wc-hooks.php:87` | ordering پیش‌فرض `total_sales` → `date DESC` (رایج‌تر در WooCommerce core) | حذف filesort روی هر shop load |
+   303→| O8 | `functions.php:152` | dequeue `data.js`+`app.js` وقتی `tka_fallback_demo=false` | ~۱۸KB کم per homepage |
+   304→| O9 | `inc/front-data.php:544` | minimal `window.TKA_WP` وقتی fallback off | ~۱۴KB کم per homepage |
+   305→| O10 | `inc/ajax-search.php:291` | cache-check قبل از throttle | UX بهتر برای CGNAT |
+   306→
+   307→---
+   308→
+   309→## False Positives / Not Problems
+   310→
+   311→> مواردی که در بررسی اولیه شبیه مشکل بودند ولی بعد از بررسی code-level مشخص شد مشکل واقعی نیستند.
+   312→
+   313→| # | Pattern | Location | Why NOT a problem |
+   314→|---|---------|----------|-------------------|
+   315→| F1 | `wc_get_product(get_the_ID())` داخل loop | `archive-product.php:242` | WC_Product object cache (in-memory + persistent) دومی را cache-hit می‌کند. main query posts را قبلاً load کرده. استاندارد WC. |
+   316→| F2 | `wc_get_product` در search.php split loop (line 38) + render loop (line 87) | `search.php:38,87` | دومین call cache-hit است. split برای grouping لازم است. |
+   317→| F3 | `get_post_meta($product->get_id(), 'tka_bnpl', true)` per card | `product-card.php:73` | WP_Query main `update_post_meta_cache=true` (default) همهٔ post_meta را prime کرده. cache hit. |
+   318→| F4 | `get_the_terms(get_the_ID(), 'product_cat')` در live-search loop | `ajax-search.php:144` | WP_Query با `update_post_term_cache=true` (default) term relationships را prime کرده. cache hit. |
+   319→| F5 | `get_permalink` در loop‌ها | همه‌جا | WP post cache پر شده، cache hit. |
+   320→| F6 | `get_post($tka_post_id)` در search.php posts/other loops | `search.php:104,135` | main query posts را قبلاً load کرده، `get_post` از cache برمی‌گرداند. |
+   321→| F7 | Variable product `get_available_variations` | `single-product.php:404` | این WC core behavior است (via `woocommerce_single_product_summary` hook). قالب هیچ کار اضافه‌ای نمی‌کند. هزینه ذاتی WC برای variable products. |
+   322→| F8 | `get_variation_prices(true)` در pcard برای variable | `product-card.php:46` |WC این را cache می‌کند (`wc_get_product_variation_prices` transient). برای storefront با variable products لازم است. |
+   323→| F9 | `wp_count_posts('product')` در `front_unlocked` | `front-data.php:457` | فقط یک‌بار per request (cached در WP options). فقط برای gate check. |
+   324→| F10 | `set_transient` در throttle | `ajax-search.php:244` | short-TTL (15s)، overhead بسیار کم. |
+   325→| F11 | درخت دسته‌بندی `cats_tree` transient | `cat-data.php` | خود transient-cached است (۱۲h). فقط thundering-herd (M1) مشکل است نه خود query. |
+   326→
+   327→---
+   328→
+   329→## Page-by-Page Analysis
+   330→
+   331→### Homepage (`front-page.php`)
+   332→- **Query اصلی rails:** `toykindangel_home_rail_products()` (static-cached per request) — ۳ rail (amazing/newest/best) × ۱۰ محصول. منبع واحد برای SSR + JSON. ✅
+   333→- **Queries:** sale_ids (1 wc_get_product_ids_on_sale یا 1 SQL price_diff) + 3 wc_get_products + 1 WP_Query best. ~۵ query برای rails.
+   334→- **Stories/brands:** transient-cached (`home_stories`, `home_brands`). ✅
+   335→- **Catgrid (C1):** ❌ UNBOUNDED get_terms + per-term meta، بدون transient. ~۶۰-۶۰۰ query.
+   336→- **Festival:** ۱ get_posts(50) بدون transient (M2).
+   337→- **JSON payload:** ~۱۴-۱۶KB `window.TKA_WP` + ~۱۵KB `data.js` — اضافی وقتی fallback off (M5, M6).
+   338→- **Cold queries:** ~۳۳۰ (با ۴۰ top cat). **Warm:** ~۲۲۰ (catgrid همچنان می‌زند).
+   339→- **Verdict:** rails طراحی‌شده‌اند بهینه؛ catgrid بحرانی است.
+   340→
+   341→### Shop (`woocommerce/archive-product.php`)
+   342→- **Main query:** ۱۲/page، pagination استاندارد، ordering روی main query. ✅
+   343→- **Default sort:** `meta_key=total_sales` → filesort روی postmeta در هر shop load (WC-standard ولی سنگین).
+   344→- **Subcats (C4):** ❌ N+1 روی term_meta. ~۹۱ query با ۳۰ زیردسته.
+   345→- **Sidebar brands:** ۱ get_terms(number=30). bounded. ✅
+   346→- **Cold/Warm:** ~۱۳۰ / ~۱۰۰ (با ۳۰ subcat).
+   347→- **Verdict:** Shop **کل catalog را نمی‌خواند** (تصور غلط رد شد). فقط ۱۲ محصول hydrate می‌شود. اما subcat N+1 واقعی است.
+   348→
+   349→### Category Archive
+   350→همان Shop + taxonomy filter روی main query. subcat N+1 (C4) اینجا هم فعال. term_description و breadcrumbs (cached) OK.
+   351→
+   352→### Product (`woocommerce/single-product.php`)
+   353→- **Main product:** ۱ hydrate از main query. ✅
+   354→- **Gallery:** attachment meta fetch (O5 duplication با schema).
+   355→- **Related (H3):** ۱۰ wc_get_product + ۱۰ pcard. ~۳۰ query. بدون transient.
+   356→- **Variable (F7):** WC core `get_available_variations` — هزینه ذاتی، نه bug.
+   357→- **Reviews:** `comments_template` bounded ۵۰/page. ✅
+   358→- **Schema:** Product JSON-LD + WC core duplicate (H4).
+   359→- **Cold/Warm:** ~۷۵ / ~۵۰ (simple). ~۱۰۰ / ~۷۰ (variable V=20).
+   360→- **Verdict:** PDP منطقی است. related rail قابل بهبود.
+   361→
+   362→### Search (`search.php`)
+   363→- **Main query:** وردپرس core search، pagination. ✅
+   364→- **Split loop:** wc_get_product per product (F2 false positive — cached). ✅
+   365→- **Cold/Warm:** بستگی به result count دارد.
+   366→
+   367→### Categories (`page-categories.php`)
+   368→- **SSR grid (C2):** ❌ ۴ helper بدون transient. ~۱۲۰-۲۰۰ query.
+   369→- **Interactive tree:** `cat-data.php` transient-cached. ✅
+   370→- **Cold/Warm:** ~۲۰۰ / ~۲۰۰ (SSR grid هرگز cached).
+   371→- **Verdict:** بحرانی. ناهماهنگی: نسخهٔ تعاملی کش شده، SSR نه.
+   372→
+   373→### AJAX Live Search (`inc/ajax-search.php`)
+   374→- **Throttle:** ۶۰/15s per-IP. ✅
+   375→- **Cache:** ۳-min per-term. ✅
+   376→- **Limit:** ۱-۸ products, ۳ posts. bounded. ✅
+   377→- **Auth:** public (مثل core search، بدون nonce). ✅
+   378→- **Verdict:** well-engineered. فقط L4 (throttle order).
+   379→
+   380→### REST Search (`inc/rest-search.php`)
+   381→- **Same payload as AJAX** (single source). ✅
+   382→- **permission_callback:** `__return_true` — justified برای public read-only search.
+   383→- **Verdict:** clean.
+   384→
+   385→### Admin (`inc/admin-meta.php`)
+   386→- **Dashboard widget:** H1 (wc_get_orders limit=-1) + H2 (low-stock cap 200) + L7 (wp_count_posts shop_order under HPOS).
+   387→- **Demo-import (`inc/demo-import.php`, 1860 lines):** frontend-safe. فقط `admin_post_tka_demo_wxr` (manage_options + nonce) و `admin_menu`. هیچ `init`/`wp_loaded`/`save_post`/cron. bounded توسط demo-data (~۳۵ محصول). ✅
+   388→- **Verdict:** admin-only مشکلات، ولی H1/H2 واقعی.
+   389→
+   390→### Cron
+   391→- **Theme registers ZERO wp-cron events.** grep تمام قالب: ۰ match برای `wp_schedule_event`، `wp_schedule_single_event`، `register_activation_hook`. فقط ۳ `after_switch_theme` one-shot idempotent.
+   392→- **Verdict:** ✅ قالب عامل wp-cron نیست. اگر فشار wp-cron دیده می‌شود، از WooCommerce core یا WordPress core است، نه از این قالب.
+   393→
+   394→---
+   395→
+   396→## Query Map
+   397→
+   398→| Location | Query Type | Estimated Count | Actual Count | Risk | Reason |
+   399→| -------- | ---------- | --------------: | -----------: | ---- | ------ |
+   400→| front-page.php:156 (catgrid) | get_terms + get_term_meta + wp_get_attachment_image_url | 1+3N | 1+3N | **High** | Unbounded + uncached |
+   401→| front-page.php rails | wc_get_products × 3 + WP_Query | ~5 | ~5 (static-cached) | Low | Single source per request |
+   402→| front-page.php stories/brands | get_terms + per-term meta | ~24 | ~0 warm (transient) | Low | 12h transient |
+   403→| page-categories.php SSR grid | get_terms × N + get_term_meta × N + get_posts fallback | ~120-200 | ~120-200 | **High** | No transient |
+   404→| archive-product.php subcats | get_terms + get_term_meta × N | 1+3N | 1+3N | **High** | Uncached |
+   405→| archive-product.php main loop | main query + wc_get_product per post | 1+12 | 1+0 (OC hit) | Low | Standard WC |
+   406→| cat-drawer.php from_menu | wp_get_nav_menu_items + term_img × N | 1+2N | 1+2N | **High** | Every page, uncached |
+   407→| single-product.php related | wc_get_product × 10 + pcard × 10 | ~30 | ~30 | Med | Bounded, no transient |
+   408→| single-product.php gallery | wp_get_attachment_image × ~5 | ~10 | ~10 | Low | Bounded |
+   409→| ajax-search.php | WP_Query × 2 + wc_get_product × 6 | ~16 | ~0 warm (3-min cache) | Low | Throttled + cached |
+   410→| admin-meta.php dashboard | wc_get_orders(limit=-1) × 2 + wc_get_products(200) | ~4 + memory | ~4 + memory | **Med** | limit=-1 IN clause |
+   411→| wishlist render | wc_get_product × ≤60 | ~60 | ~60 (OC hit warm) | Low-Med | Bounded at 60 |
+   412→
+   413→---
+   414→
+   415→## Product Hydration Map
+   416→
+   417→| Location | Call | Estimated executions per page | IDs first? | Batched? | Notes |
+   418→|----------|------|------------------------------:|-----------|----------|-------|
+   419→| `archive-product.php:242` | `wc_get_product(get_the_ID())` | 12 | Yes (main query) | No (per-post) | Object cache hit after 1st; standard WC |
+   420→| `front-data.php:138` (amazing) | `wc_get_products(include, limit=10)` | 1 call → 10 objects | Yes | **Yes** ✅ | Batched |
+   421→| `front-data.php:149` (newest) | `wc_get_products(limit=10)` | 1 call → 10 objects | Yes | **Yes** ✅ | Batched |
+   422→| `front-data.php:158-174` (best) | `WP_Query` + `wc_get_product` per post | 10 hydrations | Yes (IDs) | **No** ❌ | Could be wc_get_products |
+   423→| `front-data.php:63-64` (map_products) | `wc_get_product` if not WC_Product | 0 (rails pass objects) | n/a | n/a | Defensive only |
+   424→| `single-product.php:219,541` (related) | `wc_get_related_products` + `wc_get_product` per ID | 10 hydrations | Yes (IDs) | **No** ❌ | Could be wc_get_products |
+   425→| `search.php:38,87` (split + render) | `wc_get_product` per product × 2 | 2N (cache hit 2nd) | Yes | No | Cached 2nd pass |
+   426→| `ajax-search.php:138` | `wc_get_product(get_the_ID())` | ≤8 | Yes | No | Bounded, cached |
+   427→| `wishlist.php:103` | `wc_get_product` per client ID | ≤60 | Yes (client) | No | Bounded at 60 |
+   428→
+   429→**Total WC_Product hydrated per homepage:** ~30 (rails) + 0 catgrid = 30. ✅ معقول.
+   430→**Total per PDP:** 1 (main) + 10 (related) + V (variable variations via WC core) = ~11-50.
+   431→
+   432→---
+   433→
+   434→## N+1 Map
+   435→
+   436→> فقط N+1های **واقعی** (uncached یا cache-miss).
+   437→
+   438→| File | Line | Operation | N | Queries | Severity |
+   439→| ---- | ---: | --------- | -: | ------: | -------- |
+   440→| front-page.php | 156-176 | get_terms + get_term_meta + wp_get_attachment_image_url per top cat | unbounded | 1+3N | **CRITICAL** |
+   441→| page-categories.php | 349-374 | cats_page_children + card_media per top term | ≤40 | ~4-8N | **CRITICAL** |
+   442→| page-categories.php | 380-406 | popular_terms get_term + pop_media per term | ≤12 | ~2-3N | **HIGH** |
+   443→| archive-product.php | 93-118 | get_term_meta + wp_get_attachment_image_url per subcat | ≤30 | 1+3N | **CRITICAL** |
+   444→| cat-drawer.php | 99-106 | term_img per top nav-menu item | ≤20-60 | 2N | **CRITICAL** |
+   445→| single-product.php | 541-547 | wc_get_product + pcard per related ID | 10 | ~3N | **HIGH** |
+   446→| product-card.php | 76,84 | wp_get_attachment_image_url + wp_get_attachment_metadata per card | 12-60 | ~2N | **MED** |
+   447→| front-data.php | 158-174 | wc_get_product per best-seller post | 10 | ~1N | **LOW** (static-cached per request) |
+   448→| front-data.php | 392-408 | get_term_meta × 2 in usort comparator per comparison | ~12 brands → ~72 comparisons | ~144 | **LOW** (transient-cached) |
+   449→| admin-meta.php | 313-339 | wc_get_orders(limit=-1) + IN clause SQL | unbounded orders | 2 calls | **HIGH** (admin) |
+   450→| wishlist.php | 103-108 | wc_get_product per client ID | ≤60 | ~60 | **LOW** (bounded, OC warm) |
+   451→
+   452→---
+   453→
+   454→## Architecture Problems
+   455→
+   456→> مشکلات ساختاری، جدا از optimization.
+   457→
+   458→### A1 — ناهماهنگی cache: template partials از wrapper‌های cached عبور می‌کنند
+   459→قالب لایهٔ cache تمیز `inc/cache.php` دارد با invalidation رویدادمحور. اما template files (`front-page.php`، `page-categories.php`، `archive-product.php`) مستقیماً `get_terms`/`get_term_meta` می‌زنند بدون wrapper. این یعنی cache layer وجود دارد ولی **به‌طور یکپارچه اعمال نشده**. این الگوی «cache برای inc/ functions، نه برای templates» خطرناک است چون template‌ها پر‌بازدیدترین مسیرها هستند.
+   460→
+   461→### A2 — ordering پیش‌فرض Shop بر `total_sales` meta
+   462→`inc/wc-hooks.php:87` default sort را `meta_key=total_sales, orderby=meta_value_num` می‌کند. این JOIN به postmeta + filesort روی هر shop/category بازدید است. WooCommerce core default `menu_order/date` است. این انتخاب تجاری قابل‌دفاع است (پرفروش‌ترین اول) ولی باید آگاهانه پذیرفته شود.
+   463→
+   464→### A3 — دو منبع داده برای category tree
+   465→`inc/cat-data.php` (تعاملی، transient) و `page-categories.php` helpers (SSR، بدون transient) دو pipeline مجزا برای same data دارند. این دقیقاً نوع «Duplicate Data Pipeline» ای است که audit می‌خواهد پیدا کند.
+   466→
+   467→### A4 — `window.TKA_WP` در storefront واقعی بدون مصرف‌کننده
+   468→وقتی `tka_fallback_demo=false` (default در storefront واقعی)، app.js فقط `fallback`/`catUrl` را می‌خواند. بقیه ۱۴-۱۶KB بدون مصرف‌کننده است. این data-over-shipping است.
+   469→
+   470→### A5 — Admin queries بدون cache
+   471→`admin-meta.php` هیچ transient/static‌ای ندارد. dashboard widget در هر بازدید از نو محاسبه می‌کند. admin کم‌بازدید است ولی در فروشگاه پُر‌تراکنش کند می‌شود.
+   472→
+   473→---
+   474→
+   475→## Recommended Roadmap
+   476→
+   477→### v0.20 — Must Fix
+   478→
+   479→فقط مواردی که evidence قطعی دارند و ارزش فوری:
+   480→
+   481→1. **C1 — Homepage catgrid:** اضافه‌کردن `'number' => 24` به get_terms + `_prime_term_caches` + wrap در `toykindangel_cache_get('home_catgrid')`. ~۱ ساعت کار. حذف ~۶۰۰ query در catalog بزرگ.
+   482→2. **C2 — page-categories SSR:** wrap پنج helper در transient با flush روی term change. ~۲ ساعت. حذف ~۲۰۰ query/page.
+   483→3. **C3 — cat-drawer from_menu:** `_prime_term_caches` برای term IDs + static per-request + transient. ~۱ ساعت. حذف ~۴۰ query در هر صفحه.
+   484→4. **C4 — archive-product subcats:** `_prime_term_caches` بعد از get_terms. ~۱۵ دقیقه. حذف ~۹۰ query.
+   485→5. **H2 — admin low-stock cap:** `limit => -1` یا SQL مستقیم. ~۳۰ دقیقه. اصلاح correctness.
+   486→
+   487→### v0.21 — Should Optimize
+   488→
+   489→6. **H1 — admin wc_get_orders:** SQL مستقیم SUM. ~۱ ساعت.
+   490→7. **H3 — PDP related rail:** `wc_get_products(include)`. ~۳۰ دقیقه.
+   491→8. **H4 — schema duplication:** `remove_action` WC structured_data روی PDP. ~۱۵ دقیقه.
+   492→9. **H5 — pcard attachment meta:** `_prime_post_caches` در listings. ~۱ ساعت.
+   493→10. **M1 — cat-data stampede lock:** ~۲ ساعت.
+   494→11. **M5/M6 — TKA_WP + data.js gating:** ~۳۰ دقیقه. ~۳۰KB کم per homepage.
+   495→12. **L4 — throttle order:** cache-check اول. ~۱۰ دقیقه.
+   496→
+   497→### Later
+   498→
+   499→13. **M2 — festival transient:** کم‌اثر.
+   500→14. **M3 — best-sellers wc_get_products:** کم‌اثر (static-cached).
+   501→15. **M4 — usort brand meta:** کم‌اثر (transient-cached).
+   502→16. **L1 — ItemList schema to wp_footer:** کم‌اثر.
+   503→17. **L2/L3 — schema brand field + plugin guard:** semantic correctness.
+   504→18. **L5 — dead header-bare/footer-bare:** cleanup.
+   505→19. **L7 — wp_count_posts shop_order HPOS:** admin-only.
+   506→20. **O7 — default sort total_sales → date:** تصمیم تجاری.
+   507→
+   508→---
+   509→
+   510→## Final Verdict
+   511→
+   512→### **C — Needs Targeted Fixes Before Production**
+   513→
+   514→**توضیح مبتنی بر evidence:**
+   515→
+   516→قالب از نظر **معماری هسته** در وضعیت خوب است — به‌طور قابل‌توجهی بهتر از حد انتظار یک قالب AI-built. لایهٔ cache تمیز، single-source-of-truth برای homepage rails، standard WC main-query pattern روی Shop، throttle+cache روی live search، و **صفر cron ثبت‌شده** همگی نشانهٔ مهندسی آگاهانه هستند. v0.19.0 به‌طور صریح چندین مشکل v0.18.0 را حل کرده (duplicate pipelines، uncached search، hydration ۱۰۰‌تایی sale IDs).
+   517→
+   518→اما **۴ N+1 واقعی در template partials پر‌بازدید** (homepage catgrid، page-categories SSR، archive-product subcats، footer drawer) در هر بار بارگذاری اجرا می‌شوند و با افزایش catalog **خطی رشد می‌کنند**. این‌ها توسط cache layer موجود قابل اصلاح هستند (الگوی `toykindangel_cache_get` + `_prime_term_caches`)، نه به refactor معماری نیاز دارند. با این حال، تا اصلاح نشوند، قالب در catalog ۵۰۰+ محصولی تحت ترافیک همزمان، MySQL را تحت فشار می‌گذارد.
+   519→
+   520→علاوه بر این، **دو correctness bug در admin** (H2 low-stock cap، L7 HPOS wp_count_posts) و **یک SEO issue** (H4 duplicate schema) وجود دارد که باید قبل از production پاک شوند.
+   521→
+   522→**چرا نه D؟** چون مشکلات الگوی تکراری یکسانی هستند (uncached term-meta N+1) که با یک الگوی fix واحد (`_prime_term_caches` + transient wrapper) همگی حل می‌شوند. این نیاز به refactor اساسی ندارد.
+   523→
+   524→**چرا نه B؟** چون N+1های C1-C4 روی صفحات پر‌بازدید (homepage، shop، category، هر صفحه از طریق footer) هستند و در catalog متوسط (۵۰۰ محصول، ۴۰ دسته) قابل‌احساس می‌شوند. B مناسب وضعیتی است که فقط optimization opportunities داشته باشد بدون critical.
+   525→
+   526→**شرط ارتقا به B (Production Ready with Minor Optimizations):** اجرای v0.20 roadmap (۵ fix، ~۵ ساعت کار) — بعد از آن قالب production-ready است.
+   527→
+   528→**هیچ کدی در این audit تغییر نکرده است.** این گزارش فقط تحلیل است.
+   529→

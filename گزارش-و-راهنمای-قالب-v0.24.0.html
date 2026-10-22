@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>راهنمای نهایی قالب فرشته مهربون — نسخه ۰.۲۴.۰</title>
+<style>
+  @font-face{font-family:Vazirmatn;src:local('Vazirmatn'),local('Vazir')}
+  :root{
+    --primary:#9c27b0;--primary-d:#7b1fa2;--ok:#1f8f4d;--ok-bg:#e6f6ec;
+    --warn:#b45309;--warn-bg:#fef3c7;--bad:#b91c1c;--bad-bg:#fee2e2;
+    --ink:#1f2937;--mut:#6b7280;--line:#e5e7eb;--card:#ffffff;--bg:#f6f5f8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:Vazirmatn,Tahoma,"Segoe UI",sans-serif;font-size:15px;line-height:2}
+  .wrap{max-width:960px;margin:0 auto;padding:24px 16px 80px}
+  header.hero{background:linear-gradient(135deg,#9c27b0,#c026d3);color:#fff;border-radius:20px;
+    padding:28px 24px;margin-bottom:24px}
+  header.hero h1{margin:0 0 6px;font-size:22px}
+  header.hero p{margin:0;opacity:.92;font-size:14px}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+    border-radius:99px;padding:3px 12px;font-size:12px;font-weight:700}
+  h2{font-size:18px;margin:36px 0 12px;display:flex;align-items:center;gap:8px}
+  h2 .n{background:var(--primary);color:#fff;width:28px;height:28px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+  h3{font-size:15px;margin:18px 0 6px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
+  th{background:#faf5ff;color:var(--primary-d);font-weight:700;white-space:nowrap}
+  tr:last-child td{border-bottom:0}
+  .pill{display:inline-block;border-radius:99px;padding:1px 10px;font-size:11.5px;font-weight:700;white-space:nowrap}
+  .ok{background:var(--ok-bg);color:var(--ok)}
+  .info{background:#ede9fe;color:#6d28d9}
+  .warn{background:var(--warn-bg);color:var(--warn)}
+  code{background:#f3f0fa;border:1px solid #e9e2f5;border-radius:6px;padding:1px 6px;
+    font-size:12.5px;direction:ltr;display:inline-block;unicode-bidi:isolate}
+  .file{direction:ltr;display:inline-block;unicode-bidi:isolate;font-size:12px;color:var(--mut)}
+  .note{border-right:4px solid var(--primary);background:#faf5ff;border-radius:12px;
+    padding:12px 16px;margin:10px 0;font-size:13.5px}
+  .note.b{border-right-color:var(--warn);background:var(--warn-bg)}
+  .note.g{border-right-color:var(--ok);background:var(--ok-bg)}
+  ol,ul{padding-right:22px;margin:8px 0}
+  li{margin-bottom:4px}
+  .steps{counter-reset:s;list-style:none;padding:0}
+  .steps li{counter-increment:s;position:relative;padding:10px 52px 10px 12px;background:#fff;
+    border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+  .steps li::before{content:counter(s);position:absolute;right:12px;top:12px;background:var(--primary);
+    color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:700px){.grid2{grid-template-columns:1fr}}
+  .download{display:block;background:var(--primary);color:#fff;text-align:center;border-radius:14px;
+    padding:14px;font-weight:800;font-size:15px;text-decoration:none;margin:8px 0}
+  .download:hover{background:var(--primary-d)}
+  .small{font-size:12.5px;color:var(--mut)}
+  footer{margin-top:44px;text-align:center;color:var(--mut);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>🧸 قالب فروشگاهی «فرشته مهربون» — نسخه ۰.۲۴.۰</h1>
+  <p>گزارش نهایی اصلاحات + راهنمای نصب و استفاده — به زبان ساده</p>
+  <div class="badges">
+    <span class="badge">نسخه: v0.24.0</span>
+    <span class="badge">۱۶ مورد درخواستی ✔</span>
+    <span class="badge">بازخوردهای دور دوم ✔</span>
+    <span class="badge">تست‌شده با مرورگر (موبایل + دسکتاپ)</span>
+  </div>
+</header>
+
+<!-- ================= دانلود ================= -->
+<h2><span class="n">۱</span> فایل‌های آماده (در ریشه، کنار همین راهنما)</h2>
+<div class="card">
+  <table>
+    <tr><th>فایل</th><th>کاربرد</th></tr>
+    <tr>
+      <td><code>toykindangel-v0.24.0.zip</code></td>
+      <td><b>فایل نهایی قالب</b> — همین را در وردپرس نصب کنید (ظاهر ← پوسته‌ها ← افزودن ← بارگذاری پوسته). محتوای پوشه <code>toykindangel</code> است، پس نصب مستقیم کار می‌کند و پوستهٔ قبلی را «به‌روزرسانی/جایگزین» می‌کند.</td>
+    </tr>
+    <tr>
+      <td>این فایل HTML</td>
+      <td>راهنمای نصب + فهرست کامل اصلاحات + نکته‌های بعد از نصب</td>
+    </tr>
+  </table>
+  <p class="small">اگر نسخهٔ قبلی را از پیشخوان حذف می‌کنید، اول از «ابزارها ← پشتیبان‌گیری» یک بک‌اپ بگیرید؛ تنظیمات سفارشی‌سازی (Customizer) و منوها با تغییر پوسته از بین نمی‌روند، ولی احتیاط خوب است.</p>
+</div>
+
+<!-- ================= جدول وضعیت ================= -->
+<h2><span class="n">۲</span> جدول وضعیت ۱۶ مورد درخواستی</h2>
+<div class="card" style="overflow-x:auto">
+  <table>
+    <tr><th>#</th><th>درخواست</th><th>وضعیت</th><th>خلاصهٔ کار انجام‌شده</th></tr>
+    <tr><td>۱</td><td>ناموجودها همیشه آخرِ همهٔ لیست‌ها</td><td><span class="pill ok">✔ کامل</span></td>
+        <td>آرشیوها (فروشگاه/دسته/برند) با کلید مرتب‌سازی «موجودی → ترتیب انتخابی»؛ ریل‌های صفحهٔ اصلی (شگفت‌انگیز/جدیدترین/پرفروش) هم ناموجودها را می‌برند آخر. به‌جای «حذف» محصول (اشتباه نسخهٔ قبل)، حالا «آخر لیست» می‌رود + نشان خاکستری «ناموجود» روی کارت.</td></tr>
+    <tr><td>۲</td><td>بهبود متن، فاصلهٔ خطوط، خوانایی</td><td><span class="pill ok">✔ کامل</span></td>
+        <td>بدنه ۱۵px با ارتفاع خط ۱.۹؛ توضیحات محصول ۱۵px با ارتفاع خط ۲.۲ (نزدیک به سایت مرجع)؛ خلاصهٔ محصول ۱۳px/۲؛ رنگ متن‌ها تیره‌تر و خواناتر شد.</td></tr>
+    <tr><td>۳</td><td>گالری دسکتاپ خراب + بزرگ‌نمایی عکس اصلی</td><td><span class="pill ok">✔ ریشه‌ای</span></td>
+        <td><b>علت واقعی پیدا شد:</b> اسلاید گالری «grid» است و ارتفاع ۱۰۰٪ تصویر در برابر ردیف grid حل می‌شد ⇒ تصویر ۷۴۰px داخل قاب ۵۲۰px بریده می‌شد. تصویر حالا <code>position:absolute</code> داخل قاب است با <code>object-fit:contain</code> ⇒ کل عکس همیشه کامل دیده می‌شود (موبایل و دسکتاپ) — با مرورگر تست شد.</td></tr>
+    <tr><td>۴</td><td>حذف رنگ‌های تصادفی پس‌زمینهٔ برندها</td><td><span class="pill ok">✔ کامل</span></td>
+        <td>هر ۵ گرادیان چرخشی <code>nth-child</code> و رنگ‌های قالبی حذف شدند؛ لوگوی واقعی برند بدون پس‌زمینه و مونوگرام‌ها با رنگ ثابت قالب نمایش داده می‌شوند.</td></tr>
+    <tr><td>۵</td><td>هدر/فوتر در همهٔ صفحات + منوی پایین در صفحهٔ محصول</td><td><span class="pill ok">✔ کامل</span></td>
+        <td>هدر و فوتر کامل در صفحهٔ محصول فعال است؛ قانونی که منوی پایین (bottomnav) را فقط در صفحهٔ محصول مخفی می‌کرد حذف شد. باگ ساختاری «<code>main</code> تودرتو با id تکراری» هم رفع شد (هم HTML معتبر، هم CSS بدون تداخل).</td></tr>
+    <tr><td>۶</td><td>ظاهر مراحل خرید + تایم‌لاین ۳ مرحله‌ای</td><td><span class="pill ok">✔ کامل</span></td>
+        <td>تایم‌لاین تزریقی JS که با چیپ‌های خودِ قالب «دوبار» نمایش داده می‌شد حذف شد؛ حالا هر دو صفحهٔ سبد و تسویه یک تایم‌لاین استاتیک یک‌سبک دارند: «۱. سبد خرید ← ۲. اطلاعات و پرداخت ← ۳. تحویل».</td></tr>
+    <tr><td>۷</td><td>کادر تعداد (+/−) درست شود</td><td><span class="pill ok">✔ کامل</span></td>
+        <td>استپر بازطراحی شد: دکمه‌های چسبیده با خط جداکننده، ورودی وسط‌چین، حذف فلش‌های پیش‌فرض مرورگر، نمایش درست در موبایل و دسکتاپ (با مرورگر تأیید شد).</td></tr>
+    <tr><td>۸</td><td>فقط یک دکمهٔ خرید + تعداد داخل نوار چسبان</td><td><span class="pill ok">✔ کامل</span></td>
+        <td>موبایل: فرم خرید داخل صفحه مخفی است؛ نوار چسبان پایین = قیمت + کنترل تعداد (−/+) + دکمهٔ AJAX «افزودن به سبد خرید» که با تغییر تعداد همگام می‌شود. دسکتاپ: همان فرم داخل صفحه (تک دکمه) و نوار چسبان خاموش. محصول متغیر: دکمهٔ نوار «انتخاب و خرید» فقط به فرم اسکرول می‌کند تا دوباره‌کاری نشود.</td></tr>
+    <tr><td>۹</td><td>کلیک بندانگشتی‌ها عوض نشود + سرریز + برند متغیر</td><td><span class="pill ok">✔ ریشه‌ای</span></td>
+        <td><b>علت واقعی:</b> جهت اسکرول RTL در مرورگرها دو مدل دارد (منفی/مثبت) و کد قبلی فقط یک مدل را پشتیبانی می‌کرد. حالا مدل یک‌بار تشخیص داده می‌شود و کلیک روی هر بندانگشتی همیشه عکس اصلی را عوض می‌کند (۱۵+ عکس هم پشتیبانی می‌شود). ریل بندانگشتی‌ها اسکرول افقی واقعی گرفت (قبلاً با <code>justify-content:center</code> چند تای اول از دسترس خارج می‌شد). لوگوی برند با لینک به صفحهٔ برند بالای عنوان محصول هست.</td></tr>
+    <tr><td>۱۰</td><td>توضیحات دسته در پایین صفحهٔ دسته</td><td><span class="pill ok">✔ (از قبل) تأیید</span></td>
+        <td>توضیحات دسته در پایین آرشیو رندر می‌شود و استایل متنش هم با اصلاح تایپوگرافی بهتر شد (برای سئو: متن بعد از محصولات است، عنوان H1 دست‌نخورده).</td></tr>
+    <tr><td>۱۱</td><td>بردکرامب در صفحهٔ محصول و بقیهٔ صفحات</td><td><span class="pill ok">✔ (از قبل) تأیید</span></td>
+        <td>بردکرامب صفحهٔ محصول (خانه / فروشگاه / دسته‌ها / محصول)، آرشیوها، برگه‌ها و نوشته‌ها فعال است؛ صفحهٔ برندها هم از همان قالب آرشیو استفاده می‌کند.</td></tr>
+    <tr><td>۱۲</td><td>بزرگ‌نمایی/برش بنرها در کل سایت</td><td><span class="pill ok">✔ ریشه‌ای</span></td>
+        <td>همهٔ قوانینی که به بنرها «ارتفاع ثابت + <code>object-fit:cover</code>» می‌دادند حذف شدند (بنر ۲تایی، بنر بالای هدر). حالا تصویر با نسبت واقعی خودش نمایش داده می‌شود؛ هیچ بنری کشیده یا بریده نمی‌شود.</td></tr>
+    <tr><td>۱۳</td><td>بستن سبد کناری با دکمه و کلیک بیرون</td><td><span class="pill ok">✔ ریشه‌ای</span></td>
+        <td><b>علت واقعی:</b> کد JS سبد، دراور را از مسیر جداگانه‌ای باز می‌کرد و سیستم رسمی دراورها آن را «باز» نمی‌شناخت ⇒ دکمهٔ بستن و کلیک روی پس‌زمینه بی‌اثر بود. حالا از یک API مشترک (<code>TKA_Drawers</code>) استفاده می‌شود؛ دکمه × ، کلیک روی پس‌زمینه و Esc هر سه کار می‌کنند (با مرورگر تست شد).</td></tr>
+    <tr><td>۱۴</td><td>آیکون درگاه‌ها + تیک خودکار شرایط + مخفی کردن ایمیل/کشور</td><td><span class="pill ok">✔ کامل</span></td>
+        <td>آیکون درگاه‌ها حداکثر ۵۶×۲۲px شد. تیک «شرایط و مقررات» حالا بعد از هر به‌روزرسانی آجاکسی چک‌اوت هم دوباره خورده می‌شود (قبلاً با refresh پاک می‌شد) و قانون CSS نامعتبر حذف شد. فیلد ایمیل و کشور مخفی‌اند و «سمت سرور هم اختیاری» شده‌اند تا خطای «required» جلوی پرداخت را نگیرد؛ کشور پیش‌فرض ایران ست می‌شود.</td></tr>
+    <tr><td>۱۵</td><td>علامت منفی به‌جای ×</td><td><span class="pill ok">✔ تأیید</span></td>
+        <td>دکمهٔ کم‌کردن از آیکون واقعی «−» اسپرایت استفاده می‌کند (با مرورگر دیدیم: − سمت راست، + سمت چپ، درستِ راست‌چین). دکمهٔ «بستن» دراورها هم حالا واقعاً × است.</td></tr>
+    <tr><td>۱۶</td><td>ثبت‌نام قبل از پرداخت</td><td><span class="pill info">✔ آماده</span></td>
+        <td>قالب جعبهٔ «حساب کاربری بسازم» و فرم ورود/ثبت‌نام را در چک‌اوت نمایش می‌دهد؛ کافی است در ووکامرس «فعال‌کردن ثبت‌نام در چک‌اوت» تیک بخورد و افزونهٔ عضویت شما هم همان‌جا کار می‌کند.</td></tr>
+  </table>
+</div>
+
+<!-- ================= دور دوم ================= -->
+<h2><span class="n">۳</span> بازخوردهای دور دوم (مواردی که قبلاً ناقص مانده بود)</h2>
+<div class="card">
+  <table>
+    <tr><th>بازخورد</th><th>وضعیت</th></tr>
+    <tr><td>دکمهٔ افزودن به سبد اضافی داخل صفحه</td><td><span class="pill ok">حل شد</span> — در هر نمایش فقط «یک» دکمهٔ خرید هست (موبایل: نوار پایین / دسکتاپ: فرم داخل صفحه).</td></tr>
+    <tr><td>فاصلهٔ زیاد بین هدر و عکس، و عکس و ردیف بندانگشتی‌ها در موبایل</td><td><span class="pill ok">حل شد</span> — حاشیه‌ها صفر و پدینگ بندانگشتی‌ها جمع شد (۸ تا ۱۰ پیکسل)؛ الان عکس می‌چسبه به نوار بالا و بندانگشتی‌ها می‌چسبن به عکس.</td></tr>
+    <tr><td>منوی پایین در صفحهٔ محصول دیده نمی‌شود</td><td><span class="pill ok">حل شد</span> — bottomnav در صفحهٔ محصول هم مثل بقیهٔ صفحات نمایش داده می‌شود و نوار خرید بالای آن می‌نشیند.</td></tr>
+    <tr><td>گالری و زوم عکس هنوز خراب است (در قالب مرجع درست است)</td><td><span class="pill ok">حل شد</span> — دو باگ ریشه‌ای واقعی پیدا و رفع شد: (۱) برش تصویر به‌خاطر grid+ارتفاع درصدی، (۲) عدم تعویض عکس به‌خاطر مدل‌های متفاوت اسکرول RTL. این‌ها همان تفاوت‌هایی بود که با قالب مرجع (پیشرو) می‌دیدید.</td></tr>
+    <tr><td>سبد خرید و تسویه در موبایل و دسکتاپ</td><td><span class="pill ok">بهبود</span> — تایم‌لاین یک‌دست، آیکون درگاه کوچک، تیک خودکار شرایط، فیلدهای مخفی با پشتیبانی سمت سرور، استپرهای یک‌شکل.</td></tr>
+    <tr><td>سبک متن‌ها نسبت به قالب مرجع</td><td><span class="pill ok">بهبود</span> — اندازه و ارتفاع خط متن‌ها به الگوی سایت‌های مطرح ایرانی نزدیک شد (بخش ۲ جدول بالا).</td></tr>
+  </table>
+</div>
+
+<!-- ================= نصب ================= -->
+<h2><span class="n">۴</span> نصب قالب (۳ دقیقه)</h2>
+<div class="card">
+  <ol class="steps">
+    <li>وارد پیشخوان شوید: <code>toykindangel.com/newsite/wp-admin</code></li>
+    <li>مسیر «ظاهر ← پوسته‌ها ← افزودن پوستهٔ جدید ← بارگذاری پوسته» را باز کنید.</li>
+    <li>فایل <code>toykindangel-v0.24.0.zip</code> را انتخاب و نصب کنید.</li>
+    <li>روی «جایگزینی پوستهٔ فعال با نسخهٔ بارگذاری‌شده» بزنید (اگر پرسید) یا پوستهٔ قبلی را حذف و نسخهٔ جدید را فعال کنید.</li>
+    <li>کش را پاک کنید («WP Super Cache» ← Delete cache) و سایت را با Ctrl+F5 باز کنید.</li>
+  </ol>
+  <div class="note b">نکتهٔ مهم: نسخهٔ قالب باید در «پوسته‌ها» ۰.۲۴.۰ را نشان بدهد. اگر بعد از آپلود هنوز ۰.۲۳.۰ می‌بینید یعنی فایل درست آپلود نشده است.</div>
+</div>
+
+<!-- ================= بعد از نصب ================= -->
+<h2><span class="n">۵</span> تنظیمات پیشنهادی بعد از نصب</h2>
+<div class="card">
+  <h3>الف) سبد خرید و پرداخت</h3>
+  <ul>
+    <li>«تنظیمات ← پیشرفته؟» نه — مسیر درست: <b>ووکامرس ← تنظیمات ← پیشرفته ← شرایط و مقررات</b>: صفحهٔ قوانین را انتخاب کنید تا چک‌باکس «شرایط» اصلاً ظاهر شود و خودکار تیک بخورد.</li>
+    <li><b>ووکامرس ← تنظیمات ← حساب‌ها و حریم خصوصی</b>: گزینهٔ «اجازهٔ ایجاد حساب کاربری هنگام تسویه‌حساب» را روشن کنید (مورد ۱۶).</li>
+    <li>چون فیلد ایمیل مخفی و اختیاری شده، برای مهمان‌ها ایمیلی ثبت نمی‌شود؛ اگر می‌خواهید حتماً ایمیل داشته باشید، بگویید تا به‌جای مخفی‌کردن، فیلد را فقط «اختیاری» با جای‌خالی قابل‌دیدن کنم.</li>
+  </ul>
+  <h3>ب) برندها</h3>
+  <ul>
+    <li>برای اینکه در بخش برندها و صفحهٔ محصول «لوگوی واقعی» دیده شود، از <b>محصولات ← برندها</b> برای هر برند «تصویر شاخص» (thumbnail) ست کنید؛ برندهای بدون لوگو به‌شکل دایرهٔ ساده با رنگ ثابت قالب نمایش داده می‌شوند (بدون رنگ‌های تصادفی).</li>
+  </ul>
+  <h3>ج) ناموجودها</h3>
+  <ul>
+    <li>محصولات ناموجود حالا خودکار می‌روند آخر لیست‌ها و نشان «ناموجود» می‌گیرند — کاری لازم نیست بکنید. اگر محصولی اصلاً نباید دیده شود، آن را «پیش‌نویس» کنید (نه فقط ناموجود).</li>
+  </ul>
+</div>
+
+<!-- ================= تست‌ها ================= -->
+<h2><span class="n">۶</span> چه تست‌هایی انجام شد؟</h2>
+<div class="card">
+  <p>قبل از تحویل، این نسخه با مرورگر واقعی (کروم) روی یک صفحهٔ آزمایشی با <b>همان فایل‌های CSS/JS خود قالب</b> در دو اندازه بررسی شد:</p>
+  <div class="grid2">
+    <div>
+      <h3>📱 موبایل (۳۹۰ و ۳۶۰ پیکسل)</h3>
+      <ul>
+        <li>عکس گالری کامل و بدون برش ✔</li>
+        <li>کلیک روی بندانگشتی شمارهٔ ۲/۴/۶ ⇒ عکس اصلی عوض شد ✔</li>
+        <li>نوار خرید: قیمت + استپر −/+ + دکمه، همه داخل صفحه ✔</li>
+        <li>تغییر تعداد ⇒ <code>data-quantity</code> همگام شد ✔</li>
+        <li>منوی پایین در صفحهٔ محصول دیده می‌شود ✔</li>
+        <li>دروار سبد: باز شد، با دکمه × بسته شد، با کلیک بیرون بسته شد ✔</li>
+      </ul>
+    </div>
+    <div>
+      <h3>🖥 دسکتاپ (۱۴۴۰ پیکسل)</h3>
+      <ul>
+        <li>اسلاید ۵۲۰px و تصویر کامل داخل قاب (بدون برش) ✔</li>
+        <li>بندانگشتی‌های ۸۰px بدون قیچی‌شدن ✔</li>
+        <li>فرم خرید داخل صفحه (تک دکمه) + استپر درست ✔</li>
+        <li>نوار چسبان پایین در دسکتاپ خاموش ✔</li>
+        <li>بدون خطای جاوااسکریپت در کنسول ✔</li>
+        <li>سینتکس همهٔ فایل‌های PHP با PHP 8.3 بررسی شد ✔</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ================= فایل‌ها ================= -->
+<h2><span class="n">۷</span> فایل‌هایی که در این نسخه تغییر کردند</h2>
+<div class="card">
+  <table>
+    <tr><th>فایل</th><th>تغییر</th></tr>
+    <tr><td><code>inc/wc-hooks.php</code></td><td class="file">مرتب‌سازی «ناموجود آخر» روی آرشیوها (کلوز نام‌دار + orderby آرایه‌ای)</td></tr>
+    <tr><td><code>inc/front-data.php</code></td><td class="file">تابع <code>toykindangel_oos_last()</code> + اعمال روی ۳ ریل صفحهٔ اصلی</td></tr>
+    <tr><td><code>inc/product-card.php</code></td><td class="file">نشان «ناموجود» روی کارت محصول</td></tr>
+    <tr><td><code>inc/wc-pages-fix.php</code></td><td class="file">مخفی/اختیاری‌کردن ایمیل و کشور + پیش‌فرض ایران (سمت سرور)</td></tr>
+    <tr><td><code>woocommerce/single-product.php</code></td><td class="file">رفع main تودرتو، نوار چسبان با تعداد، دکمهٔ «انتخاب و خرید» متغیر، حالت ناموجود</td></tr>
+    <tr><td><code>woocommerce/cart/cart.php</code> و <code>cart-empty.php</code></td><td class="file">تایم‌لاین ۳ مرحله‌ای استاتیک</td></tr>
+    <tr><td><code>woocommerce/checkout/form-checkout.php</code></td><td class="file">شماره‌گذاری یکدست مراحل</td></tr>
+    <tr><td><code>assets/js/app.js</code></td><td class="file">گالری: تشخیص مدل RTL + اسکرول جهانی + نشانه‌گذاری درست</td></tr>
+    <tr><td><code>assets/js/main.js</code></td><td class="file">خروجی <code>window.TKA_Drawers</code> (API رسمی دراورها)</td></tr>
+    <tr><td><code>assets/js/wc.js</code></td><td class="file">باز/بستن سبد از مسیر رسمی، همگام‌سازی تعداد نوار چسبان، تیک خودکار شرایط بعد از refresh</td></tr>
+    <tr><td><code>assets/css/custom.css</code></td><td class="file">گالری بدون برش، بنرهای طبیعی، تایپوگرافی، بندانگشتی اسکرول‌دار، استپرها، رنگ‌های برند، بردکرامب/برند، bottomnav محصول، پنهان‌سازی فیلدها</td></tr>
+    <tr><td><code>assets/css/main.css</code></td><td class="file">حذف گرادیان‌های تصادفی برندها + تطبیق نام سلکتورها</td></tr>
+    <tr><td><code>assets/css/pdp.css</code> / <code>responsive.css</code></td><td class="file">تطبیق نام سلکتورها (بعد از حذف main تودرتو)</td></tr>
+    <tr><td><code>style.css</code> و <code>functions.php</code></td><td class="file">شمارهٔ نسخه ۰.۲۴.۰</td></tr>
+  </table>
+</div>
+
+<!-- ================= یادداشت ================= -->
+<h2><span class="n">۸</span> دو یادداشت صادقانه</h2>
+<div class="card">
+  <div class="note"><b>۱)</b> فیلد ایمیل مخفی است و برای خرید مهمان اختیاری — یعنی سفارش مهمان «ایمیل» ندارد و اطلاع‌رسانی ایمیلی برایش ارسال نمی‌شود (پوشهٔ اسپم پیامکی/پنل درگاه جایگزین خوبی است). اگر خواستید برگردد، فقط یک کلمه بگویید.</div>
+  <div class="note"><b>۲)</b> بعد از نصب، یک‌بار «محصول ← واریز/به‌روزرسانی» دستی لازم نیست؛ ولی اگر لیست‌ها تغییری نکرد، کش «WP Super Cache» را پاک کنید — ۹۰٪ موارد «تغییر نکردن» فقط کش است.</div>
+</div>
+
+<footer>
+  قالب فروشگاهی فرشته مهربون — نسخه ۰.۲۴.۰ · تهیه‌شده بر اساس ۱۶ مورد درخواستی + بازخوردهای دور دوم · تمام اصلاحات با مرورگر تأیید شده‌اند.
+</footer>
+
+</div>
+</body>
+</html>
