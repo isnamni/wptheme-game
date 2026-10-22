@@ -1,0 +1,760 @@
+     1→/**
+     2→ * ToyKind Angel — WordPress glue layer.
+     3→ *
+     4→ * v0.21.0 refactor — this file used to be the "demo bridge": it merged
+     5→ * window.TKA_WP onto window.TKA (demo dataset) before app.js rendered,
+     6→ * then fixed the demo's hardcoded href="#" links after render. All of
+     7→ * that is gone now that every section is server-rendered by PHP with
+     8→ * real hrefs. What remains is genuine WordPress theme JS:
+     9→ *
+    10→ *   - /categories/ tree browser interactions (rail switch, accordion,
+    11→ *     live filter) — the tree HTML itself is server-rendered by
+    12→ *     toykindangel_ssr_categories_tree(); JS only toggles visibility
+    13→ *     and filters tiles.
+    14→ *   - Back-to-top button.
+    15→ *   - PDP glue (back/share/fav).
+    16→ *   - Drawers (menu, categories, minicart).
+    17→ *   - Wishlist (localStorage + AJAX render).
+    18→ *   - Cart steppers + add-to-cart fragments.
+    19→ *   - Variable-product chip selector.
+    20→ *   - Rail scroll arrows.
+    21→ *   - Sticky header.
+    22→ *
+    23→ * No dependency on window.TKA (demo dataset) remains.
+    24→ */
+    25→(function () {
+    26→        'use strict';
+    27→
+    28→        var WP = window.TKA_WP || {};
+    29→
+    30→        document.addEventListener('DOMContentLoaded', function () {
+    31→                /* ---------- 1) /categories/ tree browser interactions ----------
+    32→                 * The tree is server-rendered (inc/front-ssr.php) with all
+    33→                 * panels in the DOM. JS only:
+    34→                 *   - switches the visible .cpanel__page on rail click,
+    35→                 *   - toggles .cgroup--open on group-head click (accordion),
+    36→                 *   - filters .ctile by name on #catSearch input,
+    37→                 *   - deep-links #cat-N to the matching rail item,
+    38→                 *   - jumps to WP search on Enter. */
+    39→                var rail = document.getElementById('catRail');
+    40→                var catPanel = document.getElementById('catPanel');
+    41→                if (rail && catPanel) {
+    42→                        var pages = catPanel.querySelectorAll('.cpanel__page');
+    43→
+    44→                        var showPage = function (i) {
+    45→                                [].forEach.call(pages, function (p, k) {
+    46→                                        p.classList.toggle('on', k === i);
+    47→                                });
+    48→                                catPanel.scrollTop = 0;
+    49→                        };
+    50→
+    51→                        /* Rail click → switch visible panel + sync hash. */
+    52→                        rail.addEventListener('click', function (e) {
+    53→                                var btn = e.target.closest('.crail__item');
+    54→                                if (!btn || !btn.dataset.i) { return; }
+    55→                                var prev = rail.querySelector('.crail__item.on');
+    56→                                if (prev) { prev.classList.remove('on'); }
+    57→                                btn.classList.add('on');
+    58→                                try { btn.scrollIntoView({ block: 'nearest' }); } catch (err) {}
+    59→                                showPage(+btn.dataset.i);
+    60→                                try {
+    61→                                        history.replaceState(null, '', '#cat-' + btn.dataset.i);
+    62→                                } catch (err) { /* ignore */ }
+    63→                        });
+    64→
+    65→                        /* Accordion: click on .cgroup__head toggles that group. */
+    66→                        catPanel.addEventListener('click', function (e) {
+    67→                                var head = e.target.closest('.cgroup__head');
+    68→                                if (!head) { return; }
+    69→                                var grp = head.parentNode;
+    70→                                var open = grp.classList.contains('cgroup--open');
+    71→                                [].forEach.call(catPanel.querySelectorAll('.cgroup'), function (g) {
+    72→                                        g.classList.remove('cgroup--open');
+    73→                                });
+    74→                                if (!open) { grp.classList.add('cgroup--open'); }
+    75→                        });
+    76→
+    77→                        /* Live filter: hide tiles whose label doesn't match.
+    78→                         * Restores the full tree when the input is cleared. */
+    79→                        var search = document.getElementById('catSearch');
+    80→                        if (search) {
+    81→                                search.addEventListener('input', function () {
+    82→                                        var q = search.value.trim();
+    83→                                        if (!q) {
+    84→                                                [].forEach.call(catPanel.querySelectorAll('.ctile'), function (t) {
+    85→                                                        t.style.display = '';
+    86→                                                });
+    87→                                                return;
+    88→                                        }
+    89→                                        var ql = q.toLowerCase();
+    90→                                        [].forEach.call(catPanel.querySelectorAll('.ctile'), function (t) {
+    91→                                                var lb = t.querySelector('.ctile__lb');
+    92→                                                var name = lb ? lb.textContent.toLowerCase() : '';
+    93→                                                t.style.display = name.indexOf(ql) > -1 ? '' : 'none';
+    94→                                        });
+    95→                                });
+    96→
+    97→                                /* Enter → jump to WP search page. */
+    98→                                search.addEventListener('keydown', function (e) {
+    99→                                        if (e.key === 'Enter' && search.value.trim() && WP.searchUrl) {
+   100→                                                window.location.href = WP.searchUrl + '?s=' +
+   101→                                                        encodeURIComponent(search.value.trim());
+   102→                                        }
+   103→                                });
+   104→                        }
+   105→
+   106→                        /* Deep link: /categories/#cat-N opens that rail item. */
+   107→                        var hashM = /^#cat-(\d+)$/.exec(location.hash || '');
+   108→                        if (hashM && rail.children[+hashM[1]]) {
+   109→                                rail.children[+hashM[1]].click();
+   110→                        }
+   111→                }
+   112→
+   113→                /* ---------- 2) Back to top ---------- */
+   114→                var btn = document.getElementById('tka-backtop');
+   115→                if (btn) {
+   116→                        var toggleVisibility = function () {
+   117→                                var show = window.scrollY > 400;
+   118→                                /* hidden attribute + display none via CSS */
+   119→                                if (show) {
+   120→                                        btn.removeAttribute('hidden');
+   121→                                } else {
+   122→                                        btn.setAttribute('hidden', '');
+   123→                                }
+   124→                        };
+   125→
+   126→                        window.addEventListener('scroll', toggleVisibility, { passive: true });
+   127→                        toggleVisibility();
+   128→
+   129→                        btn.addEventListener('click', function () {
+   130→                                window.scrollTo({ top: 0, behavior: 'smooth' });
+   131→                        });
+   132→                }
+   133→
+   134→                /* ---------- 2b) topstrip hide-on-scroll ----------
+   135→                 * وقتی کاربر پایین اسکرول می‌کند، بنر بالای هدر محو می‌شود
+   136→                 * تا فضای آن خالی نماند و هدر در top:0 بچسبد. وقتی به بالا
+   137→                 * برگردد، بنر دوباره ظاهر می‌شود. */
+   138→                var topstrip = document.getElementById('topStrip');
+   139→                if (topstrip) {
+   140→                        var toggleTopstrip = function () {
+   141→                                if (window.scrollY > 10) {
+   142→                                        document.body.classList.add('tka-scrolled');
+   143→                                } else {
+   144→                                        document.body.classList.remove('tka-scrolled');
+   145→                                }
+   146→                        };
+   147→                        window.addEventListener('scroll', toggleTopstrip, { passive: true });
+   148→                        toggleTopstrip();
+   149→                }
+   150→
+   151→                /* ---------- 6) PDP glue (Step 5) ----------
+   152→                 * The demo pdp__bar buttons are wired here instead of
+   153→                 * inline handlers (cleaner + CSP friendly):
+   154→                 *   - back  → history.back() when possible
+   155→                 *   - share → Web Share API with clipboard fallback
+   156→                 *   - fav   → localStorage wishlist + toast feedback */
+   157→                var toast = function (msg) {
+   158→                        var el = document.createElement('div');
+   159→                        el.className = 'tka-toast';
+   160→                        el.setAttribute('role', 'status');
+   161→                        el.textContent = msg;
+   162→                        document.body.appendChild(el);
+   163→                        setTimeout(function () { el.classList.add('show'); }, 10);
+   164→                        setTimeout(function () {
+   165→                                el.classList.remove('show');
+   166→                                setTimeout(function () { el.remove(); }, 350);
+   167→                        }, 2200);
+   168→                };
+   169→
+   170→                /* PDP back button (demo used inline onclick="history.back()"). */
+   171→                [].forEach.call(document.querySelectorAll('.tka-back'), function (b) {
+   172→                        b.addEventListener('click', function () {
+   173→                                if (window.history.length > 1) {
+   174→                                        window.history.back();
+   175→                                } else {
+   176→                                        window.location.href = '/';
+   177→                                }
+   178→                        });
+   179→                });
+   180→
+   181→                /* Share: native sheet → clipboard → legacy copy fallback. */
+   182→                [].forEach.call(document.querySelectorAll('.tka-share'), function (b) {
+   183→                        b.addEventListener('click', function () {
+   184→                                var url = b.dataset.shareUrl || location.href;
+   185→                                var title = b.dataset.shareTitle || document.title;
+   186→                                var legacyCopy = function () {
+   187→                                        var ta = document.createElement('textarea');
+   188→                                        ta.value = url;
+   189→                                        ta.setAttribute('readonly', '');
+   190→                                        ta.style.cssText = 'position:fixed;left:-9999px';
+   191→                                        document.body.appendChild(ta);
+   192→                                        ta.select();
+   193→                                        var ok = false;
+   194→                                        try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+   195→                                        ta.remove();
+   196→                                        toast(ok ? 'لینک محصول کپی شد' : url);
+   197→                                };
+   198→                                if (navigator.share) {
+   199→                                        navigator.share({ title: title, url: url }).catch(function () { /* cancelled */ });
+   200→                                } else if (navigator.clipboard && navigator.clipboard.writeText) {
+   201→                                        navigator.clipboard.writeText(url).then(function () {
+   202→                                                toast('لینک محصول کپی شد');
+   203→                                        }).catch(legacyCopy);
+   204→                                } else {
+   205→                                        legacyCopy();
+   206→                                }
+   207→                        });
+   208→                });
+   209→
+   210→                /* Wishlist: localStorage list of product IDs + heart state. */
+   211→                var FAV_KEY = 'tka_favs';
+   212→                var readFavs = function () {
+   213→                        try {
+   214→                                var raw = window.localStorage.getItem(FAV_KEY);
+   215→                                var list = raw ? JSON.parse(raw) : [];
+   216→                                return Object.prototype.toString.call(list) === '[object Array]' ? list : [];
+   217→                        } catch (err) { return []; }
+   218→                };
+   219→                var writeFavs = function (list) {
+   220→                        try { window.localStorage.setItem(FAV_KEY, JSON.stringify(list)); } catch (err) { /* private mode */ }
+   221→                };
+   222→                /* Header heart badge (all pages). */
+   223→                var syncFavBadge = function () {
+   224→                        var n = readFavs().length;
+   225→                        [].forEach.call(document.querySelectorAll('.tka-fav-badge'), function (el) {
+   226→                                el.textContent = n;
+   227→                                el.hidden = !n;
+   228→                        });
+   229→                };
+   230→                syncFavBadge();
+   231→                [].forEach.call(document.querySelectorAll('.tka-fav'), function (b) {
+   232→                        var id = String(b.dataset.favId || '');
+   233→                        if (!id) { return; }
+   234→                        var sync = function () {
+   235→                                var on = readFavs().indexOf(id) > -1;
+   236→                                b.classList.toggle('on', on);
+   237→                                b.setAttribute('aria-pressed', on ? 'true' : 'false');
+   238→                        };
+   239→                        sync();
+   240→                        b.addEventListener('click', function () {
+   241→                                var list = readFavs();
+   242→                                var i = list.indexOf(id);
+   243→                                if (i > -1) {
+   244→                                        list.splice(i, 1);
+   245→                                        toast('از علاقه‌مندی‌ها حذف شد');
+   246→                                } else {
+   247→                                        list.push(id);
+   248→                                        toast('به علاقه‌مندی‌ها اضافه شد');
+   249→                                }
+   250→                                writeFavs(list);
+   251→                                sync();
+   252→                                syncFavBadge();
+   253→                        });
+   254→                });
+   255→
+   256→                /* ---------- Wishlist page ----------
+   257→                 * Fetches real WC cards for the localStorage IDs through
+   258→                 * the tka_wishlist_render endpoint (inc/wishlist.php). */
+   259→                var wishGrid = document.getElementById('tkaWishGrid');
+   260→                if (wishGrid) {
+   261→                        var wishIds = readFavs();
+   262→                        var wishCount = document.getElementById('tka-wish-count');
+   263→                        var wishEmpty = document.getElementById('tkaWishEmpty');
+   264→                        if (!wishIds.length) {
+   265→                                wishGrid.setAttribute('aria-busy', 'false');
+   266→                                wishGrid.style.display = 'none';
+   267→                                if (wishEmpty) { wishEmpty.hidden = false; }
+   268→                                if (wishCount) { wishCount.textContent = '۰'; }
+   269→                        } else {
+   270→                                if (wishCount) { wishCount.textContent = String(wishIds.length); }
+   271→                                var body = new URLSearchParams();
+   272→                                body.append('action', 'tka_wishlist_render');
+   273→                                wishIds.forEach(function (id) { body.append('ids[]', id); });
+   274→                                fetch(window.TKA_AJAX || '/wp-admin/admin-ajax.php', {
+   275→                                        method: 'POST',
+   276→                                        credentials: 'same-origin',
+   277→                                        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+   278→                                        body: body.toString()
+   279→                                }).then(function (r) { return r.json(); }).then(function (res) {
+   280→                                        wishGrid.setAttribute('aria-busy', 'false');
+   281→                                        if (res && res.success && res.data && res.data.html) {
+   282→                                                wishGrid.innerHTML = res.data.html;
+   283→                                                [].forEach.call(wishGrid.querySelectorAll('.tka-wish-remove'), function (btn) {
+   284→                                                        btn.addEventListener('click', function () {
+   285→                                                                var id = String(btn.dataset.wishId || '');
+   286→                                                                var list = readFavs().filter(function (v) { return v !== id; });
+   287→                                                                writeFavs(list);
+   288→                                                                syncFavBadge();
+   289→                                                                var item = btn.closest('.tka-wish-item');
+   290→                                                                if (item) { item.remove(); }
+   291→                                                                if (!readFavs().length) {
+   292→                                                                        wishGrid.style.display = 'none';
+   293→                                                                        if (wishEmpty) { wishEmpty.hidden = false; }
+   294→                                                                        if (wishCount) { wishCount.textContent = '۰'; }
+   295→                                                                } else if (wishCount) {
+   296→                                                                        wishCount.textContent = String(readFavs().length);
+   297→                                                                }
+   298→                                                        });
+   299→                                                });
+   300→                                        } else {
+   301→                                                wishGrid.style.display = 'none';
+   302→                                                if (wishEmpty) { wishEmpty.hidden = false; }
+   303→                                        }
+   304→                                }).catch(function () {
+   305→                                        wishGrid.setAttribute('aria-busy', 'false');
+   306→                                        wishGrid.innerHTML = '<div class="tka-wishlist__loading">خطا در بارگذاری — دوباره تلاش کنید</div>';
+   307→                                });
+   308→                        }
+   309→                }
+   310→
+   311→                /* Smooth scroll for the reviews anchor on the PDP. */
+   312→                [].forEach.call(document.querySelectorAll('a.tka-reviews-link[href="#reviews"]'), function (a) {
+   313→                        a.addEventListener('click', function (e) {
+   314→                                var target = document.getElementById('reviews');
+   315→                                if (target) {
+   316→                                        e.preventDefault();
+   317→                                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+   318→                                }
+   319→                        });
+   320→                });
+   321→
+   322→                /* Sticky CTA «مشاهده و خرید» jumps to the price box. */
+   323→                [].forEach.call(document.querySelectorAll('.tka-cta-alt[href="#pricebox-top"]'), function (a) {
+   324→                        a.addEventListener('click', function (e) {
+   325→                                var box = document.querySelector('.pricebox');
+   326→                                if (box) {
+   327→                                        e.preventDefault();
+   328→                                        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+   329→                                }
+   330→                        });
+   331→                });
+   332→
+   333→                /* ---------- Variable products: demo-style chips ----------
+   334→                 * The standard WC variation <select>s stay in the DOM (form
+   335→                 * integrity, gateway plugins, stock logic) but are visually
+   336→                 * replaced by chips. Chip click → select value + native
+   337→                 * 'change' (bubbles to WC's jQuery delegated handlers);
+   338→                 * WC-driven updates (reset link, disabled combos) sync back
+   339→                 * via the jQuery 'change'/'reset_data'/'check_variations'
+   340→                 * events, which native listeners can't see. */
+   341→                [].forEach.call(document.querySelectorAll('.variations_form.cart .variations select'), function (sel) {
+   342→                 try {
+   343→                        var td = sel.closest('td.value') || sel.parentElement;
+   344→                        if (!td) { return; }
+   345→                        var wrap = document.createElement('div');
+   346→                        wrap.className = 'tka-chips';
+   347→                        wrap.setAttribute('role', 'listbox');
+   348→                        wrap.setAttribute('aria-label', sel.closest('tr') ? (sel.closest('tr').querySelector('th.label') || {}).textContent || '' : '');
+   349→                        [].forEach.call(sel.options, function (opt) {
+   350→                                if (!opt.value) { return; }
+   351→                                var chip = document.createElement('button');
+   352→                                chip.type = 'button';
+   353→                                chip.className = 'tka-chip';
+   354→                                chip.setAttribute('role', 'option');
+   355→                                chip.dataset.value = opt.value;
+   356→                                chip.textContent = opt.textContent;
+   357→                                chip.addEventListener('click', function () {
+   358→                                        sel.value = (sel.value === opt.value) ? '' : opt.value;
+   359→                                        sel.dispatchEvent(new Event('change', { bubbles: true }));
+   360→                                        syncChips();
+   361→                                });
+   362→                                wrap.appendChild(chip);
+   363→                        });
+   364→                        if (!wrap.children.length) { return; }
+   365→                        sel.classList.add('tka-chips__source');
+   366→                        td.insertBefore(wrap, sel);
+   367→                        function syncChips() {
+   368→                                [].forEach.call(wrap.children, function (chip) {
+   369→                                        var opt = sel.querySelector('option[value="' + CSS.escape(chip.dataset.value) + '"]');
+   370→                                        chip.classList.toggle('on', sel.value === chip.dataset.value);
+   371→                                        chip.classList.toggle('disabled', !!(opt && opt.disabled));
+   372→                                        chip.setAttribute('aria-selected', sel.value === chip.dataset.value ? 'true' : 'false');
+   373→                                });
+   374→                        }
+   375→                        syncChips();
+   376→                        window.tkaSyncChips = window.tkaSyncChips || [];
+   377→                        window.tkaSyncChips.push(syncChips);
+   378→                 } catch (e) { /* chips are cosmetic — form stays functional */ }
+   379→                });
+   380→                if (window.jQuery && window.tkaSyncChips) {
+   381→                        window.jQuery(document).on('change reset_data check_variations woocommerce_update_variation_values', function () {
+   382→                                setTimeout(function () { window.tkaSyncChips.forEach(function (fn) { fn(); }); }, 60);
+   383→                        });
+   384→                }
+   385→
+   386→                /* ---------- 7) Image delivery glue (Step 6) ----------
+   387→                 * The demo img() helper lazy-loads EVERY image — including
+   388→                 * the LCP hero slider. Without touching demo files we fix
+   389→                 * that here: the visible hero slide becomes eager +
+   390→                 * fetchpriority=high, every other image gets decoding=async
+   391→                 * (loading stays lazy from the demo itself). */
+   392→                [].forEach.call(document.querySelectorAll('.hero__track .hero__slide img'), function (img, i) {
+   393→                        img.decoding = 'async';
+   394→                        if (0 === i) {
+   395→                                img.loading = 'eager';
+   396→                                img.setAttribute('fetchpriority', 'high');
+   397→                        }
+   398→                });
+   399→
+   400→                [].forEach.call(document.querySelectorAll('.banners img, .brands img, .stories img, .plist__track img, .offer__track img'), function (img) {
+   401→                        img.decoding = 'async';
+   402→                });
+   403→
+   404→                /* ---------- 8) Cart quantity steppers (Step 8 UX glue) ----------
+   405→                 * The classic WC cart only ships a bare number input; demo-like
+   406→                 * Iranian shops use +/− steppers. Buttons are injected around
+   407→                 * the input and drive it through WC's own qty field so the
+   408→                 * «بروزرسانی سبد خرید» flow stays intact. */
+   409→                [].forEach.call(document.querySelectorAll('.woocommerce-cart table.shop_table .quantity'), function (q) {
+   410→                        var input = q.querySelector('input.qty');
+   411→                        if (!input || q.querySelector('.tka-step')) { return; }
+   412→
+   413→                        var mk = function (label, cls) {
+   414→                                var b = document.createElement('button');
+   415→                                b.type = 'button';
+   416→                                b.className = 'tka-step ' + cls;
+   417→                                b.textContent = label;
+   418→                                b.setAttribute('aria-label', cls === 'minus' ? 'کاهش تعداد' : 'افزایش تعداد');
+   419→                                return b;
+   420→                        };
+   421→
+   422→                        var step = function (delta) {
+   423→                                var val = parseInt(input.value, 10) || 0;
+   424→                                var min = parseFloat(input.getAttribute('min')) || 1;
+   425→                                var max = parseFloat(input.getAttribute('max'));
+   426→                                var next = val + delta;
+   427→                                if (next < min) { next = min; }
+   428→                                if (!isNaN(max) && max > 0 && next > max) { next = max; }
+   429→                                if (next === val) { return; }
+   430→                                input.value = next;
+   431→                                /* Same event WC's own handlers listen to. */
+   432→                                input.dispatchEvent(new Event('change', { bubbles: true }));
+   433→                                /* Classic cart needs the update button; do it silently. */
+   434→                                var form = input.closest('form.woocommerce-cart-form');
+   435→                                var upd = form ? form.querySelector('button[name="update_cart"]') : null;
+   436→                                if (upd) {
+   437→                                        upd.disabled = false;
+   438→                                        if (window.jQuery) {
+   439→                                                window.jQuery(upd).trigger('click');
+   440→                                        } else {
+   441→                                                upd.click();
+   442→                                        }
+   443→                                }
+   444→                        };
+   445→
+   446→                        var minus = mk('−', 'minus');
+   447→                        var plus = mk('+', 'plus');
+   448→                        q.insertBefore(minus, input);
+   449→                        q.appendChild(plus);
+   450→                });
+   451→
+   452→                /* ---------- 9) Desktop rail arrows (v0.7.0) ----------
+   453→                 * On desktop (≥1024px) the demo rails (amazing / newest /
+   454→                 * best / brands / related) become wide scrollers; injected
+   455→                 * prev/next buttons page them like a real desktop shop.
+   456→                 * Pure glue: demo markup untouched, buttons are additive. */
+   457→                [].forEach.call(document.querySelectorAll('.offer, .section, .brands-section'), function (sec) {
+   458→                        var track = sec.querySelector('.offer__track, .plist__track, .brands');
+   459→                        if (!track || sec.querySelector('.tka-rail')) { return; }
+   460→                        /* Only for horizontally scrollable rails. */
+   461→                        if (track.scrollWidth <= track.clientWidth + 48) { return; }
+   462→
+   463→                        var mk = function (dir) {
+   464→                                var b = document.createElement('button');
+   465→                                b.type = 'button';
+   466→                                b.className = 'tka-rail tka-rail--' + dir;
+   467→                                b.setAttribute('aria-label', dir === 'next' ? 'مشاهده موارد بعدی' : 'مشاهده موارد قبلی');
+   468→                                b.innerHTML = '<svg class="ic" aria-hidden="true"><use href="#i-chev-left"></use></svg>';
+   469→                                b.addEventListener('click', function () {
+   470→                                        var amount = Math.max(280, track.clientWidth * 0.75);
+   471→                                        /* RTL: scrolling forward = negative scrollLeft. */
+   472→                                        var sign = dir === 'next' ? -1 : 1;
+   473→                                        track.scrollBy({ left: sign * amount, behavior: 'smooth' });
+   474→                                });
+   475→                                return b;
+   476→                        };
+   477→
+   478→                        var sync = function () {
+   479→                                var max = track.scrollWidth - track.clientWidth;
+   480→                                /* RTL scrollLeft runs 0 → -max in modern browsers. */
+   481→                                var sl = Math.abs(track.scrollLeft);
+   482→                                prevBtn.disabled = sl <= 4;
+   483→                                nextBtn.disabled = sl >= max - 4;
+   484→                        };
+   485→
+   486→                        sec.classList.add('tka-railsec');
+   487→                        var nextBtn = mk('next');
+   488→                        var prevBtn = mk('prev');
+   489→                        sec.appendChild(nextBtn);
+   490→                        sec.appendChild(prevBtn);
+   491→                        track.addEventListener('scroll', sync, { passive: true });
+   492→                        window.addEventListener('resize', sync);
+   493→                        sync();
+   494→                });
+   495→
+   496→                /* ---------- 10) Drawers — primary menu + categories browser (v0.9) ----------
+   497→                 * Everything is scoped to .tka-drawer containers (#tka-menu-drawer /
+   498→                 * #tka-cats-drawer, printed by inc/cat-drawer.php in footer.php),
+   499→                 * so the demo app.js categories page (#catRail/#catPanel) is
+   500→                 * never touched. */
+   501→                (function () {
+   502→                        var esc = function (s) {
+   503→                                return String(s).replace(/[&<>"']/g, function (c) {
+   504→                                        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+   505→                                });
+   506→                        };
+   507→                        var RM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+   508→                        var backdrop = document.getElementById('tka-drawer-backdrop');
+   509→                        var openDrawer = null;
+   510→                        var lastTrigger = null;
+   511→
+   512→                        var focusables = function (box) {
+   513→                                return [].slice.call(box.querySelectorAll(
+   514→                                        'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
+   515→                                )).filter(function (el) { return el.offsetParent !== null; });
+   516→                        };
+   517→
+   518→                        var syncTriggers = function (name, expanded) {
+   519→                                [].forEach.call(document.querySelectorAll('[data-tka-drawer="' + name + '"]'), function (t) {
+   520→                                        t.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+   521→                                });
+   522→                        };
+   523→
+   524→                        var open = function (name, trigger) {
+   525→                                var d = document.getElementById('tka-' + name + '-drawer');
+   526→                                if (!d) { return; }
+   527→                                if (openDrawer === d) { return; }
+   528→                                if (openDrawer) { hide(openDrawer); }
+   529→                                openDrawer = d;
+   530→                                d.dataset.tkaName = name;
+   531→                                lastTrigger = trigger || null;
+   532→                                d.removeAttribute('hidden');
+   533→                                void d.offsetWidth; /* reflow → transition runs */
+   534→                                d.classList.add('is-open');
+   535→                                if (backdrop) {
+   536→                                        backdrop.removeAttribute('hidden');
+   537→                                        requestAnimationFrame(function () { backdrop.classList.add('is-open'); });
+   538→                                }
+   539→                                document.documentElement.classList.add('tka-drawer-lock');
+   540→                                syncTriggers(name, true);
+   541→                                var f = focusables(d);
+   542→                                if (f.length) { f[0].focus(); }
+   543→                        };
+   544→
+   545→                        var hide = function (d) {
+   546→                                d.classList.remove('is-open');
+   547→                                if (backdrop) { backdrop.classList.remove('is-open'); }
+   548→                                document.documentElement.classList.remove('tka-drawer-lock');
+   549→                                if (d.dataset.tkaName) { syncTriggers(d.dataset.tkaName, false); }
+   550→                                /* Per-drawer timer: switching drawers must not cancel
+   551→                                 * the previous one's hide, and the shared backdrop only
+   552→                                 * hides when no drawer remains open. */
+   553→                                clearTimeout(d._tkaTimer || 0);
+   554→                                d._tkaTimer = setTimeout(function () {
+   555→                                        if (openDrawer !== d) { d.setAttribute('hidden', ''); }
+   556→                                        if (!openDrawer && backdrop) { backdrop.setAttribute('hidden', ''); }
+   557→                                }, RM ? 0 : 320);
+   558→                        };
+   559→
+   560→                        var close = function () {
+   561→                                if (!openDrawer) { return; }
+   562→                                var d = openDrawer;
+   563→                                openDrawer = null;
+   564→                                hide(d);
+   565→                                if (lastTrigger && document.contains(lastTrigger)) { lastTrigger.focus(); }
+   566→                                lastTrigger = null;
+   567→                        };
+   568→
+   569→                        /* Delegated open/close triggers. */
+   570→                        document.addEventListener('click', function (e) {
+   571→                                var t = e.target.closest ? e.target.closest('[data-tka-drawer]') : null;
+   572→                                if (t) { open(t.getAttribute('data-tka-drawer'), t); return; }
+   573→                                if (!openDrawer) { return; }
+   574→                                /* v0.22.3: closest روی SVG ممکن است نباشد — fallback با parent walk */
+   575→                                var closeTarget = e.target.closest ? e.target.closest('[data-tka-close]') : null;
+   576→                                if (!closeTarget && e.target) {
+   577→                                        var node = e.target;
+   578→                                        while (node && node !== document) {
+   579→                                                if (node.hasAttribute && node.hasAttribute('data-tka-close')) {
+   580→                                                        closeTarget = node;
+   581→                                                        break;
+   582→                                                }
+   583→                                                node = node.parentNode;
+   584→                                        }
+   585→                                }
+   586→                                if (closeTarget) { close(); return; }
+   587→                                if (backdrop && (e.target === backdrop || backdrop.contains(e.target))) { close(); }
+   588→                        });
+   589→
+   590→                        /* Escape closes; Tab is trapped inside the open drawer. */
+   591→                        document.addEventListener('keydown', function (e) {
+   592→                                if (!openDrawer) { return; }
+   593→                                if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+   594→                                if (e.key !== 'Tab') { return; }
+   595→                                var f = focusables(openDrawer);
+   596→                                if (!f.length) { return; }
+   597→                                var first = f[0], last = f[f.length - 1];
+   598→                                if (e.shiftKey && document.activeElement === first) {
+   599→                                        e.preventDefault(); last.focus();
+   600→                                } else if (!e.shiftKey && document.activeElement === last) {
+   601→                                        e.preventDefault(); first.focus();
+   602→                                }
+   603→                        });
+   604→
+   605→                        /* Categories drawer: rail switch + accordions + search. */
+   606→                        var catsDrawer = document.getElementById('tka-cats-drawer');
+   607→                        if (!catsDrawer) { return; }
+   608→
+   609→                        var panel = catsDrawer.querySelector('.tka-drawer__panel');
+   610→                        var search = catsDrawer.querySelector('[data-tka-cats-search]');
+   611→                        var resultsPage = null;
+   612→
+   613→                        var showPage = function (idx) {
+   614→                                if (!panel) { return; }
+   615→                                [].forEach.call(panel.querySelectorAll('.tka-drawer__page'), function (p) {
+   616→                                        if (p.getAttribute('data-page') === String(idx)) {
+   617→                                                p.removeAttribute('hidden');
+   618→                                        } else {
+   619→                                                p.setAttribute('hidden', '');
+   620→                                        }
+   621→                                });
+   622→                                panel.scrollTop = 0;
+   623→                        };
+   624→
+   625→                        var buildResults = function (q) {
+   626→                                if (!panel) { return; }
+   627→                                if (!resultsPage || !panel.contains(resultsPage)) {
+   628→                                        resultsPage = document.createElement('div');
+   629→                                        resultsPage.className = 'tka-drawer__page tka-drawer__page--search';
+   630→                                        resultsPage.setAttribute('data-page', 'search');
+   631→                                        panel.appendChild(resultsPage);
+   632→                                }
+   633→                                var seen = {};
+   634→                                var count = 0;
+   635→                                var grid = document.createElement('div');
+   636→                                grid.className = 'cgrid';
+   637→                                [].forEach.call(panel.querySelectorAll('.tka-drawer__page[data-page]:not([data-page="search"]) .ctile'), function (tile) {
+   638→                                        var name = tile.getAttribute('data-name') || '';
+   639→                                        if (!name || name.indexOf(q) === -1 || seen[name]) { return; }
+   640→                                        seen[name] = 1;
+   641→                                        count++;
+   642→                                        if (count <= 60) { grid.appendChild(tile.cloneNode(true)); }
+   643→                                });
+   644→                                if (count) {
+   645→                                        resultsPage.innerHTML = '<a class="call" href="' +
+   646→                                                ((WP && WP.searchUrl) ? esc(WP.searchUrl) + '?s=' + encodeURIComponent(q) : '#') +
+   647→                                                '"><span>نتایج جستجو</span><small class="num" style="color:var(--gray-500);font-weight:400">' +
+   648→                                                count + ' مورد</small></a>';
+   649→                                        resultsPage.appendChild(grid);
+   650→                                } else {
+   651→                                        resultsPage.innerHTML = '<div class="cempty">' +
+   652→                                                '<svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg>' +
+   653→                                                'نتیجه‌ای برای «' + esc(q) + '» یافت نشد</div>';
+   654→                                }
+   655→                                [].forEach.call(panel.querySelectorAll('.tka-drawer__page'), function (p) { p.setAttribute('hidden', ''); });
+   656→                                resultsPage.removeAttribute('hidden');
+   657→                                panel.scrollTop = 0;
+   658→                        };
+   659→
+   660→                        catsDrawer.addEventListener('click', function (e) {
+   661→                                var item = e.target.closest('.crail__item');
+   662→                                if (item) {
+   663→                                        [].forEach.call(catsDrawer.querySelectorAll('.crail__item'), function (b) {
+   664→                                                b.classList.toggle('on', b === item);
+   665→                                        });
+   666→                                        if (search) { search.value = ''; }
+   667→                                        showPage(item.getAttribute('data-panel'));
+   668→                                        return;
+   669→                                }
+   670→                                var head = e.target.closest('.cgroup__head');
+   671→                                if (head) {
+   672→                                        var grp = head.parentNode;
+   673→                                        var page = head.closest('.tka-drawer__page');
+   674→                                        var wasOpen = grp.classList.contains('cgroup--open');
+   675→                                        if (page) {
+   676→                                                [].forEach.call(page.querySelectorAll('.cgroup'), function (g) {
+   677→                                                        g.classList.remove('cgroup--open');
+   678→                                                });
+   679→                                        }
+   680→                                        if (!wasOpen) { grp.classList.add('cgroup--open'); }
+   681→                                }
+   682→                        });
+   683→
+   684→                        if (search) {
+   685→                                search.addEventListener('input', function () {
+   686→                                        var q = search.value.trim();
+   687→                                        if (!q) {
+   688→                                                if (resultsPage) { resultsPage.setAttribute('hidden', ''); }
+   689→                                                var on = catsDrawer.querySelector('.crail__item.on');
+   690→                                                showPage(on ? on.getAttribute('data-panel') : '0');
+   691→                                                return;
+   692→                                        }
+   693→                                        buildResults(q);
+   694→                                });
+   695→                                search.addEventListener('keydown', function (e) {
+   696→                                        if (e.key === 'Enter' && search.value.trim() && WP && WP.searchUrl) {
+   697→                                                window.location.href = WP.searchUrl + '?s=' + encodeURIComponent(search.value.trim());
+   698→                                        }
+   699→                                });
+   700→                        }
+   701→                })();
+   702→
+   703→                /* Header cart badge stays in sync after silent cart updates
+   704→                 * (wc-cart-fragments only listens to wc_fragment_refresh). */
+   705→                if (window.jQuery) {
+   706→                        ['updated_cart_totals', 'updated_wc_div'].forEach(function (ev) {
+   707→                                window.jQuery(document.body).on(ev, function () {
+   708→                                        window.jQuery(document.body).trigger('wc_fragment_refresh');
+   709→                                });
+   710→                        });
+   711→                }
+   712→        });
+   713→
+   714→
+   715→        /* ---------- TKA 0.16.0 (task 18-b): هدر چسبان فشرده ----------
+   716→           یک سنتینل ۱px دقیقاً قبل از .header می‌گذاریم؛ وقتی از دید
+   717→           خارج شد یعنی هدر به لبهٔ بالا چسبیده → body.tka-stuck و
+   718→           CSS (main.css) هدر را فشرده + سایه می‌دهد. برگشت به بالا =
+   719→           حذف کلاس. rAF/IO پسند؛ بدون تغییر قالب. */
+   720→        function tkaInitStickyHeader() {
+   721→                var header = document.querySelector('.header');
+   722→                if (!header || !('IntersectionObserver' in window)) return;
+   723→                if (header.dataset.tkaSticky) return;
+   724→                header.dataset.tkaSticky = '1';
+   725→
+   726→                var sentinel = document.createElement('div');
+   727→                sentinel.setAttribute('aria-hidden', 'true');
+   728→                sentinel.style.cssText =
+   729→                        'position:relative;width:1px;height:1px;margin:0;padding:0;pointer-events:none';
+   730→                header.parentNode.insertBefore(sentinel, header);
+   731→
+   732→                var io = new IntersectionObserver(function (entries) {
+   733→                        for (var i = 0; i < entries.length; i++) {
+   734→                                document.body.classList.toggle('tka-stuck', !entries[i].isIntersecting);
+   735→                        }
+   736→                }, { threshold: 0 });
+   737→                io.observe(sentinel);
+   738→
+   739→                /* TKA 0.17.0 (ممیزی P2-6): توکن پویای ارتفاع هدر.
+   740→                   --header-h در demo.css مقدار ثابت کهنهٔ 104px دارد؛
+   741→                   اینجا ارتفاع «واقعی» هدر (و تغییرش در حالت فشردهٔ
+   742→                   .tka-stuck یا ریسپانسیو) با ResizeObserver روی
+   743→                   <html> نوشته می‌شود تا هر قانون CSS که به
+   744→                   var(--header-h) تکیه می‌کند همیشه درست باشد. */
+   745→                if ('ResizeObserver' in window) {
+   746→                        var setH = function () {
+   747→                                var h = header.offsetHeight;
+   748→                                if (h > 0) document.documentElement.style.setProperty('--header-h', h + 'px');
+   749→                        };
+   750→                        setH();
+   751→                        new ResizeObserver(setH).observe(header);
+   752→                }
+   753→        }
+   754→        if (document.readyState === 'loading') {
+   755→                document.addEventListener('DOMContentLoaded', tkaInitStickyHeader);
+   756→        } else {
+   757→                tkaInitStickyHeader();
+   758→        }
+   759→})();
+   760→
