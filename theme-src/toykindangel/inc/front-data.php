@@ -104,6 +104,140 @@ function toykindangel_oos_last( array $products ) {
 }
 
 /**
+ * v0.27.0 — محصولات ریل «ترندترین‌ها» (نیاز ۲).
+ *
+ * دستهٔ نمایش‌دهنده را مدیر از سفارشی‌سازی انتخاب می‌کند
+ * (tka_trending_cat)؛ هر محصولی که در آن دسته بگذارد «ترند» محسوب
+ * می‌شود. مرتب‌سازی: جدیدترین اول. ناموجودها (مانند بقیهٔ ریل‌های
+ * صفحهٔ اول) حذف می‌شوند.
+ *
+ * @return WC_Product[] (may be empty).
+ */
+function toykindangel_trending_products() {
+        static $tka_local = null;
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = toykindangel_cache_get( 'home_trending' );
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = array();
+        $tka_cat   = (int) get_theme_mod( 'tka_trending_cat', 0 );
+
+        if ( $tka_cat > 0 && taxonomy_exists( 'product_cat' ) && function_exists( 'wc_get_products' ) ) {
+                $tka_ids = get_posts(
+                        array(
+                                'post_type'      => 'product',
+                                'post_status'    => 'publish',
+                                'posts_per_page' => 40,
+                                'fields'         => 'ids',
+                                'orderby'        => 'date',
+                                'order'          => 'DESC',
+                                'no_found_rows'  => true,
+                                'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- curated trending category; cached 12h.
+                                        array(
+                                                'taxonomy' => 'product_cat',
+                                                'field'    => 'term_id',
+                                                'terms'    => $tka_cat,
+                                        ),
+                                ),
+                        )
+                );
+                $tka_ids = array_map( 'intval', (array) $tka_ids );
+                if ( ! empty( $tka_ids ) ) {
+                        $tka_local = array_slice(
+                                toykindangel_in_stock_only(
+                                        wc_get_products(
+                                                array(
+                                                        'include' => $tka_ids,
+                                                        'limit'   => 40,
+                                                        'orderby' => 'include',
+                                                )
+                                        )
+                                ),
+                                0,
+                                10
+                        );
+                }
+        }
+
+        toykindangel_cache_set( 'home_trending', $tka_local, 12 * HOUR_IN_SECONDS );
+        return $tka_local;
+}
+
+/**
+ * v0.27.0 — زیردسته‌های «خرید بر اساس سن» (نیاز ۳).
+ *
+ * مدیر از سفارشی‌سازی یک دستهٔ مادر (tka_age_parent) انتخاب می‌کند؛
+ * زیردسته‌های همان دسته (تا ۸ مورد) با تصویر بندانگشتی برگردانده
+ * می‌شوند تا سکشن «خرید بر اساس سن» دقیقاً با ساختار سکشن
+ * «دسته‌بندی‌های فروشگاه» رندر شود.
+ *
+ * @return array[] { name, href, img } — empty array when unset/empty.
+ */
+function toykindangel_age_children() {
+        static $tka_local = null;
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = toykindangel_cache_get( 'home_agegrid' );
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local   = array();
+        $tka_parent  = (int) get_theme_mod( 'tka_age_parent', 0 );
+
+        if ( $tka_parent > 0 && taxonomy_exists( 'product_cat' ) ) {
+                $tka_terms = get_terms(
+                        array(
+                                'taxonomy'   => 'product_cat',
+                                'parent'     => $tka_parent,
+                                'hide_empty' => false,
+                                'number'     => 8,
+                        )
+                );
+
+                if ( ! is_wp_error( $tka_terms ) && ! empty( $tka_terms ) ) {
+                        /* یک‌شات پرکردن کش ترم‌ها — همان الگوی catgrid (N+1 رخ ندهد). */
+                        $tka_term_ids = array_map( 'intval', wp_list_pluck( $tka_terms, 'term_id' ) );
+                        _prime_term_caches( $tka_term_ids, false );
+
+                        $tka_thumb_ids = array();
+                        foreach ( $tka_terms as $tka_term ) {
+                                $tka_thumb = (int) get_term_meta( (int) $tka_term->term_id, 'thumbnail_id', true );
+                                if ( $tka_thumb ) {
+                                        $tka_thumb_ids[] = $tka_thumb;
+                                }
+                        }
+                        if ( ! empty( $tka_thumb_ids ) ) {
+                                _prime_post_caches( array(), $tka_thumb_ids, false, false );
+                        }
+
+                        foreach ( $tka_terms as $tka_term ) {
+                                $tka_link = get_term_link( $tka_term );
+                                if ( is_wp_error( $tka_link ) ) {
+                                        continue;
+                                }
+                                $tka_thumb = (int) get_term_meta( (int) $tka_term->term_id, 'thumbnail_id', true );
+                                $tka_local[] = array(
+                                        'name' => $tka_term->name,
+                                        'href' => $tka_link,
+                                        'img'  => $tka_thumb ? wp_get_attachment_image_url( $tka_thumb, 'woocommerce_thumbnail' ) : '',
+                                );
+                        }
+                }
+        }
+
+        toykindangel_cache_set( 'home_agegrid', $tka_local, 12 * HOUR_IN_SECONDS );
+        return $tka_local;
+}
+
+/**
  * Single source of truth for the three homepage product rails
  * (amazing offers / newest / best sellers).
  *

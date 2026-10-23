@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
         exit;
 }
 
-define( 'TOYKINDANGEL_VERSION', '0.26.0' );
+define( 'TOYKINDANGEL_VERSION', '0.27.0' );
 define( 'TOYKINDANGEL_DIR', get_template_directory() );
 define( 'TOYKINDANGEL_URI', get_template_directory_uri() );
 
@@ -45,6 +45,7 @@ require_once TOYKINDANGEL_DIR . '/inc/format.php';
 require_once TOYKINDANGEL_DIR . '/inc/fa-text.php';
 require_once TOYKINDANGEL_DIR . '/inc/wc-pages-fix.php';
 require_once TOYKINDANGEL_DIR . '/inc/ig-stories.php';
+require_once TOYKINDANGEL_DIR . '/inc/class-tka-filter-widget.php'; // v0.27.0 (نیاز ۷): ویجت حرفه‌ای فیلتر محصولات
 
 /**
  * Theme supports.

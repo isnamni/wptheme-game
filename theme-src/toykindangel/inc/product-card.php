@@ -135,7 +135,13 @@ function toykindangel_pcard( $product ) {
  * @return string HTML.
  */
 function toykindangel_pcard_wrap( $product ) {
-        $html = '<div class="pcard-wrap">';
+        /*
+         * v0.27.0 (نیاز ۱): کلاس حالت ناموجود روی خودِ کارت — برای خاکستری
+         * کردن تصویر و حالت‌دهی کامل به کارت بدون دکمهٔ خرید.
+         */
+        $tka_oos_class = ( $product instanceof WC_Product && ! $product->is_in_stock() ) ? ' pcard-wrap--oos' : '';
+
+        $html = '<div class="pcard-wrap' . $tka_oos_class . '">';
         $html .= toykindangel_pcard( $product );
 
         if ( $product->is_type( 'simple' ) && $product->is_purchasable() && $product->is_in_stock() ) {

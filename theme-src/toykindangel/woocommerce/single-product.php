@@ -227,17 +227,29 @@ if ( $product ) {
  * fresh hydration. Batch the hydration with wc_get_products(include=>IDs)
  * instead — same WC CRUD path, one query family, same downstream pcard_wrap
  * rendering. No change to the rendered markup or the related-IDs source.
+ *
+ * v0.27.0 (نیاز ۵) — ناموجودها از ریل «محصولات مشابه» حذف می‌شوند.
+ * قانون «ناموجود در آخر» (کد فانکشنز کاربر) فقط روی آرشیوها اثر دارد و
+ * به کوئری مرتبط‌ها پوشش نمی‌دهد؛ پس مثل ریل‌های صفحهٔ اول (v0.26.0)
+ * ۳۰ کاندید واکشی، ناموجودها فیلتر و در نهایت ۱۰ مورد نمایش داده
+ * می‌شود تا ریل حتی با حذف ناموجودها هم پر بماند.
  */
-$tka_related_ids = ( $product && get_theme_mod( 'tka_pdp_related', true ) ) ? wc_get_related_products( $tka_id, 10 ) : array();
+$tka_related_ids = ( $product && get_theme_mod( 'tka_pdp_related', true ) ) ? wc_get_related_products( $tka_id, 30 ) : array();
 $tka_related     = array();
 if ( ! empty( $tka_related_ids ) && function_exists( 'wc_get_products' ) ) {
-        $tka_related = wc_get_products(
-                array(
-                        'include' => $tka_related_ids,
-                        'limit'   => 10,
-                        'orderby' => 'post__in',
-                        'order'   => 'ASC',
-                )
+        $tka_related = array_slice(
+                toykindangel_in_stock_only(
+                        wc_get_products(
+                                array(
+                                        'include' => $tka_related_ids,
+                                        'limit'   => 30,
+                                        'orderby' => 'post__in',
+                                        'order'   => 'ASC',
+                                )
+                        )
+                ),
+                0,
+                10
         );
 }
 

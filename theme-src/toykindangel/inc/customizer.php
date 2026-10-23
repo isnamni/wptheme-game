@@ -263,6 +263,111 @@ function toykindangel_customize_register( $wp_customize ) {
                 );
         }
 
+        /* --------------------------------------------------------------
+         * v0.27.0 — ریل «ترندترین‌ها» + سکشن «خرید بر اساس سن» (نیاز ۲ و ۳)
+         * ----------------------------------------------------------- */
+
+        /**
+         * Sanitize a product_cat term ID coming from the section selects.
+         *
+         * @param mixed $value Raw value.
+         * @return int Term ID (0 = none).
+         */
+        $tka_cat_sanitize = static function ( $value ) {
+                return ( taxonomy_exists( 'product_cat' ) && get_term( (int) $value, 'product_cat' ) instanceof WP_Term ) ? (int) $value : 0;
+        };
+
+        $wp_customize->add_setting(
+                'tka_trending_cat',
+                array(
+                        'default'           => 0,
+                        'sanitize_callback' => $tka_cat_sanitize,
+                )
+        );
+        $wp_customize->add_control(
+                'tka_trending_cat',
+                array(
+                        'label'       => __( 'دستهٔ «ترندترین‌ها» — محصولات این دسته در ریل ترند می‌آیند', 'toykindangel' ),
+                        'description' => __( 'یک دسته بسازید (مثلاً «ترند») و محصولات پرطرفدار را داخلش بگذارید؛ سپس همین‌جا انتخابش کنید.', 'toykindangel' ),
+                        'section'     => 'tka_homepage',
+                        'type'        => 'select',
+                        'choices'     => toykindangel_cat_choices(),
+                )
+        );
+
+        $wp_customize->add_setting(
+                'tka_trending_title',
+                array(
+                        'default'           => __( 'ترندترین محصولات', 'toykindangel' ),
+                        'sanitize_callback' => 'sanitize_text_field',
+                )
+        );
+        $wp_customize->add_control(
+                'tka_trending_title',
+                array(
+                        'label'   => __( 'عنوان سکشن ترندترین‌ها', 'toykindangel' ),
+                        'section' => 'tka_homepage',
+                        'type'    => 'text',
+                )
+        );
+
+        $wp_customize->add_setting(
+                'tka_age_parent',
+                array(
+                        'default'           => 0,
+                        'sanitize_callback' => $tka_cat_sanitize,
+                )
+        );
+        $wp_customize->add_control(
+                'tka_age_parent',
+                array(
+                        'label'       => __( 'دستهٔ مادر «خرید بر اساس سن»', 'toykindangel' ),
+                        'description' => __( 'دستهٔ مادر را بسازید و زیردسته‌های سنی (تا یکسال، یک تا سه سال و…) را داخلش قرار دهید؛ سکشن صفحهٔ اول از زیردسته‌های همین دسته پر می‌شود.', 'toykindangel' ),
+                        'section'     => 'tka_homepage',
+                        'type'        => 'select',
+                        'choices'     => toykindangel_cat_choices(),
+                )
+        );
+
+        $wp_customize->add_setting(
+                'tka_age_title',
+                array(
+                        'default'           => __( 'خرید بر اساس سن', 'toykindangel' ),
+                        'sanitize_callback' => 'sanitize_text_field',
+                )
+        );
+        $wp_customize->add_control(
+                'tka_age_title',
+                array(
+                        'label'   => __( 'عنوان سکشن خرید بر اساس سن', 'toykindangel' ),
+                        'section' => 'tka_homepage',
+                        'type'    => 'text',
+                )
+        );
+
+        $wp_customize->add_setting(
+                'tka_age_style',
+                array(
+                        'default'           => 'tiles',
+                        'sanitize_callback' => static function ( $value ) {
+                                return in_array( $value, array( 'tiles', 'circles', 'chips' ), true ) ? $value : 'tiles';
+                        },
+                )
+        );
+        $wp_customize->add_control(
+                'tka_age_style',
+                array(
+                        'label'   => __( 'ظاهر آیتم‌های خرید بر اساس سن', 'toykindangel' ),
+                        'section' => 'tka_homepage',
+                        'type'    => 'select',
+                        'choices' => array(
+                                'tiles'   => __( 'کاشی تصویردار — مثل دسته‌بندی‌های فروشگاه', 'toykindangel' ),
+                                'circles' => __( 'دایره‌ای — مثل استوری‌ها', 'toykindangel' ),
+                                'chips'   => __( 'قرص متنی — جمع‌وجور', 'toykindangel' ),
+                        ),
+                )
+        );
+
         // ---------- Section: Product page (PDP) ----------
         $wp_customize->add_section(
                 'tka_pdp',
@@ -414,3 +519,46 @@ function toykindangel_customizer_css() {
         echo "</style>\n";
 }
 add_action( 'wp_head', 'toykindangel_customizer_css', 100 );
+
+/**
+ * v0.27.0 — فهرست انتخابی دسته‌های محصولات برای دراپ‌داون‌های سفارشی‌سازی.
+ *
+ * دسته‌های سطح اول (parent=0) بدون «دسته‌بندی نشده»؛ برای دو تنظیم
+ * «دستهٔ ترندترین‌ها» و «دستهٔ مادر خرید بر اساس سن» استفاده می‌شود.
+ * کش‌شده در ترنزینت؛ با تغییر دسته‌ها (inc/cache.php) پاک می‌شود.
+ *
+ * @return array<int,string> term_id => name
+ */
+function toykindangel_cat_choices() {
+        static $tka_local = null;
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = toykindangel_cache_get( 'customizer_cat_choices' );
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = array( 0 => __( '— انتخاب دسته —', 'toykindangel' ) );
+
+        if ( taxonomy_exists( 'product_cat' ) ) {
+                $tka_terms = get_terms(
+                        array(
+                                'taxonomy'   => 'product_cat',
+                                'parent'     => 0,
+                                'hide_empty' => false,
+                                'number'     => 60,
+                                'exclude'    => array( (int) get_option( 'default_product_cat', 0 ) ),
+                        )
+                );
+                if ( ! is_wp_error( $tka_terms ) ) {
+                        foreach ( $tka_terms as $tka_term ) {
+                                $tka_local[ (int) $tka_term->term_id ] = $tka_term->name;
+                        }
+                }
+        }
+
+        toykindangel_cache_set( 'customizer_cat_choices', $tka_local, 12 * HOUR_IN_SECONDS );
+        return $tka_local;
+}

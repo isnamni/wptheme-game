@@ -77,6 +77,9 @@ function toykindangel_cache_flush_term_data() {
 	delete_transient( 'tka_cache_home_stories' );
 	delete_transient( 'tka_cache_home_brands' );
 	delete_transient( 'tka_cache_home_catgrid' );
+	delete_transient( 'tka_cache_home_trending' ); /* v0.27.0: ریل ترند بر اساس دسته است */
+	delete_transient( 'tka_cache_home_agegrid' );  /* v0.27.0: سکشن خرید بر اساس سن */
+	delete_transient( 'tka_cache_customizer_cat_choices' ); /* v0.27.0: دراپ‌داون سفارشی‌سازی */
 	delete_transient( 'tka_cache_cats_page_grid' );
 	delete_transient( 'tka_cache_cats_page_popular' );
 	delete_transient( 'tka_cache_drawer_menu' );
@@ -84,6 +87,9 @@ function toykindangel_cache_flush_term_data() {
 	unset( $GLOBALS['tka_cache_local']['tka_cache_home_stories'] );
 	unset( $GLOBALS['tka_cache_local']['tka_cache_home_brands'] );
 	unset( $GLOBALS['tka_cache_local']['tka_cache_home_catgrid'] );
+	unset( $GLOBALS['tka_cache_local']['tka_cache_home_trending'] );
+	unset( $GLOBALS['tka_cache_local']['tka_cache_home_agegrid'] );
+	unset( $GLOBALS['tka_cache_local']['tka_cache_customizer_cat_choices'] );
 	unset( $GLOBALS['tka_cache_local']['tka_cache_cats_page_grid'] );
 	unset( $GLOBALS['tka_cache_local']['tka_cache_cats_page_popular'] );
 	unset( $GLOBALS['tka_cache_local']['tka_cache_drawer_menu'] );
@@ -96,7 +102,9 @@ function toykindangel_cache_flush_term_data() {
  */
 function toykindangel_cache_flush_product_data() {
 	delete_transient( 'tka_cache_price_diff_ids' );
+	delete_transient( 'tka_cache_home_trending' ); /* v0.27.0: موجودی/حذف محصول در ریل ترند */
 	unset( $GLOBALS['tka_cache_local']['tka_cache_price_diff_ids'] );
+	unset( $GLOBALS['tka_cache_local']['tka_cache_home_trending'] );
 }
 
 /**

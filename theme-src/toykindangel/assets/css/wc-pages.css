@@ -289,47 +289,88 @@
         background:var(--gray-50);padding:10px 14px;font-size:var(--fs-xs);color:var(--gray-700);
         border-top:1px solid var(--gray-200);
 }
-/* v0.26.0 — روش‌های ارسال به‌صورت کارت (هم‌سبک با درگاه‌های پرداخت).
+/* v0.27.0 — روش‌های ارسال به‌صورت کارت (هم‌سبک با درگاه‌های پرداخت).
  * بازخورد مشتری: بخش «ارسال» در سبد/تسویه کاملاً به‌هم‌ریخته بود؛
  * هر نحوهٔ ارسال حالا یک کارت مثل کارت‌های درگاه پرداخت دارد.
- * (کارت‌ها در هر دو صفحه سبد خرید و تسویه اعمال می‌شود.) */
-#order_review tr.woocommerce-shipping-totals,
-.cart_totals tr.woocommerce-shipping-totals,
-.tka-totals__shipping tr.woocommerce-shipping-totals{display:block}
-#order_review tr.woocommerce-shipping-totals th,
-.cart_totals tr.woocommerce-shipping-totals th,
-.tka-totals__shipping tr.woocommerce-shipping-totals th{
+ *
+ * نکتهٔ فنی مهم: در «سبد خرید» ردیف ارسال خارج از جدول رندر می‌شود
+ * (.tka-totals__shipping) پس بلاک‌کردنش بی‌خطر است؛ اما در «تسویه»
+ * همان ردیف داخل جدول واقعی #order_review است و بلاک‌کردن tr داخل
+ * جدول، عرض ردیف را به عرض ستون اول جدول (حدود نصف کارت) می‌فشارد —
+ * دقیقاً باگ گزارش‌شدهٔ نسخهٔ قبل. راه‌حل: کل جدول «سفارش شما» در همهٔ
+ * عرض‌ها پشته‌ای-فلکس می‌شود (همان ظاهر خلاصه‌حساب مرجع) و فقط ردیف
+ * ارسال به‌صورت عنوان + کارت‌های تمام‌عرض زیر آن نمایش داده می‌شود. */
+.tka-totals__shipping tr.woocommerce-shipping-totals,
+.cart_totals tr.woocommerce-shipping-totals{display:block}
+.tka-totals__shipping tr.woocommerce-shipping-totals th,
+.cart_totals tr.woocommerce-shipping-totals th{
         display:block;width:100%;box-sizing:border-box;
         text-align:right;font-size:var(--fs-xs);font-weight:700;color:var(--gray-700);
         border-bottom:0 !important;padding:2px 0 6px !important;
 }
-#order_review tr.woocommerce-shipping-totals td,
+.tka-totals__shipping tr.woocommerce-shipping-totals td,
 .cart_totals tr.woocommerce-shipping-totals td{
         display:block;width:100%;box-sizing:border-box;
         border-bottom:0 !important;
+}
+/* جدول «سفارش شما» — پشته‌ای-فلکس (موبایل و دسکتاپ) */
+#order_review .woocommerce-checkout-review-order-table{
+        display:block;width:100%;border:0;background:none;
+        border-collapse:separate;border-spacing:0;
+}
+#order_review .woocommerce-checkout-review-order-table thead{display:none}
+#order_review .woocommerce-checkout-review-order-table tbody,
+#order_review .woocommerce-checkout-review-order-table tfoot{display:block;width:100%}
+#order_review .woocommerce-checkout-review-order-table tr{
+        display:flex;align-items:baseline;justify-content:space-between;gap:12px;width:100%;
+}
+#order_review .woocommerce-checkout-review-order-table th,
+#order_review .woocommerce-checkout-review-order-table td{
+        display:block;width:auto;box-sizing:border-box;text-align:right;background:none;
+}
+#order_review .woocommerce-checkout-review-order-table th{flex:1 1 auto;font-size:var(--fs-sm);font-weight:700;color:var(--gray-700)}
+#order_review .woocommerce-checkout-review-order-table td{flex:0 1 auto;text-align:left;font-weight:800;color:var(--gray-900)}
+#order_review .woocommerce-checkout-review-order-table .product-name{flex:1 1 auto;min-width:0}
+#order_review .woocommerce-checkout-review-order-table .product-total{flex:0 0 auto;white-space:nowrap}
+/* ردیف ارسال: عنوان بالای کارت‌ها + کارت‌های تمام‌عرض */
+#order_review .woocommerce-checkout-review-order-table tr.woocommerce-shipping-totals{
+        display:block;align-items:stretch;
+}
+#order_review .woocommerce-checkout-review-order-table tr.woocommerce-shipping-totals th{
+        width:100%;box-sizing:border-box;
+        font-size:var(--fs-xs);font-weight:700;color:var(--gray-700);
+        border-bottom:0 !important;padding:2px 0 6px !important;
+}
+#order_review .woocommerce-checkout-review-order-table tr.woocommerce-shipping-totals td{
+        width:100%;box-sizing:border-box;text-align:right;
+        border-bottom:0 !important;padding:0 !important;
 }
 #shipping_method,
 .woocommerce-shipping-methods{
         list-style:none;margin:0;padding:0;
 }
+/* v0.27.0: خودِ li کانتینر فلکس است تا رادیو و متن/مبلغ در «یک خط»
+ * بنشینند (قبلاً رادیو یک ردیف و لیبل ردیف بعد بود). */
 #shipping_method li,
 .woocommerce-shipping-methods li{
+        display:flex;align-items:center;gap:9px;
         border:1px solid var(--gray-200);border-radius:var(--r-xl);
-        margin:0 0 8px;padding:0;overflow:hidden;background:var(--white);
+        margin:0 0 8px;padding:12px 14px;overflow:hidden;background:var(--white);
         transition:border-color .15s ease,box-shadow .15s ease;
 }
 #shipping_method li:hover,
 .woocommerce-shipping-methods li:hover{border-color:var(--gray-400)}
 #shipping_method li label,
 .woocommerce-shipping-methods li label{
-        display:flex;align-items:flex-start;gap:8px;
-        padding:11px 14px;margin:0;
-        font-size:var(--fs-sm);font-weight:700;line-height:1.9;
+        flex:1 1 auto;min-width:0;
+        display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;
+        padding:0;margin:0;
+        font-size:var(--fs-sm);font-weight:700;line-height:1.8;
         color:var(--gray-900);cursor:pointer;
 }
 #shipping_method li input[type=radio],
 .woocommerce-shipping-methods li input[type=radio]{
-        accent-color:var(--primary);flex:none;width:16px;height:16px;margin-top:8px;
+        accent-color:var(--primary);flex:none;width:17px;height:17px;margin:0;
 }
 #shipping_method li .amount,
 .woocommerce-shipping-methods li .amount{white-space:nowrap;font-weight:800}
@@ -820,19 +861,19 @@ body.woocommerce-view-order .woocommerce table.shop_table tfoot .order-total td{
 body.woocommerce-view-order .woocommerce table.shop_table tr:last-child td,
 body.woocommerce-view-order .woocommerce table.shop_table tr:last-child th{border-bottom:0}
 
-/* TKA fix (5) [P2]: نوار چسبان ثبت سفارش در موبایل — بالای bottomnav
-   (z-index:70 ، ارتفاع 56px) می‌نشیند و با آن هم‌پوشانی ندارد؛
-   padding-bottom هم محتوای انتهای فرم را قابل‌دسترس نگه می‌دارد */
+/* TKA fix (5) [P2] — v0.27.0 (نیاز ۶): نوار «ثبت سفارش + شرایط و قوانین»
+ * در موبایل دیگر ثابت (sticky) نیست؛ بازخورد مشتری بود که با اسکرول
+ * روی محتوا می‌نشیند. حالا در جریان عادی صفحه رندر می‌شود (استایل
+ * کارتی ملایم حفظ شده) و فقط padding صفحه برای منوی پایین موبایل
+ * کنار گذاشته می‌شود. */
 @media (max-width:767.98px){
-        .tka-co{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+        .tka-co{padding-bottom:calc(56px + env(safe-area-inset-bottom,0px))}
         .woocommerce .tka-co__form .form-row.place-order{
-                position:sticky;bottom:calc(56px + env(safe-area-inset-bottom,0px));
-                z-index:80;clear:both;
+                position:static;clear:both;
                 margin:10px 0 0;padding:10px;
-                background:rgba(255,255,255,.97);
-                -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+                background:var(--gray-50);
                 border:1px solid var(--gray-200);border-radius:var(--r-xl);
-                box-shadow:0 -6px 20px rgba(0,0,0,.08);
+                box-shadow:none;
         }
 }
 

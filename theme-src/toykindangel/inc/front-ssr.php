@@ -91,10 +91,14 @@ function toykindangel_ssr_stories() {
                 $tka_html .= '<span class="story__label">' . esc_html( $tka_s['name'] ) . '</span></a>';
         }
 
-        /* «همه دسته‌ها» closing card — same as app.js. */
-        $tka_html .= '<a class="story" href="' . esc_url( toykindangel_categories_url() ) . '">';
-        $tka_html .= '<span class="story__img" style="display:grid;place-items:center;background:var(--primary-light);color:var(--primary)"><svg class="ic" style="font-size:34px" aria-hidden="true"><use href="#i-grid"></use></svg></span>';
-        $tka_html .= '<span class="story__label">' . esc_html__( 'همه دسته‌ها', 'toykindangel' ) . '</span></a>';
+        /* «همه دسته‌ها» closing card — same as app.js.
+         * v0.27.0 (نیاز ۴): به‌جای آیکن تنها، تصویر کوچک اختصاصی قالب
+         * (assets/img/all-categories.png) نشان داده می‌شود — هم‌شکل بقیهٔ
+         * استوری‌ها که تصویرشان از وردپرس خوانده می‌شود. */
+        $tka_allcats = TOYKINDANGEL_URI . '/assets/img/all-categories.png';
+        $tka_html   .= '<a class="story" href="' . esc_url( toykindangel_categories_url() ) . '">';
+        $tka_html   .= '<span class="story__img story__img--allcats"><img src="' . esc_url( $tka_allcats ) . '" alt="' . esc_attr__( 'همه دسته‌ها', 'toykindangel' ) . '" width="104" height="104" loading="lazy" decoding="async" onerror="this.remove()"></span>';
+        $tka_html   .= '<span class="story__label">' . esc_html__( 'همه دسته‌ها', 'toykindangel' ) . '</span></a>';
 
         return $tka_html;
 }
@@ -434,6 +438,79 @@ function toykindangel_ssr_categories_tree() {
         $tka_html  = '<div class="cpage cthub-cpage">';
         $tka_html .= '<aside class="crail" id="catRail" aria-label="' . esc_attr__( 'دسته‌های اصلی', 'toykindangel' ) . '">' . $tka_rail_html . '</aside>';
         $tka_html .= '<div class="cpanel" id="catPanel" aria-label="' . esc_attr__( 'زیردسته‌ها', 'toykindangel' ) . '">' . $tka_panels_html . '</div>';
+        $tka_html .= '</div>';
+
+        return $tka_html;
+}
+
+/**
+ * v0.27.0 — سکشن «خرید بر اساس سن» (نیاز ۳).
+ *
+ * دقیقاً همان ساختار و مارک‌آپ سکشن «دسته‌بندی‌های فروشگاه»
+ * (toykindangel_ssr_catgrid) است؛ فقط دادهٔ آن از زیردسته‌های دستهٔ
+ * مادری می‌آید که مدیر در سفارشی‌سازی انتخاب کرده است (tka_age_parent).
+ *
+ * سه ظاهر از سفارشی‌سازی انتخاب‌پذیر است (tka_age_style):
+ *   - tiles   : کاشی مربعی — دقیقاً مثل «دسته‌بندی‌های فروشگاه»
+ *   - circles : دایره‌ای استوری‌مانند
+ *   - chips   : قرص‌های متنی جمع‌وجور
+ *
+ * @return string HTML (empty when unset/empty).
+ */
+function toykindangel_ssr_agegrid() {
+        $tka_items = toykindangel_age_children();
+        if ( empty( $tka_items ) ) {
+                return '';
+        }
+
+        $tka_style = (string) get_theme_mod( 'tka_age_style', 'tiles' );
+        if ( ! in_array( $tka_style, array( 'tiles', 'circles', 'chips' ), true ) ) {
+                $tka_style = 'tiles';
+        }
+
+        $tka_html = '';
+
+        if ( 'chips' === $tka_style ) {
+                $tka_html .= '<div class="tka-agegrid tka-agegrid--chips">';
+                foreach ( $tka_items as $tka_cat ) {
+                        $tka_html .= '<a class="tka-agegrid__chip" href="' . esc_url( $tka_cat['href'] ) . '">' . esc_html( $tka_cat['name'] ) . '</a>';
+                }
+                $tka_html .= '</div>';
+                return $tka_html;
+        }
+
+        if ( 'circles' === $tka_style ) {
+                $tka_html .= '<div class="tka-agegrid tka-agegrid--circles">';
+                foreach ( $tka_items as $tka_cat ) {
+                        $tka_html .= '<a class="tka-agegrid__circle" href="' . esc_url( $tka_cat['href'] ) . '">';
+                        $tka_html .= '<span class="tka-agegrid__img">';
+                        if ( $tka_cat['img'] ) {
+                                $tka_html .= '<img src="' . esc_url( $tka_cat['img'] ) . '" alt="' . esc_attr( $tka_cat['name'] ) . '" loading="lazy" decoding="async">';
+                        } else {
+                                $tka_html .= '<svg class="ic" aria-hidden="true"><use href="#i-gift"></use></svg>';
+                        }
+                        $tka_html .= '</span>';
+                        $tka_html .= '<span class="tka-agegrid__label">' . esc_html( $tka_cat['name'] ) . '</span>';
+                        $tka_html .= '</a>';
+                }
+                $tka_html .= '</div>';
+                return $tka_html;
+        }
+
+        /* tiles — همان مارک‌آپ tka-catgrid (کپی ۱:۱). */
+        $tka_html .= '<div class="tka-catgrid tka-agegrid tka-agegrid--tiles">';
+        foreach ( $tka_items as $tka_cat ) {
+                $tka_html .= '<a class="tka-catgrid__item" href="' . esc_url( $tka_cat['href'] ) . '">';
+                $tka_html .= '<span class="tka-catgrid__img">';
+                if ( $tka_cat['img'] ) {
+                        $tka_html .= '<img src="' . esc_url( $tka_cat['img'] ) . '" alt="' . esc_attr( $tka_cat['name'] ) . '" loading="lazy" decoding="async">';
+                } else {
+                        $tka_html .= '<svg class="ic" aria-hidden="true"><use href="#i-gift"></use></svg>';
+                }
+                $tka_html .= '</span>';
+                $tka_html .= '<span class="tka-catgrid__label">' . esc_html( $tka_cat['name'] ) . '</span>';
+                $tka_html .= '</a>';
+        }
         $tka_html .= '</div>';
 
         return $tka_html;

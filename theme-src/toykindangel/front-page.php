@@ -126,6 +126,25 @@ else :
         </section>
         <?php endif; ?>
 
+        <!-- ترندترین‌ها — v0.27.0 (نیاز ۲): ریل مبتنی بر دستهٔ انتخابی در سفارشی‌سازی -->
+        <?php if ( get_theme_mod( 'tka_show_trending', true ) && toykindangel_trending_products() ) : ?>
+        <section class="section tka-trending-sec">
+                <div class="section__head">
+                        <span class="section__title">
+                                <svg class="ic" aria-hidden="true"><use href="#i-flash"></use></svg>
+                                <?php echo esc_html( get_theme_mod( 'tka_trending_title', __( 'ترندترین محصولات', 'toykindangel' ) ) ); ?>
+                        </span>
+                        <?php
+                        $tka_trending_term = get_term( (int) get_theme_mod( 'tka_trending_cat', 0 ), 'product_cat' );
+                        if ( $tka_trending_term instanceof WP_Term && ! is_wp_error( $tka_trending_term ) ) :
+                                ?>
+                                <a class="section__more" href="<?php echo esc_url( get_term_link( $tka_trending_term ) ); ?>"><?php esc_html_e( 'همه', 'toykindangel' ); ?> <svg class="ic" aria-hidden="true"><use href="#i-chev-left"></use></svg></a>
+                        <?php endif; ?>
+                </div>
+                <div class="plist__track" id="trendingTrack"><?php echo toykindangel_ssr_rail( toykindangel_trending_products() ); // phpcs:ignore WordPress.Security.EscapeOutput -- pcard markup ?></div>
+        </section>
+        <?php endif; ?>
+
         <!-- پرفروش‌ترین‌ها -->
         <?php if ( get_theme_mod( 'tka_show_best', true ) && toykindangel_ssr_products()['best'] ) : ?>
         <section class="section">
@@ -186,6 +205,23 @@ else :
                         </div>
                 </section>
         <?php endif; ?>
+
+                <!-- خرید بر اساس سن — v0.27.0 (نیاز ۳): دقیقاً با ساختار سکشن دسته‌بندی‌ها،
+                     بر اساس زیردسته‌های دستهٔ مادری که در سفارشی‌سازی انتخاب می‌شود -->
+                <?php
+                $tka_agegrid = ( get_theme_mod( 'tka_show_age', true ) ) ? toykindangel_ssr_agegrid() : '';
+                if ( $tka_agegrid ) :
+                        ?>
+                        <section class="section tka-agegrid-sec" aria-label="<?php echo esc_attr( get_theme_mod( 'tka_age_title', __( 'خرید بر اساس سن', 'toykindangel' ) ) ); ?>">
+                                <div class="section__head">
+                                        <span class="section__title">
+                                                <svg class="ic" aria-hidden="true"><use href="#i-gift"></use></svg>
+                                                <?php echo esc_html( get_theme_mod( 'tka_age_title', __( 'خرید بر اساس سن', 'toykindangel' ) ) ); ?>
+                                        </span>
+                                </div>
+                                <?php echo $tka_agegrid; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built with esc_url()/esc_html() ?>
+                        </section>
+                <?php endif; ?>
 
         <!-- مزایا -->
         <?php if ( get_theme_mod( 'tka_show_usps', true ) ) : ?>

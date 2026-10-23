@@ -167,59 +167,36 @@ if ( ! array_key_exists( $tka_sort, $tka_sorts ) ) {
                                         <?php else : ?>
 
                                                 <?php
-                                                /* حالت پیش‌فرض: تا وقتی مدیر ویجتی در «فروشگاه (سایدبار)» نچیده. */
-                                                if ( class_exists( 'WC_Widget_Layered_Nav_Filters' ) ) {
+                                                /* حالت پیش‌فرض: تا وقتی مدیر ویجتی در «فروشگاه (سایدبار)» نچیده،
+                                                 * v0.27.0 (نیاز ۷): ویجت حرفه‌ای فیلتر محصولات قالب به‌عنوان
+                                                 * پیش‌فرض رندر می‌شود (قیمت/موجودی/تخفیف/برند/دسته/ویژگی‌ها). */
+                                                if ( class_exists( 'TKA_Product_Filters_Widget' ) ) {
                                                         the_widget(
-                                                                'WC_Widget_Layered_Nav_Filters',
-                                                                array( 'title' => __( 'فیلترهای فعال', 'toykindangel' ) ),
-                                                                array( 'widget_id' => 'tka-flt-active' )
-                                                        );
-                                                }
-                                                if ( class_exists( 'WC_Widget_Product_Categories' ) ) {
-                                                        the_widget(
-                                                                'WC_Widget_Product_Categories',
+                                                                'TKA_Product_Filters_Widget',
                                                                 array(
-                                                                        'title'        => __( 'دسته‌بندی محصولات', 'toykindangel' ),
-                                                                        'orderby'      => 'name',
-                                                                        'count'        => 1,
-                                                                        'hierarchical' => 1,
-                                                                        'hide_empty'   => 0,
+                                                                        'title'          => __( 'فیلتر محصولات', 'toykindangel' ),
+                                                                        'show_price'     => 1,
+                                                                        'show_stock_sale' => 1,
+                                                                        'show_brands'    => 1,
+                                                                        'show_cats'      => 1,
+                                                                        'show_attrs'     => 1,
+                                                                        'show_counts'    => 1,
+                                                                        'brands_max'     => 15,
+                                                                        'attrs_max'      => 4,
                                                                 ),
-                                                                array( 'widget_id' => 'tka-flt-cats' )
+                                                                array(
+                                                                        'widget_id'     => 'tka-pfilter-default',
+                                                                        'before_widget' => '<section id="%1$s" class="widget tka-card tka-pfilter-widget %2$s">',
+                                                                        'after_widget'  => '</section>',
+                                                                        'before_title'  => '',
+                                                                        'after_title'   => '',
+                                                                )
                                                         );
                                                 }
-                                                if ( class_exists( 'WC_Widget_Price_Filter' ) ) {
-                                                        the_widget(
-                                                                'WC_Widget_Price_Filter',
-                                                                array( 'title' => __( 'محدوده قیمت', 'toykindangel' ) ),
-                                                                array( 'widget_id' => 'tka-flt-price' )
-                                                        );
-                                                }
-
-                                                /* برندها — تکسونومی اختصاصی قالب. */
-                                                $tka_brands = get_terms(
-                                                        array(
-                                                                'taxonomy'   => 'tka_brand',
-                                                                'hide_empty' => false,
-                                                                'number'     => 30,
-                                                        )
-                                                );
-                                                if ( ! is_wp_error( $tka_brands ) && ! empty( $tka_brands ) ) :
-                                                        ?>
-                                                        <section class="widget tka-flt-brands">
-                                                                <h2 class="widgettitle"><?php esc_html_e( 'برندها', 'toykindangel' ); ?></h2>
-                                                                <ul class="tka-flt-brands__list">
-                                                                        <?php foreach ( $tka_brands as $tka_brand ) : ?>
-                                                                                <li>
-                                                                                        <a href="<?php echo esc_url( get_term_link( $tka_brand ) ); ?>">
-                                                                                                <span class="tka-flt-brands__name"><?php echo esc_html( $tka_brand->name ); ?></span>
-                                                                                                <span class="num tka-flt-brands__count"><?php echo esc_html( function_exists( 'toykindangel_fmt' ) ? toykindangel_fmt( (int) $tka_brand->count ) : (string) (int) $tka_brand->count ); ?></span>
-                                                                                        </a>
-                                                                                </li>
-                                                                        <?php endforeach; ?>
-                                                                </ul>
-                                                        </section>
-                                                <?php endif; ?>
+                                                /* v0.27.0: بلوک قدیمی برندها حذف شد — بخش «برند» خودِ ویجت
+                                                 * حرفه‌ای (شامل product_brand هسته و tka_brand قالب) جایگزین
+                                                 * آن است تا لیست برندها دوبار نمایش داده نشود. */
+                                                ?>
 
                                         <?php endif; ?>
                                 </div>
