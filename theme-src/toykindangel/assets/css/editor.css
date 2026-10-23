@@ -1,0 +1,27 @@
+/* ToyKind Angel — editor stylesheet (keeps the block editor visually consistent) */
+
+body {
+	font-family: 'Vazirmatn', 'IRANSans', Tahoma, sans-serif;
+	color: #1f2937;
+	line-height: 1.8;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-weight: 800;
+	line-height: 1.5;
+}
+
+blockquote {
+	border-right: 4px solid #f97316;
+	padding: 12px 20px;
+	background: #fdf6ee;
+	border-radius: 10px;
+}
+
+a {
+	color: #f97316;
+}
+
+figure.wp-block-image img {
+	border-radius: 16px;
+}

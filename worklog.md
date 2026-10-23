@@ -172,3 +172,24 @@ Work Log:
 
 Stage Summary:
 - نسخهٔ نهایی 0.26.0 آماده نصب؛ کار سمت مشتری: نصب ZIP + پاک‌کردن کش + واردکردن آدرس واقعی شبکه‌های اجتماعی در سفارشی‌سازی
+
+---
+Task ID: 11
+Agent: main (Z.ai Code)
+Task: novak-ui-fixes.css v2.3.0 — مینی‌کارت، تب‌های عمودی دسته‌ها، ۳ باکس موبایل PDP، استایل بخش‌های PDP
+
+Work Log:
+- درخواست کاربر: به‌روزرسانی «همان فایل» v2.2.0 بدون حذف چیزی + ۴ آیتم جدید؛ خروجی برای Paste در Customizer
+- مرورگر زنده در دسترس نبود (toykindangel.com از sandbox: timeout در curl/مرورگر/allorigins) → کلاس‌ها از سورس تم v0.26.0 محلی استخراج شد (همان نسخه نصب‌شده)
+- کاوش سورس: inc/minicart.php (cta/ghost)، inc/cat-drawer.php + demo.css (crail__item 92px، آیکن 40px)، responsive.css (دراور دسکتاپ min-height:60px)، woocommerce/single-product.php (sellerbox/shipmethods/usps با margin-top:20px inline، pdp-sec/pdp-specs/tka-related)
+- کشف باگ اضافی: content:"?" در جداکننده مراحل سبد = mojibake «←» — به «←» اصلاح و افشا شد
+- قید دقت: فایل v2.2.0 خط‌به‌خط حفظ؛ diff خودکار فقط ۲ تغییر مجاز نشان داد (نسخه 2.2.0→2.3.0 + content fix) + بخش الحاقی
+- FIX A: مخفی‌سازی تسویه حساب مینی‌کارت با اسکوپ .tka-minicart__actions (دکمه «رفتن به فروشگاه» حالت خالی سالم ماند) + دکمه «مشاهده سبد» بنفش اصلی با هاور
+- FIX B: crail__item 92→64px، آیکن 40→24px (موبایل + صفحه دسته‌ها ≥1024: .cpage 64px/26px)، دراور دسکتاپ ردیف 60→44px/آیکن 24px
+- FIX C: موبایل PDP — sellerbox/shipmethods فشرده (بدون سایه، بوردر نرم، فونت 11.5) + usps در body.single-product یک ردیف ۳ستونه باریک (خانه دست‌نخورده ۲ستونه می‌ماند؛ inline margin-top:20px با !important شکسته شد)
+- FIX D: کارت یکدست بخش‌های PDP — pdp-sec__card بوردر/سایه نرم، هدر با خط نقطه‌چین + آیکن چیپ صورتی، جدول مشخصات ردیف‌های قرصی (th صورتی radius راست-RTL، td خاکستری radius چپ)، جداکننده فرم دیدگاه، tka-related کارت‌شده (موبایل inset با --pad، دسکتاپ max-width:1320 وسط‌چین) با پدینگ ترک تکراری اسلایدر
+- اعتبارسنجی: postcss parse OK (180 rule، 18 media) + بالانس براکت 198/198 + diff ساختاری + خروجی در روت و public/
+
+Stage Summary:
+- novak-ui-fixes.css (v2.3.0، 1261 خط، 36KB) در روت و public/ — آماده Paste در Additional CSS؛ پس از تأیید کاربر باید به custom.css قالب منتقل شود
+- نکته شبکه: راستی‌آزمایی مرورگری روی سایت زنده این جلسه ممکن نشد (بلاک بودن خروجی)؛ سلتورها مستقیماً از سورس تم نصب‌شده استخراج شده‌اند

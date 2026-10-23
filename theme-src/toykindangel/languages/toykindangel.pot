@@ -1,0 +1,1847 @@
+# Copyright (C) 2026 ToyKind Angel Dev Team
+# This file is distributed under the GNU General Public License v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: ToyKind Angel 0.16.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/theme/toykindangel\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-09-28T05:27:53+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: toykindangel\n"
+
+#. Theme Name of the theme
+#: style.css
+msgid "ToyKind Angel"
+msgstr ""
+
+#. Theme URI of the theme
+#. Author URI of the theme
+#: style.css
+msgid "https://toykindangel.com"
+msgstr ""
+
+#. Description of the theme
+#: style.css
+msgid "قالب فروشگاهی وردپرس/ووکامرس فارسی اسباب‌بازی «فرشته مهربون» — تبدیل ۱۰۰٪ مطابق دمو، RTL کامل، فونت وزیرمتن، سئو و سرعت بهینه. Persian toy-shop WooCommerce theme converted 1:1 from the ToyKind Angel mobile demo."
+msgstr ""
+
+#. Author of the theme
+#: style.css
+msgid "ToyKind Angel Dev Team"
+msgstr ""
+
+#: 404.php:17
+msgid "صفحه پیدا نشد!"
+msgstr ""
+
+#: 404.php:18
+msgid "به نظر می‌رسد این صفحه گم شده، مثل یک اسباب‌بازی زیر تخت! از جستجو استفاده کنید یا به صفحه اصلی برگردید."
+msgstr ""
+
+#: 404.php:22
+msgid "بازگشت به فروشگاه"
+msgstr ""
+
+#: archive.php:35
+#: inc/wc-hooks.php:208
+#: index.php:50
+#: page-blog.php:97
+#: search.php:158
+#: woocommerce/myaccount/orders.php:128
+msgid "قبلی"
+msgstr ""
+
+#: archive.php:36
+#: inc/wc-hooks.php:209
+#: index.php:51
+#: page-blog.php:98
+#: search.php:159
+#: woocommerce/myaccount/orders.php:132
+msgid "بعدی"
+msgstr ""
+
+#: archive.php:37
+#: index.php:52
+msgid "صفحه‌بندی نوشته‌ها"
+msgstr ""
+
+#: archive.php:44
+msgid "چیزی پیدا نشد"
+msgstr ""
+
+#: archive.php:45
+msgid "برای این بخش هنوز محتوایی ثبت نشده است."
+msgstr ""
+
+#. translators: %s: comments count
+#: comments.php:23
+#: woocommerce/single-product.php:515
+#, php-format
+msgid "%s دیدگاه"
+msgid_plural "%s دیدگاه"
+msgstr[0] ""
+msgstr[1] ""
+
+#: comments.php:44
+msgid "دیدگاه‌های قبلی"
+msgstr ""
+
+#: comments.php:45
+msgid "دیدگاه‌های بعدی"
+msgstr ""
+
+#: comments.php:52
+msgid "امکان ارسال دیدگاه برای این مطلب بسته شده است."
+msgstr ""
+
+#: comments.php:58
+msgid "دیدگاه خود را بنویسید"
+msgstr ""
+
+#: comments.php:59
+msgid "ارسال دیدگاه"
+msgstr ""
+
+#: comments.php:61
+msgid "دیدگاه *"
+msgstr ""
+
+#: footer-bare.php:21
+#: footer.php:116
+msgid "ناوبری اصلی"
+msgstr ""
+
+#: footer-bare.php:23
+#: footer.php:118
+#: inc/seo-schema.php:106
+msgid "فروشگاه"
+msgstr ""
+
+#: footer-bare.php:26
+#: footer.php:121
+#: front-page.php:79
+#: functions.php:307
+#: header.php:69
+#: inc/cat-drawer.php:36
+#: inc/cat-drawer.php:402
+#: inc/cat-drawer.php:404
+msgid "دسته‌بندی‌ها"
+msgstr ""
+
+#: footer-bare.php:29
+#: footer.php:124
+#: functions.php:308
+#: header.php:56
+#: inc/cat-drawer.php:37
+#: inc/minicart.php:104
+#: inc/minicart.php:108
+#: inc/wc-pages-fix.php:37
+#: woocommerce/cart/cart.php:27
+#: woocommerce/checkout/form-checkout.php:42
+#: woocommerce/single-product.php:244
+msgid "سبد خرید"
+msgstr ""
+
+#: footer-bare.php:32
+#: footer.php:127
+msgid "ورود و عضویت"
+msgstr ""
+
+#: footer.php:19
+msgid "راهنمای خرید"
+msgstr ""
+
+#: footer.php:33
+msgid "نحوه ثبت سفارش"
+msgstr ""
+
+#: footer.php:34
+msgid "رویه‌های ارسال"
+msgstr ""
+
+#: footer.php:35
+msgid "روش‌های پرداخت"
+msgstr ""
+
+#: footer.php:36
+msgid "شرایط مرجوعی"
+msgstr ""
+
+#: footer.php:41
+msgid "خدمات مشتریان"
+msgstr ""
+
+#: footer.php:55
+msgid "پرسش‌های متداول"
+msgstr ""
+
+#: footer.php:56
+msgid "تماس با ما"
+msgstr ""
+
+#: footer.php:57
+msgid "پیگیری سفارش"
+msgstr ""
+
+#: footer.php:58
+msgid "قوانین و مقررات"
+msgstr ""
+
+#: footer.php:65
+msgid "اطلاعات تماس"
+msgstr ""
+
+#: footer.php:69
+msgid "مشهد، امامت ۴۲، فروشگاه فرشته مهربون"
+msgstr ""
+
+#: footer.php:73
+msgid "۰۹۱۵۲۰۰۶۶۳۰"
+msgstr ""
+
+#: footer.php:77
+msgid "info@toykindangel.com"
+msgstr ""
+
+#: footer.php:81
+msgid "هر روز از ۹ صبح تا ۱۲ بامداد"
+msgstr ""
+
+#: footer.php:86
+msgid "همراه شوید"
+msgstr ""
+
+#: footer.php:90
+msgid "اینستاگرام"
+msgstr ""
+
+#: footer.php:90
+msgid "https://instagram.com/"
+msgstr ""
+
+#: footer.php:91
+#: woocommerce/single-product.php:433
+msgid "تلگرام"
+msgstr ""
+
+#: footer.php:91
+msgid "https://t.me/"
+msgstr ""
+
+#: footer.php:92
+msgid "واتس‌اپ"
+msgstr ""
+
+#: footer.php:92
+msgid "https://wa.me/"
+msgstr ""
+
+#: footer.php:93
+msgid "آپارات"
+msgstr ""
+
+#: footer.php:93
+msgid "https://aparat.com/"
+msgstr ""
+
+#: footer.php:110
+msgid "کلیه حقوق استفاده از محتوای این وب‌سایت نزد فروشگاه"
+msgstr ""
+
+#: footer.php:110
+msgid "محفوظ است."
+msgstr ""
+
+#: footer.php:132
+msgid "بازگشت به بالا"
+msgstr ""
+
+#: front-page.php:27
+msgid "راه‌اندازی فروشگاه"
+msgstr ""
+
+#: front-page.php:32
+msgid "قالب فرشته مهربون نصب شد!"
+msgstr ""
+
+#: front-page.php:35
+msgid "برای نمایش فروشگاه مطابق دمو، محتوای نمونه (برگه‌ها، دسته‌بندی‌ها، محصولات و منوها) را درون‌ریزی کنید."
+msgstr ""
+
+#: front-page.php:39
+msgid "درج محتوای نمونه"
+msgstr ""
+
+#: front-page.php:42
+msgid "فقط برگه‌ها و تنظیمات"
+msgstr ""
+
+#: front-page.php:45
+msgid "سفارشی‌سازی"
+msgstr ""
+
+#: front-page.php:49
+msgid "می‌خواهید بدون دمو فروشگاه خودتان را بسازید؟ از سفارشی‌سازی ← سکشن‌های صفحه اول، گزینهٔ «نمایش صفحه اصلی بدون درون‌ریزی دمو» را روشن کنید."
+msgstr ""
+
+#: front-page.php:53
+msgid "فروشگاه به‌زودی راه‌اندازی می‌شود. لطفاً کمی بعد دوباره سر بزنید."
+msgstr ""
+
+#: front-page.php:81
+#: inc/front-ssr.php:146
+msgid "همه دسته‌ها"
+msgstr ""
+
+#: front-page.php:93
+msgid "پیشنهادهای شگفت‌انگیز"
+msgstr ""
+
+#: front-page.php:96
+#: front-page.php:115
+#: front-page.php:132
+msgid "زمان باقیمانده:"
+msgstr ""
+
+#: front-page.php:113
+msgid "جدیدترین محصولات"
+msgstr ""
+
+#: front-page.php:129
+msgid "پرفروش‌ترین‌ها"
+msgstr ""
+
+#: front-page.php:144
+msgid "محبوب‌ترین برندها"
+msgstr ""
+
+#: front-page.php:145
+msgid "همه برندها"
+msgstr ""
+
+#: front-page.php:156
+#: woocommerce/single-product.php:445
+msgid "بازگشت کالا تا ۷ روز"
+msgstr ""
+
+#: front-page.php:157
+msgid "در صورت وجود مشکل در سفارش"
+msgstr ""
+
+#: front-page.php:161
+#: woocommerce/single-product.php:449
+msgid "پشتیبانی ۷ روز هفته"
+msgstr ""
+
+#: front-page.php:162
+msgid "از ۹ صبح تا ۱۲ بامداد"
+msgstr ""
+
+#: front-page.php:166
+msgid "ارسال سریع"
+msgstr ""
+
+#: front-page.php:167
+msgid "تحویل در کوتاه‌ترین زمان"
+msgstr ""
+
+#: functions.php:78
+#: header.php:39
+#: header.php:66
+#: inc/cat-drawer.php:383
+#: inc/cat-drawer.php:385
+#: inc/cat-drawer.php:388
+msgid "منوی اصلی"
+msgstr ""
+
+#: functions.php:79
+msgid "منوی دسته‌بندی‌ها (دراور مرورگر)"
+msgstr ""
+
+#: functions.php:80
+msgid "منوی فوتر"
+msgstr ""
+
+#: functions.php:81
+msgid "فوتر — ستون راهنمای خرید"
+msgstr ""
+
+#: functions.php:184
+msgid "در حال جستجو…"
+msgstr ""
+
+#: functions.php:185
+msgid "خطا در دریافت نتایج؛ دوباره تلاش کنید."
+msgstr ""
+
+#: functions.php:218
+msgid "سایدبار فروشگاه"
+msgstr ""
+
+#: functions.php:220
+msgid "فیلترها و ویجت‌های صفحه دسته‌بندی محصولات"
+msgstr ""
+
+#: functions.php:230
+msgid "ویجت‌های فوتر"
+msgstr ""
+
+#: functions.php:232
+msgid "ستون‌های فوتر سایت"
+msgstr ""
+
+#: functions.php:306
+#: inc/breadcrumbs.php:23
+#: inc/cat-drawer.php:35
+#: inc/seo-schema.php:92
+msgid "خانه"
+msgstr ""
+
+#: functions.php:309
+#: inc/cat-drawer.php:38
+#: woocommerce/myaccount/my-account.php:34
+msgid "حساب کاربری"
+msgstr ""
+
+#: header-bare.php:26
+#: header-pdp.php:27
+#: header.php:22
+msgid "پرش به محتوا"
+msgstr ""
+
+#: header-bare.php:34
+#: inc/cat-drawer.php:410
+msgid "جستجو در دسته‌بندی‌ها"
+msgstr ""
+
+#: header-bare.php:35
+msgid "جستجو در فرشته مهربون"
+msgstr ""
+
+#: header.php:27
+msgid "بنر ویژه فروشگاه"
+msgstr ""
+
+#: header.php:52
+#: inc/wishlist.php:127
+msgid "علاقه‌مندی‌ها"
+msgstr ""
+
+#: inc/admin-meta.php:31
+msgid "فرشته مهربون — تنظیمات نمایش"
+msgstr ""
+
+#: inc/admin-meta.php:55
+msgid "خرید قسطی (نمایش بج روی کارت محصول)"
+msgstr ""
+
+#: inc/admin-meta.php:60
+msgid "اولویت نمایش در ریل «پیشنهاد شگفت‌انگیز»"
+msgstr ""
+
+#: inc/admin-meta.php:64
+msgid "(۰ = پیش‌فرض)"
+msgstr ""
+
+#: inc/admin-meta.php:102
+#: woocommerce/myaccount/my-account.php:44
+msgid "سفارش"
+msgstr ""
+
+#: inc/admin-meta.php:105
+#: woocommerce/checkout/thankyou.php:58
+msgid "تاریخ"
+msgstr ""
+
+#: inc/admin-meta.php:108
+msgid "وضعیت"
+msgstr ""
+
+#: inc/admin-meta.php:111
+msgid "مبلغ"
+msgstr ""
+
+#: inc/admin-meta.php:114
+msgid "عملیات"
+msgstr ""
+
+#: inc/admin-meta.php:135
+#: inc/admin-meta.php:153
+msgid "قسطی"
+msgstr ""
+
+#: inc/admin-meta.php:171
+msgid "نمایش در استوری‌های صفحهٔ اصلی"
+msgstr ""
+
+#: inc/admin-meta.php:174
+#: inc/admin-meta.php:206
+msgid "ترتیب در استوری‌ها"
+msgstr ""
+
+#: inc/admin-meta.php:178
+#: inc/admin-meta.php:210
+msgid "ترتیب در ریل دسته‌بندی‌ها"
+msgstr ""
+
+#: inc/admin-meta.php:197
+msgid "استوری صفحهٔ اصلی"
+msgstr ""
+
+#: inc/admin-meta.php:201
+msgid "این دسته در ریل استوری‌ها نمایش داده شود"
+msgstr ""
+
+#: inc/admin-meta.php:229
+#: inc/admin-meta.php:236
+msgid "ترتیب نمایش برند"
+msgstr ""
+
+#: inc/admin-meta.php:293
+msgid "فرشته مهربون — وضعیت فروشگاه"
+msgstr ""
+
+#: inc/admin-meta.php:302
+msgid "ووکامرس فعال نیست."
+msgstr ""
+
+#: inc/admin-meta.php:363
+msgid "فروش امروز (تومان)"
+msgstr ""
+
+#: inc/admin-meta.php:367
+msgid "فروش این ماه (تومان)"
+msgstr ""
+
+#: inc/admin-meta.php:371
+msgid "سفارش در انتظار ارسال"
+msgstr ""
+
+#: inc/admin-meta.php:375
+msgid "کالای کم‌موجود"
+msgstr ""
+
+#: inc/admin-meta.php:395
+msgid "هنوز سفارشی ثبت نشده است."
+msgstr ""
+
+#: inc/ajax-search.php:153
+msgid "موجود"
+msgstr ""
+
+#: inc/ajax-search.php:154
+msgid "ناموجود"
+msgstr ""
+
+#: inc/ajax-search.php:256
+#: search.php:81
+msgid "محصولات"
+msgstr ""
+
+#: inc/ajax-search.php:259
+msgid "وبلاگ"
+msgstr ""
+
+#: inc/ajax-search.php:267
+#, php-format
+msgid "نتیجه‌ای برای «%s» پیدا نشد."
+msgstr ""
+
+#. translators: %s: minutes with Persian digits
+#: inc/blog.php:57
+#, php-format
+msgid "%s دقیقه مطالعه"
+msgstr ""
+
+#: inc/blog.php:150
+msgid "دسته‌های وبلاگ"
+msgstr ""
+
+#: inc/blog.php:151
+msgid "همهٔ مطالب"
+msgstr ""
+
+#: inc/blog.php:178
+msgid "پست ویژه"
+msgstr ""
+
+#: inc/blog.php:228
+msgid "ویژه"
+msgstr ""
+
+#: inc/breadcrumbs.php:49
+#: inc/seo-schema.php:173
+msgid "نتایج جستجو"
+msgstr ""
+
+#: inc/breadcrumbs.php:78
+msgid "صفحه یافت نشد"
+msgstr ""
+
+#: inc/breadcrumbs.php:85
+#: woocommerce/single-product.php:311
+msgid "مسیر صفحه"
+msgstr ""
+
+#: inc/cat-data.php:51
+#: inc/cat-data.php:53
+msgid "دسته‌های فروشگاه"
+msgstr ""
+
+#: inc/cat-data.php:52
+msgid "دسته فروشگاه"
+msgstr ""
+
+#: inc/cat-data.php:54
+msgid "همه دسته‌های فروشگاه"
+msgstr ""
+
+#: inc/cat-data.php:55
+msgid "افزودن دسته فروشگاه جدید"
+msgstr ""
+
+#: inc/cat-data.php:56
+msgid "ویرایش دسته فروشگاه"
+msgstr ""
+
+#: inc/cat-data.php:57
+msgid "دسته مادر"
+msgstr ""
+
+#: inc/cat-data.php:244
+#: inc/cat-drawer.php:443
+#: page-categories.php:431
+msgid "زیردسته‌ها"
+msgstr ""
+
+#: inc/cat-drawer.php:139
+msgid "زیرشاخه‌ها"
+msgstr ""
+
+#: inc/cat-drawer.php:334
+#: page-categories.php:344
+msgid "مشاهده همه محصولات"
+msgstr ""
+
+#: inc/cat-drawer.php:368
+#: inc/minicart.php:110
+msgid "بستن"
+msgstr ""
+
+#: inc/cat-drawer.php:411
+#: searchform.php:22
+msgid "جستجو در فرشته مهربون…"
+msgstr ""
+
+#: inc/cat-drawer.php:419
+msgid "هنوز دسته‌بندی‌ای ساخته نشده است."
+msgstr ""
+
+#: inc/cat-drawer.php:424
+#: page-categories.php:430
+msgid "دسته‌های اصلی"
+msgstr ""
+
+#: inc/customizer.php:24
+msgid "تنظیمات قالب ToyKind Angel"
+msgstr ""
+
+#: inc/customizer.php:33
+msgid "اطلاعات تماس فروشگاه"
+msgstr ""
+
+#: inc/customizer.php:39
+msgid "شماره تلفن"
+msgstr ""
+
+#: inc/customizer.php:40
+msgid "ایمیل"
+msgstr ""
+
+#: inc/customizer.php:41
+msgid "آدرس"
+msgstr ""
+
+#: inc/customizer.php:42
+msgid "ساعات کاری"
+msgstr ""
+
+#: inc/customizer.php:67
+msgid "متن‌های فروشگاه"
+msgstr ""
+
+#: inc/customizer.php:82
+msgid "متن نوار اطلاع‌رسانی بالای سایت"
+msgstr ""
+
+#: inc/customizer.php:83
+msgid "موارد را با • از هم جدا کنید."
+msgstr ""
+
+#: inc/customizer.php:99
+msgid "متن سئوی فوتر"
+msgstr ""
+
+#: inc/customizer.php:109
+msgid "شبکه‌های اجتماعی"
+msgstr ""
+
+#: inc/customizer.php:143
+msgid "اسلایدر و بنرهای صفحه اول"
+msgstr ""
+
+#: inc/customizer.php:144
+msgid "اگر تصویری تنظیم نشود، همان تصویر نمونهٔ دمو نمایش داده می‌شود."
+msgstr ""
+
+#: inc/customizer.php:154
+msgid "بنر نوار بالای صفحه"
+msgstr ""
+
+#: inc/customizer.php:155
+msgid "اسلاید ۱"
+msgstr ""
+
+#: inc/customizer.php:156
+msgid "اسلاید ۲"
+msgstr ""
+
+#: inc/customizer.php:157
+msgid "اسلاید ۳"
+msgstr ""
+
+#: inc/customizer.php:158
+msgid "اسلاید ۴"
+msgstr ""
+
+#: inc/customizer.php:159
+msgid "بنر گرید ۱"
+msgstr ""
+
+#: inc/customizer.php:160
+msgid "بنر گرید ۲"
+msgstr ""
+
+#: inc/customizer.php:161
+msgid "بنر گرید ۳"
+msgstr ""
+
+#: inc/customizer.php:162
+msgid "بنر گرید ۴"
+msgstr ""
+
+#: inc/customizer.php:205
+msgid "سکشن‌های صفحه اول"
+msgstr ""
+
+#: inc/customizer.php:206
+msgid "فعال/غیرفعال کردن سکشن‌های صفحه اصلی مطابق دمو."
+msgstr ""
+
+#: inc/customizer.php:212
+msgid "نمایش اسلایدر"
+msgstr ""
+
+#: inc/customizer.php:213
+msgid "نمایش دسته‌بندی‌ها"
+msgstr ""
+
+#: inc/customizer.php:214
+msgid "نمایش پیشنهادهای شگفت‌انگیز"
+msgstr ""
+
+#: inc/customizer.php:215
+msgid "نمایش بنرهای تبلیغاتی"
+msgstr ""
+
+#: inc/customizer.php:216
+msgid "نمایش جدیدترین محصولات"
+msgstr ""
+
+#: inc/customizer.php:217
+msgid "نمایش پرفروش‌ترین‌ها"
+msgstr ""
+
+#: inc/customizer.php:218
+msgid "نمایش برندها"
+msgstr ""
+
+#: inc/customizer.php:219
+msgid "نمایش بخش مزایا"
+msgstr ""
+
+#: inc/customizer.php:220
+msgid "نمایش برچسب «خرید قسطی» روی کارت محصولات"
+msgstr ""
+
+#: inc/customizer.php:221
+msgid "وقتی داده وردپرس/ووکامرس نیست، از داده نمونهٔ دمو استفاده شود (پیشنهاد: خاموش)"
+msgstr ""
+
+#: inc/customizer.php:222
+msgid "نمایش صفحه اصلی بدون درون‌ریزی دمو (حالت استاندارد وردپرس)"
+msgstr ""
+
+#: inc/customizer.php:247
+msgid "صفحه محصول"
+msgstr ""
+
+#: inc/customizer.php:248
+msgid "متن‌های گارانتی، روش‌های ارسال و ریل محصولات مشابه (پیش‌فرض‌ها مطابق دمو هستند)."
+msgstr ""
+
+#: inc/customizer.php:255
+msgid "متن گارانتی"
+msgstr ""
+
+#: inc/customizer.php:256
+#: woocommerce/single-product.php:127
+msgid "گارانتی سلامت فیزیکی کالا"
+msgstr ""
+
+#: inc/customizer.php:259
+msgid "عنوان روش ارسال اول"
+msgstr ""
+
+#: inc/customizer.php:260
+#: woocommerce/single-product.php:118
+msgid "عادی"
+msgstr ""
+
+#: inc/customizer.php:263
+msgid "توضیح روش ارسال اول"
+msgstr ""
+
+#: inc/customizer.php:264
+#: woocommerce/single-product.php:119
+msgid "ارسال از انبار فروشگاه — ۲ تا ۴ روز کاری"
+msgstr ""
+
+#: inc/customizer.php:267
+msgid "عنوان روش ارسال دوم"
+msgstr ""
+
+#: inc/customizer.php:268
+#: woocommerce/single-product.php:123
+msgid "اکسپرس"
+msgstr ""
+
+#: inc/customizer.php:271
+msgid "توضیح روش ارسال دوم"
+msgstr ""
+
+#: inc/customizer.php:272
+#: woocommerce/single-product.php:124
+msgid "ارسال در سریع‌ترین زمان — ویژه مشهد"
+msgstr ""
+
+#: inc/customizer.php:304
+msgid "نمایش ریل «محصولات مشابه» در صفحه محصول"
+msgstr ""
+
+#: inc/customizer.php:321
+msgid "نمایش نشان «جشنواره» روی کارت محصولات و صفحه محصول"
+msgstr ""
+
+#: inc/customizer.php:322
+msgid "محصولات دارای برچسب جشنواره، نشان بنفش/طلایی جشنواره را نشان می‌دهند و در «پیشنهادهای شگفت‌انگیز» هم می‌آیند."
+msgstr ""
+
+#: inc/demo-import.php:846
+msgid "برای درج محتوای نمونه ابتدا افزونه ووکامرس باید فعال باشد."
+msgstr ""
+
+#: inc/demo-import.php:1249
+msgid "محتوای نمونه با موفقیت درج شد."
+msgstr ""
+
+#: inc/demo-import.php:1282
+msgid "ساختار پیوند یکتا (/%postname%/)"
+msgstr ""
+
+#: inc/demo-import.php:1294
+msgid "برگه‌ها و تنظیمات لازم اعمال شد — بدون محصول، دسته‌بندی، برند و منو."
+msgstr ""
+
+#: inc/demo-import.php:1731
+msgid "درج محتوای نمونه فرشته مهربون"
+msgstr ""
+
+#: inc/demo-import.php:1738
+msgid "محصولات:"
+msgstr ""
+
+#: inc/demo-import.php:1739
+msgid "دسته‌ها"
+msgstr ""
+
+#: inc/demo-import.php:1740
+msgid "رسانه‌ها"
+msgstr ""
+
+#: inc/demo-import.php:1741
+msgid "برگه‌ها"
+msgstr ""
+
+#: inc/demo-import.php:1742
+msgid "آیتم منو"
+msgstr ""
+
+#: inc/demo-import.php:1743
+msgid "— ویژگی (رنگ/سایز):"
+msgstr ""
+
+#: inc/demo-import.php:1744
+msgid "— متغیر ساخته‌شده:"
+msgstr ""
+
+#: inc/demo-import.php:1757
+msgid "برگه‌های ساخته/بررسی‌شده"
+msgstr ""
+
+#: inc/demo-import.php:1759
+msgid "— تنظیمات اعمال‌شده:"
+msgstr ""
+
+#: inc/demo-import.php:1761
+msgid "— همهٔ تنظیمات لازم از قبل درست بود."
+msgstr ""
+
+#: inc/demo-import.php:1771
+msgid "برای درون‌ریزی کامل دمو، افزونه"
+msgstr ""
+
+#: inc/demo-import.php:1771
+msgid "ووکامرس"
+msgstr ""
+
+#: inc/demo-import.php:1771
+msgid "باید نصب و فعال باشد. (گزینهٔ «فقط برگه‌ها و تنظیمات» بدون ووکامرس هم برگه‌ها را می‌سازد.)"
+msgstr ""
+
+#: inc/demo-import.php:1775
+msgid "طبق استاندارد قالب‌های وردپرس،"
+msgstr ""
+
+#: inc/demo-import.php:1775
+msgid "تا زمانی که دمو درون‌ریزی نشده باشد صفحه اصلی چیزی از دمو نشان نمی‌دهد"
+msgstr ""
+
+#: inc/demo-import.php:1776
+msgid "(فقط کارت راه‌اندازی). دو راه دارید:"
+msgstr ""
+
+#: inc/demo-import.php:1782
+msgid "۱) درون‌ریزی کامل دمو"
+msgstr ""
+
+#: inc/demo-import.php:1784
+msgid "کل محتوای دمو بازسازی می‌شود: منوی اصلی، درخت کامل دسته‌بندی‌ها، برندها،"
+msgstr ""
+
+#: inc/demo-import.php:1786
+msgid "درباره ما/تماس با ما/دسته‌بندی‌ها، برگه‌های ووکامرس و بنرهای صفحه اصلی."
+msgstr ""
+
+#: inc/demo-import.php:1787
+msgid "همه تصاویر از خود قالب بارگذاری می‌شوند و"
+msgstr ""
+
+#: inc/demo-import.php:1787
+msgid "هیچ لینکی به سایت خارجی نمی‌ماند"
+msgstr ""
+
+#: inc/demo-import.php:1788
+msgid "اجرای دوباره بی‌خطر است."
+msgstr ""
+
+#: inc/demo-import.php:1794
+msgid "اجرای دوباره درون‌ریزی (بی‌خطر)"
+msgstr ""
+
+#: inc/demo-import.php:1794
+msgid "شروع درون‌ریزی محتوای نمونه"
+msgstr ""
+
+#: inc/demo-import.php:1800
+msgid "✔ درون‌ریزی نسخه"
+msgstr ""
+
+#: inc/demo-import.php:1800
+msgid "قبلاً انجام شده است."
+msgstr ""
+
+#: inc/demo-import.php:1807
+msgid "۲) فقط برگه‌ها و تنظیمات"
+msgstr ""
+
+#: inc/demo-import.php:1807
+msgid "(بدون محصول و منو)"
+msgstr ""
+
+#: inc/demo-import.php:1809
+msgid "اگر می‌خواهید فروشگاه را با محصولات خودتان بسازید، این گزینه فقط"
+msgstr ""
+
+#: inc/demo-import.php:1810
+msgid "برگه‌های لازم"
+msgstr ""
+
+#: inc/demo-import.php:1810
+msgid "را می‌سازد (فروشگاه، سبد خرید، تسویه‌حساب، حساب کاربری،"
+msgstr ""
+
+#: inc/demo-import.php:1812
+msgid "تنظیمات لازم"
+msgstr ""
+
+#: inc/demo-import.php:1812
+msgid "را اعمال می‌کند (پیوند یکتا در صورت خالی‌بودن)."
+msgstr ""
+
+#: inc/demo-import.php:1813
+msgid "هیچ محصول، دسته‌بندی، برند یا منویی ساخته نمی‌شود."
+msgstr ""
+
+#: inc/demo-import.php:1819
+msgid "اجرای دوباره (بی‌خطر)"
+msgstr ""
+
+#: inc/demo-import.php:1819
+msgid "اعمال برگه‌ها و تنظیمات"
+msgstr ""
+
+#: inc/demo-import.php:1825
+msgid "✔ تنظیمات نسخه"
+msgstr ""
+
+#: inc/demo-import.php:1825
+msgid "اعمال شده است."
+msgstr ""
+
+#: inc/demo-import.php:1829
+msgid "نکته: پس از این حالت، برای نمایش سکشن‌های صفحه اصلی یا محصول خودتان را منتشر کنید"
+msgstr ""
+
+#: inc/demo-import.php:1830
+msgid "سفارشی‌سازی ← سکشن‌های صفحه اول"
+msgstr ""
+
+#: inc/demo-import.php:1831
+msgid "گزینهٔ «نمایش صفحه اصلی بدون درون‌ریزی دمو» را روشن کنید."
+msgstr ""
+
+#: inc/demo-import.php:1837
+msgid "فایل ایمپورت استاندارد وردپرس (WXR)"
+msgstr ""
+
+#: inc/demo-import.php:1839
+msgid "اگر می‌خواهید محتوای نمونه را با ابزار استاندارد وردپرس بازسازی کنید"
+msgstr ""
+
+#: inc/demo-import.php:1841
+msgid "شامل"
+msgstr ""
+
+#: inc/demo-import.php:1841
+msgid "محصول با قیمت و تصویر،"
+msgstr ""
+
+#: inc/demo-import.php:1842
+msgid "دسته‌های محصول، برگه‌ها و منوی اصلی. تصاویر از پوشهٔ خود قالب خوانده می‌شوند."
+msgstr ""
+
+#: inc/demo-import.php:1843
+msgid "پس از ایمپورت، منو را از"
+msgstr ""
+
+#: inc/demo-import.php:1843
+msgid "نمایش → فهرست‌ها"
+msgstr ""
+
+#: inc/demo-import.php:1843
+msgid "به جایگاه «فهرست اصلی» اختصاص دهید"
+msgstr ""
+
+#: inc/demo-import.php:1844
+msgid "یا یک‌بار دکمهٔ درون‌ریزی بالا را اجرا کنید (بی‌خطر است و تنظیمات را کامل می‌کند)."
+msgstr ""
+
+#: inc/demo-import.php:1848
+msgid "دانلود فایل toykindangel-demo-content.xml"
+msgstr ""
+
+#: inc/festival.php:70
+#: inc/product-card.php:107
+msgid "جشنواره"
+msgstr ""
+
+#: inc/front-data.php:37
+#: inc/front-data.php:39
+#: woocommerce/archive-product.php:147
+msgid "برندها"
+msgstr ""
+
+#: inc/front-data.php:38
+#: page-categories.php:330
+#: woocommerce/single-product.php:162
+msgid "برند"
+msgstr ""
+
+#: inc/front-data.php:40
+msgid "افزودن برند جدید"
+msgstr ""
+
+#: inc/front-ssr.php:173
+msgid "مشاهده همه"
+msgstr ""
+
+#: inc/front-ssr.php:199
+msgid "پیشنهاد ویژه"
+msgstr ""
+
+#: inc/front-ssr.php:225
+msgid "بنر تبلیغاتی فروشگاه"
+msgstr ""
+
+#: inc/minicart.php:39
+#: woocommerce/cart/cart-empty.php:22
+msgid "سبد خرید شما خالی است"
+msgstr ""
+
+#: inc/minicart.php:40
+#: page-wishlist.php:44
+#: woocommerce/cart/cart-empty.php:33
+msgid "رفتن به فروشگاه"
+msgstr ""
+
+#: inc/minicart.php:66
+#: woocommerce/cart/cart.php:102
+msgid "حذف از سبد خرید"
+msgstr ""
+
+#: inc/minicart.php:72
+#: woocommerce/cart/cart.php:185
+msgid "مبلغ قابل پرداخت"
+msgstr ""
+
+#: inc/minicart.php:74
+#: inc/wc-pages-fix.php:43
+#: woocommerce/checkout/form-checkout.php:39
+msgid "تسویه حساب"
+msgstr ""
+
+#: inc/minicart.php:75
+msgid "مشاهدهٔ سبد"
+msgstr ""
+
+#. translators: %s: product name for the image alt attribute.
+#. translators: %s: product name
+#: inc/product-card.php:92
+#: woocommerce/cart/cart.php:71
+#: woocommerce/single-product.php:288
+#, php-format
+msgid "تصویر %s"
+msgstr ""
+
+#: inc/product-card.php:111
+msgid "خرید قسطی"
+msgstr ""
+
+#: inc/product-card.php:120
+#: woocommerce/single-product.php:384
+msgid "تومان"
+msgstr ""
+
+#: inc/product-card.php:144
+#: inc/wishlist.php:59
+#: woocommerce/single-product.php:397
+#: woocommerce/single-product.php:565
+msgid "افزودن به سبد خرید"
+msgstr ""
+
+#: inc/product-card.php:151
+#: inc/product-card.php:152
+#: inc/wishlist.php:66
+#: inc/wishlist.php:67
+msgid "انتخاب گزینه‌ها"
+msgstr ""
+
+#. translators: %s: site name.
+#: inc/seo-meta.php:56
+#, php-format
+msgid "فروشگاه اینترنتی %s — خرید آنلاین اسباب‌بازی و سیسمونی با ارسال سریع و ضمانت اصالت کالا"
+msgstr ""
+
+#. translators: %s: search query.
+#: inc/seo-meta.php:218
+#, php-format
+msgid "نتایج جستجو برای «%s»"
+msgstr ""
+
+#: inc/wc-pages-fix.php:49
+msgid "حساب کاربری من"
+msgstr ""
+
+#: inc/wishlist.php:72
+msgid "حذف از علاقه‌مندی‌ها"
+msgstr ""
+
+#: index.php:20
+#: page-blog.php:39
+msgid "مقالات، راهنمای خرید اسباب‌بازی و ایده‌های بازی برای فرزندان دلبندتان"
+msgstr ""
+
+#: index.php:59
+msgid "موردی یافت نشد"
+msgstr ""
+
+#: index.php:60
+msgid "متأسفانه محتوایی برای نمایش وجود ندارد."
+msgstr ""
+
+#. Template Name of the theme
+msgid "وبلاگ (فهرست مطالب)"
+msgstr ""
+
+#: page-blog.php:91
+msgid "صفحه‌بندی وبلاگ"
+msgstr ""
+
+#: page-blog.php:109
+msgid "هنوز مطلبی منتشر نشده"
+msgstr ""
+
+#: page-blog.php:110
+msgid "به‌زودی مقالات و ایده‌های بازی جدید را همین‌جا بخوانید."
+msgstr ""
+
+#: page-categories.php:282
+#: woocommerce/archive-product.php:119
+msgid "دسته‌بندی محصولات"
+msgstr ""
+
+#: page-categories.php:283
+msgid "هرچه برای بازی، یادگیری و دنیای خیالی کودک لازم دارید؛ دسته‌به‌دسته مرتب و آمادهٔ کشف."
+msgstr ""
+
+#: page-categories.php:286
+msgid "جستجوی محصولات"
+msgstr ""
+
+#: page-categories.php:292
+msgid "مثلاً: عروسک پولیشی، ماشین کنترلی، پازل…"
+msgstr ""
+
+#: page-categories.php:297
+msgid "جستجو"
+msgstr ""
+
+#: page-categories.php:303
+msgid "آمار فروشگاه"
+msgstr ""
+
+#: page-categories.php:319
+#: page-categories.php:360
+#: page-categories.php:403
+#: search.php:69
+#: woocommerce/archive-product.php:73
+msgid "کالا"
+msgstr ""
+
+#: page-categories.php:324
+#: woocommerce/single-product.php:152
+msgid "دسته‌بندی"
+msgstr ""
+
+#: page-categories.php:336
+#: page-categories.php:341
+msgid "همه دسته‌بندی‌ها"
+msgstr ""
+
+#: page-categories.php:362
+msgid "به‌زودی"
+msgstr ""
+
+#: page-categories.php:382
+#: page-categories.php:387
+msgid "زیردسته‌های پرطرفدار"
+msgstr ""
+
+#: page-categories.php:413
+#: page-categories.php:418
+msgid "مرور درختی دسته‌بندی‌ها"
+msgstr ""
+
+#: page-categories.php:420
+msgid "دستهٔ اصلی را از ریل انتخاب کنید"
+msgstr ""
+
+#: page-categories.php:425
+msgid "جستجو در درخت دسته‌بندی‌ها"
+msgstr ""
+
+#: page-categories.php:426
+msgid "جستجوی سریع در دسته‌ها…"
+msgstr ""
+
+#: page-categories.php:436
+msgid "برای مشاهده مرور درختی دسته‌بندی‌ها، جاوااسکریپت مرورگر را فعال کنید؛ تا آن زمان از کارت‌های دسته‌بندی بالا استفاده کنید."
+msgstr ""
+
+#. Template Name of the theme
+msgid "فرشته مهربون — علاقه‌مندی‌ها"
+msgstr ""
+
+#: page-wishlist.php:25
+msgid "علاقه‌مندی‌های من"
+msgstr ""
+
+#: page-wishlist.php:33
+msgid "در حال بارگذاری علاقه‌مندی‌ها…"
+msgstr ""
+
+#: page-wishlist.php:41
+msgid "هنوز چیزی به علاقه‌مندی‌ها اضافه نکرده‌اید"
+msgstr ""
+
+#: page-wishlist.php:42
+msgid "روی قلبِ هر محصول بزنید تا اینجا ذخیره شود."
+msgstr ""
+
+#. translators: %s: search query
+#: search.php:64
+#, php-format
+msgid "نتایج جستجو برای: %s"
+msgstr ""
+
+#: search.php:98
+msgid "مقالات"
+msgstr ""
+
+#: search.php:128
+msgid "سایر نتایج"
+msgstr ""
+
+#: search.php:168
+msgid "کالایی با این عبارت پیدا نشد!"
+msgstr ""
+
+#: search.php:169
+#: woocommerce/archive-product.php:218
+msgid "دیدن دسته‌بندی‌ها"
+msgstr ""
+
+#: search.php:175
+msgid "نتیجه‌ای یافت نشد"
+msgstr ""
+
+#: search.php:176
+msgid "عبارت دیگری را امتحان کنید یا از دسته‌بندی‌ها استفاده کنید."
+msgstr ""
+
+#: searchform.php:21
+msgid "جستجو در فروشگاه"
+msgstr ""
+
+#: searchform.php:38
+msgid "نتایج جستجوی زنده"
+msgstr ""
+
+#: single.php:79
+msgid "برچسب‌ها:"
+msgstr ""
+
+#: single.php:97
+msgid "مطلب قبلی"
+msgstr ""
+
+#: single.php:98
+msgid "مطلب بعدی"
+msgstr ""
+
+#: woocommerce/archive-product.php:54
+msgid "پرفروش‌ترین"
+msgstr ""
+
+#: woocommerce/archive-product.php:55
+msgid "جدیدترین"
+msgstr ""
+
+#: woocommerce/archive-product.php:56
+msgid "ارزان‌ترین"
+msgstr ""
+
+#: woocommerce/archive-product.php:57
+msgid "گران‌ترین"
+msgstr ""
+
+#: woocommerce/archive-product.php:95
+msgid "فیلترها"
+msgstr ""
+
+#: woocommerce/archive-product.php:111
+msgid "فیلترهای فعال"
+msgstr ""
+
+#: woocommerce/archive-product.php:131
+msgid "محدوده قیمت"
+msgstr ""
+
+#: woocommerce/archive-product.php:168
+msgid "ترتیب نمایش"
+msgstr ""
+
+#: woocommerce/archive-product.php:199
+msgid "صفحه‌بندی محصولات"
+msgstr ""
+
+#: woocommerce/archive-product.php:217
+msgid "هنوز کالایی اینجا نیست!"
+msgstr ""
+
+#: woocommerce/cart/cart-empty.php:23
+msgid "هنوز چیزی برای خرید انتخاب نکرده‌اید؛ از دسته‌بندی‌ها شروع کنید یا پرفروش‌ترین اسباب‌بازی‌ها را ببینید."
+msgstr ""
+
+#: woocommerce/cart/cart-empty.php:38
+msgid "مرور دسته‌بندی‌ها"
+msgstr ""
+
+#. translators: %d: number of items in the cart.
+#. translators: %d: number of items.
+#: woocommerce/cart/cart.php:31
+#: woocommerce/myaccount/orders.php:83
+#, php-format
+msgid "%d کالا"
+msgid_plural "%d کالا"
+msgstr[0] ""
+msgstr[1] ""
+
+#: woocommerce/cart/cart.php:117
+msgid "به‌روزرسانی سبد خرید"
+msgstr ""
+
+#: woocommerce/cart/cart.php:119
+msgid "به‌روزرسانی سبد"
+msgstr ""
+
+#: woocommerce/cart/cart.php:134
+msgid "کد تخفیف دارید؟ اینجا وارد کنید"
+msgstr ""
+
+#: woocommerce/cart/cart.php:136
+#: woocommerce/cart/cart.php:137
+msgid "اعمال کد"
+msgstr ""
+
+#: woocommerce/cart/cart.php:150
+msgid "مجموع سفارش"
+msgstr ""
+
+#: woocommerce/cart/cart.php:153
+msgid "جمع کالاها"
+msgstr ""
+
+#: woocommerce/cart/cart.php:159
+msgid "کد تخفیف"
+msgstr ""
+
+#: woocommerce/cart/cart.php:179
+msgid "مالیات"
+msgstr ""
+
+#: woocommerce/cart/cart.php:190
+msgid "ادامه و تسویه حساب"
+msgstr ""
+
+#: woocommerce/cart/cart.php:196
+msgid "پرداخت امن · ضمانت اصالت کالا · ۷ روز مهلت بازگشت"
+msgstr ""
+
+#: woocommerce/checkout/form-checkout.php:30
+msgid "برای ادامهٔ خرید ابتدا وارد حساب کاربری خود شوید."
+msgstr ""
+
+#: woocommerce/checkout/form-checkout.php:43
+msgid "اطلاعات و پرداخت"
+msgstr ""
+
+#: woocommerce/checkout/form-checkout.php:44
+msgid "تحویل"
+msgstr ""
+
+#: woocommerce/checkout/form-checkout.php:72
+msgid "سفارش شما"
+msgstr ""
+
+#: woocommerce/checkout/form-checkout.php:88
+msgid "حساب کاربری بسازم (سفارش‌ها و کدرهگیری سریع‌تر)"
+msgstr ""
+
+#: woocommerce/checkout/thankyou.php:27
+msgid "پرداخت ناموفق بود"
+msgstr ""
+
+#: woocommerce/checkout/thankyou.php:29
+msgid "متأسفانه تراکنش تکمیل نشد. می‌توانید دوباره تلاش کنید یا با پشتیبانی تماس بگیرید."
+msgstr ""
+
+#: woocommerce/checkout/thankyou.php:33
+msgid "پرداخت مجدد"
+msgstr ""
+
+#: woocommerce/checkout/thankyou.php:39
+msgid "سفارش شما با موفقیت ثبت شد!"
+msgstr ""
+
+#. translators: %s: customer first name.
+#: woocommerce/checkout/thankyou.php:44
+#, php-format
+msgid "ممنون از اعتماد شما %s 🎁 سفارش‌تان آمادهٔ بسته‌بندی است و کدرهگیری از طریق پیامک ارسال می‌شود."
+msgstr ""
+
+#: woocommerce/checkout/thankyou.php:54
+msgid "شماره سفارش"
+msgstr ""
+
+#: woocommerce/checkout/thankyou.php:62
+msgid "مبلغ کل"
+msgstr ""
+
+#: woocommerce/checkout/thankyou.php:66
+msgid "روش پرداخت"
+msgstr ""
+
+#: woocommerce/checkout/thankyou.php:73
+msgid "پیگیری سفارش در حساب کاربری"
+msgstr ""
+
+#: woocommerce/checkout/thankyou.php:76
+msgid "ادامهٔ خرید"
+msgstr ""
+
+#: woocommerce/myaccount/downloads.php:28
+msgid "فایل‌های دانلود"
+msgstr ""
+
+#: woocommerce/myaccount/downloads.php:44
+msgid "هیچ فایل قابل دانلودی در دسترس نیست."
+msgstr ""
+
+#: woocommerce/myaccount/downloads.php:46
+msgid "مشاهدهٔ محصولات"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-account.php:19
+msgid "اطلاعات حساب"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-account.php:28
+msgid "نام"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-account.php:32
+msgid "نام خانوادگی"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-account.php:37
+msgid "نام نمایشی"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-account.php:39
+msgid "این نام در حساب کاربری و دیدگاه‌ها نمایش داده می‌شود"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-account.php:39
+msgid "این نام در حساب کاربری شما نمایش داده می‌شود"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-account.php:43
+#: woocommerce/myaccount/form-login.php:110
+msgid "نشانی ایمیل"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-account.php:51
+msgid "تغییر گذرواژه"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-account.php:55
+msgid "گذرواژهٔ کنونی (بدون تغییر بماند اگر نمی‌خواهید عوض شود)"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-account.php:59
+msgid "گذرواژهٔ جدید"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-account.php:63
+msgid "تکرار گذرواژهٔ جدید"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-account.php:73
+#: woocommerce/myaccount/form-edit-account.php:74
+msgid "ذخیرهٔ تغییرات"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-address.php:19
+#: woocommerce/myaccount/my-address.php:25
+#: woocommerce/myaccount/my-address.php:34
+msgid "آدرس صورت‌حساب"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-address.php:19
+#: woocommerce/myaccount/my-address.php:26
+msgid "آدرس ارسال"
+msgstr ""
+
+#: woocommerce/myaccount/form-edit-address.php:52
+#: woocommerce/myaccount/form-edit-address.php:53
+msgid "ذخیرهٔ آدرس"
+msgstr ""
+
+#: woocommerce/myaccount/form-login.php:31
+#: woocommerce/myaccount/form-login.php:69
+#: woocommerce/myaccount/form-login.php:70
+msgid "ورود"
+msgstr ""
+
+#: woocommerce/myaccount/form-login.php:34
+#: woocommerce/myaccount/form-login.php:131
+#: woocommerce/myaccount/form-login.php:132
+msgid "ثبت‌نام"
+msgstr ""
+
+#: woocommerce/myaccount/form-login.php:44
+msgid "ورود به حساب کاربری"
+msgstr ""
+
+#: woocommerce/myaccount/form-login.php:46
+msgid "برای پیگیری سفارش‌ها و خرید سریع‌تر وارد شوید."
+msgstr ""
+
+#: woocommerce/myaccount/form-login.php:53
+msgid "نام کاربری یا نشانی ایمیل"
+msgstr ""
+
+#: woocommerce/myaccount/form-login.php:57
+#: woocommerce/myaccount/form-login.php:117
+msgid "گذرواژه"
+msgstr ""
+
+#: woocommerce/myaccount/form-login.php:66
+msgid "مرا به خاطر بسپار"
+msgstr ""
+
+#: woocommerce/myaccount/form-login.php:75
+msgid "گذرواژه‌ام را فراموش کرده‌ام"
+msgstr ""
+
+#: woocommerce/myaccount/form-login.php:92
+msgid "ساخت حساب جدید"
+msgstr ""
+
+#: woocommerce/myaccount/form-login.php:94
+msgid "عضویت رایگان است؛ سفارش‌ها و آدرس‌ها همیشه در دسترس شماست."
+msgstr ""
+
+#: woocommerce/myaccount/form-login.php:103
+msgid "نام کاربری"
+msgstr ""
+
+#: woocommerce/myaccount/form-login.php:123
+msgid "لینک تنظیم گذرواژهٔ جدید به ایمیل شما ارسال می‌شود."
+msgstr ""
+
+#. translators: %s: user display name.
+#: woocommerce/myaccount/my-account.php:38
+#, php-format
+msgid "سلام %s 👋"
+msgstr ""
+
+#: woocommerce/myaccount/my-address.php:41
+msgid "این آدرس‌ها به‌صورت پیش‌فرض در صفحهٔ تسویه حساب استفاده می‌شوند."
+msgstr ""
+
+#: woocommerce/myaccount/my-address.php:56
+msgid "ویرایش"
+msgstr ""
+
+#: woocommerce/myaccount/my-address.php:56
+msgid "افزودن"
+msgstr ""
+
+#: woocommerce/myaccount/my-address.php:63
+msgid "هنوز آدرسی ثبت نشده است."
+msgstr ""
+
+#: woocommerce/myaccount/navigation.php:21
+msgid "منوی حساب کاربری"
+msgstr ""
+
+#: woocommerce/myaccount/orders.php:27
+msgid "سفارش‌های من"
+msgstr ""
+
+#: woocommerce/myaccount/orders.php:144
+msgid "هنوز سفارشی ثبت نکرده‌اید."
+msgstr ""
+
+#: woocommerce/myaccount/orders.php:147
+msgid "شروع خرید"
+msgstr ""
+
+#: woocommerce/myaccount/view-order.php:23
+msgid "جزئیات سفارش"
+msgstr ""
+
+#. translators: %s: order date.
+#: woocommerce/myaccount/view-order.php:35
+#, php-format
+msgid "ثبت‌شده در %s"
+msgstr ""
+
+#: woocommerce/myaccount/view-order.php:46
+msgid "به‌روزرسانی‌های سفارش"
+msgstr ""
+
+#: woocommerce/single-product.php:133
+msgid "فعلاً ناموجود"
+msgstr ""
+
+#: woocommerce/single-product.php:135
+msgid "پیش‌خرید — به‌زودی شارژ می‌شود"
+msgstr ""
+
+#: woocommerce/single-product.php:137
+msgid "موجود در انبار فروشگاه"
+msgstr ""
+
+#: woocommerce/single-product.php:189
+msgid "وزن"
+msgstr ""
+
+#: woocommerce/single-product.php:197
+msgid "ابعاد بسته‌بندی"
+msgstr ""
+
+#: woocommerce/single-product.php:203
+msgid "کد محصول"
+msgstr ""
+
+#: woocommerce/single-product.php:212
+msgid "برچسب‌ها"
+msgstr ""
+
+#: woocommerce/single-product.php:225
+msgid "توضیحات"
+msgstr ""
+
+#: woocommerce/single-product.php:228
+msgid "مشخصات"
+msgstr ""
+
+#: woocommerce/single-product.php:230
+#: woocommerce/single-product.php:512
+msgid "دیدگاه‌ها"
+msgstr ""
+
+#: woocommerce/single-product.php:237
+msgid "بازگشت"
+msgstr ""
+
+#: woocommerce/single-product.php:241
+msgid "اشتراک‌گذاری"
+msgstr ""
+
+#: woocommerce/single-product.php:257
+msgid "بخش‌های صفحهٔ محصول"
+msgstr ""
+
+#: woocommerce/single-product.php:332
+msgid "امتیاز"
+msgstr ""
+
+#: woocommerce/single-product.php:334
+msgid "نظر"
+msgstr ""
+
+#: woocommerce/single-product.php:336
+#: woocommerce/single-product.php:517
+msgid "اولین دیدگاه را شما ثبت کنید"
+msgstr ""
+
+#: woocommerce/single-product.php:345
+#: woocommerce/single-product.php:453
+msgid "ارسال در کوتاه‌ترین زمان"
+msgstr ""
+
+#: woocommerce/single-product.php:346
+msgid "۷ روز ضمانت بازگشت"
+msgstr ""
+
+#. translators: %s: remaining stock quantity
+#: woocommerce/single-product.php:410
+#, php-format
+msgid "تنها %s عدد باقی‌مانده در انبار"
+msgstr ""
+
+#: woocommerce/single-product.php:419
+msgid "مورد علاقه"
+msgstr ""
+
+#: woocommerce/single-product.php:422
+msgid "اشتراک گذاری"
+msgstr ""
+
+#: woocommerce/single-product.php:429
+msgid "اشتراک‌گذاری:"
+msgstr ""
+
+#: woocommerce/single-product.php:430
+msgid "اشتراک‌گذاری در واتساپ"
+msgstr ""
+
+#: woocommerce/single-product.php:430
+msgid "واتساپ"
+msgstr ""
+
+#: woocommerce/single-product.php:433
+msgid "اشتراک‌گذاری در تلگرام"
+msgstr ""
+
+#: woocommerce/single-product.php:436
+msgid "کپی لینک محصول"
+msgstr ""
+
+#: woocommerce/single-product.php:436
+msgid "کپی لینک"
+msgstr ""
+
+#: woocommerce/single-product.php:474
+msgid "توضیحات محصول"
+msgstr ""
+
+#: woocommerce/single-product.php:489
+msgid "مشخصات محصول"
+msgstr ""
+
+#: woocommerce/single-product.php:532
+msgid "محصولات مشابه"
+msgstr ""
+
+#: woocommerce/single-product.php:568
+msgid "مشاهده و خرید"
+msgstr ""
+
+#: woocommerce/single-product.php:578
+msgid "محصول یافت نشد"
+msgstr ""
+
+#: woocommerce/single-product.php:579
+msgid "این محصول در دسترس نیست."
+msgstr ""

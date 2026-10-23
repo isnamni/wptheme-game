@@ -1,0 +1,512 @@
+<?php
+/**
+ * Front-page dynamic data (Step 3).
+ *
+ * Builds the window.TKA_WP dataset consumed by main.js which swaps it into
+ * the untouched demo dataset (window.TKA) before app.js renders. Every
+ * section only overrides when real WordPress data exists; otherwise the
+ * demo sample keeps showing (graceful fallback) unless the demo fallback
+ * is disabled in the Customizer.
+ *
+ * @package ToyKindAngel
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+        exit;
+}
+
+/**
+ * Register a lightweight brand taxonomy (used by the "برندها" rail).
+ * Only when WooCommerce is available (needs the product post type).
+ */
+function toykindangel_register_brand_tax() {
+        // WooCommerce 9.4+ ships a native product_brand taxonomy — prefer it
+        // (its 'brand' rewrite slug also collides with ours).
+        if ( taxonomy_exists( 'product_brand' ) ) {
+                return;
+        }
+        if ( ! function_exists( 'wc_get_page_id' ) || taxonomy_exists( 'tka_brand' ) ) {
+                return;
+        }
+
+        register_taxonomy(
+                'tka_brand',
+                array( 'product' ),
+                array(
+                        'labels'            => array(
+                                'name'          => __( 'برندها', 'toykindangel' ),
+                                'singular_name' => __( 'برند', 'toykindangel' ),
+                                'menu_name'     => __( 'برندها', 'toykindangel' ),
+                                'add_new_item'  => __( 'افزودن برند جدید', 'toykindangel' ),
+                        ),
+                        'hierarchical'      => false,
+                        'public'            => true,
+                        'show_admin_column' => true,
+                        'show_in_rest'      => true,
+                        'rewrite'           => array( 'slug' => 'brand' ),
+                )
+        );
+}
+add_action( 'init', 'toykindangel_register_brand_tax' );
+
+/*
+ * v0.21.0 refactor — toykindangel_map_products() and toykindangel_wc_rails()
+ * (which built the window.TKA_WP.products JSON) were removed: every homepage
+ * section is now server-rendered by inc/front-ssr.php directly from
+ * WC_Product objects, so the JSON field contract {name, price, old, off, bnpl,
+ * img, url} is no longer needed. The single source of truth for the rails is
+ * toykindangel_home_rail_products() below, consumed only by the SSR helper.
+ */
+
+/**
+ * v0.26.0 — حذف کامل ناموجودها از خروجی (مخصوص ریل‌های صفحهٔ اول).
+ *
+ * بازخورد مشتری پس از 0.25.2: در «پیشنهاد ویژه» و سایر ریل‌های صفحهٔ
+ * اصلی هنوز محصولات ناموجود نمایش داده می‌شد — چون در ریل «amazing»
+ * بیش از ۳۰ مورد از ۴۰ محصولِ تخفیف‌دارِ اخیر ناموجود بودند و بعد از
+ * oos_last همچنان وارد ده‌تای اول می‌شدند. راه‌حل: ناموجودها از ریل‌های
+ * صفحهٔ اصلی کلاً حذف می‌شوند (فقط در آرشیو/جست‌وجو ترتیب «آخر بودن»
+ * دارند؛ inc/wc-hooks.php).
+ *
+ * @param WC_Product[] $products Products.
+ * @return WC_Product[]
+ */
+function toykindangel_in_stock_only( array $products ) {
+        $tka_in_stock = array();
+        foreach ( $products as $tka_product ) {
+                if ( $tka_product instanceof WC_Product && $tka_product->is_in_stock() ) {
+                        $tka_in_stock[] = $tka_product;
+                }
+        }
+        return $tka_in_stock;
+}
+
+/**
+ * v0.24.0 — مرتب‌سازی «ناموجودها در انتهای ریل» بدون حذف محصول.
+ *
+ * ترتیب نسبی داخل هر گروه حفظ می‌شود (stable split): موجودها به همان
+ * ترتیب قبلی اول، ناموجودها به همان ترتیب قبلی آخر.
+ *
+ * @param WC_Product[] $products Products.
+ * @return WC_Product[]
+ */
+function toykindangel_oos_last( array $products ) {
+        $tka_in_stock = array();
+        $tka_oos      = array();
+        foreach ( $products as $tka_product ) {
+                if ( $tka_product instanceof WC_Product && ! $tka_product->is_in_stock() ) {
+                        $tka_oos[] = $tka_product;
+                } else {
+                        $tka_in_stock[] = $tka_product;
+                }
+        }
+        return array_merge( $tka_in_stock, $tka_oos );
+}
+
+/**
+ * Single source of truth for the three homepage product rails
+ * (amazing offers / newest / best sellers).
+ *
+ * v0.21.0 — consumed only by inc/front-ssr.php::toykindangel_ssr_products().
+ * Static-cached per request: the rails query exactly once.
+ * v0.24.0 — out-of-stock products are moved to the END of every rail
+ * (client requirement #1: ناموجودها همیشه آخرِ همهٔ لیست‌ها).
+ * v0.26.0 — ناموجودها از ریل‌های صفحهٔ اصلی کلاً حذف می‌شوند (بازخورد
+ * مشتری: هنوز در پیشنهاد ویژه و ... ناموجود نمایش داده می‌شد؛ چون در
+ * ریل تخفیف‌دارها بیش از ۳۰/۴۰ ناموجود بود و ده‌تای اول را اشغال می‌کرد).
+ * سقف واکشی ۴۰ → ۶۰ تا برای پر ماندن ریل بعد از فیلتر.
+ *
+ * @return array<string, WC_Product[]> amazing/newest/best arrays (may be empty).
+ */
+function toykindangel_home_rail_products() {
+        static $tka_cache = null;
+        if ( null !== $tka_cache ) {
+                return $tka_cache;
+        }
+
+        $tka_rails = array(
+                'amazing' => array(),
+                'newest'  => array(),
+                'best'    => array(),
+        );
+
+        if ( ! function_exists( 'wc_get_products' ) ) {
+                return $tka_rails;
+        }
+
+        /* Amazing offers → products on sale (same price-diff fallback as the JS dataset). */
+        $tka_sale_ids = function_exists( 'wc_get_product_ids_on_sale' ) ? wc_get_product_ids_on_sale() : array();
+
+        /* TKA (18-e): «جشنواره» flagged products join the amazing-offer rail
+         * even when they carry no discount — the ribbon must always have a
+         * card to sit on. Merged locally (not into the WC transient) so the
+         * rail is correct immediately after the Customizer toggle flips. */
+        if ( function_exists( 'toykindangel_festival_active' ) && function_exists( 'toykindangel_festival_ids' ) && toykindangel_festival_active() ) {
+                $tka_festival_ids = toykindangel_festival_ids();
+                if ( ! empty( $tka_festival_ids ) ) {
+                        $tka_sale_ids = array_unique( array_merge( array_map( 'intval', (array) $tka_sale_ids ), $tka_festival_ids ) );
+                }
+        }
+
+        if ( empty( $tka_sale_ids ) ) {
+                /* v0.19.0 — the old fallback hydrated 100 full WC_Product
+                 * objects just to read two price fields per product; a lean
+                 * meta_key-scoped SQL returns the same IDs directly. */
+                $tka_sale_ids = toykindangel_price_diff_sale_ids( 10 );
+        }
+        if ( ! empty( $tka_sale_ids ) ) {
+                /*
+                 * v0.26.0 — به‌جای ۴۰ محصول با oos_last، ۶۰ محصول واکشی و
+                 * ناموجودها کلاً فیلتر می‌شوند (in_stock_only) و در نهایت
+                 * ۱۰ تای اول نمایش داده می‌شود؛ ریل تخفیف هرگز ناموجود ندارد.
+                 */
+                $tka_rails['amazing'] = array_slice( toykindangel_in_stock_only( wc_get_products(
+                        array(
+                                'include' => $tka_sale_ids,
+                                'limit'   => 60,
+                                'orderby' => 'date',
+                                'order'   => 'DESC',
+                        )
+                ) ), 0, 10 );
+        }
+
+        /* Newest products — v0.26.0: بدون ناموجود. */
+        $tka_rails['newest'] = array_slice( toykindangel_in_stock_only( wc_get_products(
+                array(
+                        'limit'   => 60,
+                        'orderby' => 'date',
+                        'order'   => 'DESC',
+                )
+        ) ), 0, 10 );
+
+        /*
+         * Best sellers — v0.25.0: به‌جای WP_Query با meta_key=total_sales
+         * (که با INNER JOIN محصول‌های بدون این متا — واردات قدیمی — را
+         * کلاً حذف می‌کرد و عامل «کمتر بودن تعداد» بود)، مستقیم از جدول
+         * lookup با LEFT JOIN استفاده می‌شود؛ v0.26.0: ناموجودها فیلتر.
+         */
+        global $wpdb;
+        $tka_best_ids = $wpdb->get_col(
+                "SELECT p.ID
+                 FROM {$wpdb->posts} AS p
+                 LEFT JOIN {$wpdb->wc_product_meta_lookup} AS tka_lookup ON tka_lookup.product_id = p.ID
+                 WHERE p.post_type = 'product' AND p.post_status = 'publish'
+                 ORDER BY COALESCE(tka_lookup.total_sales, 0) DESC, p.post_date DESC
+                 LIMIT 60"
+        );
+        $tka_best_ids = array_map( 'intval', (array) $tka_best_ids );
+        if ( ! empty( $tka_best_ids ) ) {
+                $tka_rails['best'] = array_slice( toykindangel_in_stock_only( wc_get_products(
+                        array(
+                                'include' => $tka_best_ids,
+                                'limit'   => 60,
+                                'orderby' => 'include',
+                        )
+                ) ), 0, 10 );
+        }
+
+        $tka_cache = $tka_rails;
+        return $tka_cache;
+}
+
+/**
+ * Cheap ID-only scan for products whose active price is below the regular
+ * price (imports that set _price < _regular_price without filling
+ * _sale_price — invisible to wc_get_product_ids_on_sale()).
+ *
+ * Same matching semantics as the previous object-hydration loop
+ * (simple/external products only: variable parents carry an empty
+ * _regular_price and were skipped there too), but one meta_key-scoped
+ * SQL instead of 100 hydrated objects. Transient-cached and flushed by
+ * inc/cache.php whenever WooCommerce rebuilds its own product caches.
+ *
+ * @param int $limit Max IDs.
+ * @return int[]
+ */
+function toykindangel_price_diff_sale_ids( $limit = 10 ) {
+        global $wpdb;
+
+        $tka_ids = toykindangel_cache_get( 'price_diff_ids' );
+        if ( null === $tka_ids ) {
+                $tka_ids = $wpdb->get_col(
+                        "SELECT DISTINCT price_meta.post_id
+                         FROM {$wpdb->postmeta} AS price_meta
+                         INNER JOIN {$wpdb->postmeta} AS regular_meta
+                                 ON regular_meta.post_id = price_meta.post_id
+                                 AND regular_meta.meta_key = '_regular_price'
+                         INNER JOIN {$wpdb->posts} AS posts
+                                 ON posts.ID = price_meta.post_id
+                         WHERE price_meta.meta_key = '_price'
+                                AND posts.post_type = 'product'
+                                AND posts.post_status = 'publish'
+                                AND price_meta.meta_value + 0 > 0
+                                AND regular_meta.meta_value + 0 > 0
+                                AND price_meta.meta_value + 0 < regular_meta.meta_value + 0"
+                );
+                $tka_ids = array_map( 'intval', (array) $tka_ids );
+                toykindangel_cache_set( 'price_diff_ids', $tka_ids, 12 * HOUR_IN_SECONDS );
+        }
+
+        return array_slice( array_values( (array) $tka_ids ), 0, (int) $limit );
+}
+
+/*
+ * v0.21.0 — toykindangel_wc_rails() (the JSON mapper over
+ * toykindangel_home_rail_products()) was removed. The SSR helper in
+ * inc/front-ssr.php reads WC_Product objects directly now, so the
+ * intermediate JSON contract is gone.
+ */
+
+/**
+ * First-level product categories for the stories row.
+ *
+ * v0.19.0: cached (static per request + transient across requests, flushed
+ * by inc/cache.php on product_cat/product_brand term changes) — the SSR
+ * renderer and the TKA_WP dataset used to run this two/three times per
+ * homepage view.
+ *
+ * @return array|null
+ */
+function toykindangel_wc_stories() {
+        static $tka_local = null;
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = toykindangel_cache_get( 'home_stories' );
+        if ( null === $tka_local ) {
+                $tka_local = toykindangel_wc_stories_uncached();
+                if ( null !== $tka_local ) {
+                        toykindangel_cache_set( 'home_stories', $tka_local, 12 * HOUR_IN_SECONDS );
+                }
+        }
+
+        return $tka_local;
+}
+
+/**
+ * Uncached stories builder (see toykindangel_wc_stories()).
+ *
+ * @return array|null
+ */
+function toykindangel_wc_stories_uncached() {
+        if ( ! taxonomy_exists( 'product_cat' ) ) {
+                return null;
+        }
+
+        // Preferred: story-flagged terms in their seeded demo order.
+        $terms = get_terms(
+                array(
+                        'taxonomy'   => 'product_cat',
+                        'parent'     => 0,
+                        'hide_empty' => false,
+                        'number'     => 10,
+                        'meta_key'   => 'tka_story_order', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- indexed theme meta; cached story ranks
+                        'orderby'    => 'meta_value_num',
+                        'order'      => 'ASC',
+                        'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- theme meta filtering; cached in transients
+                                array(
+                                        'key'   => 'tka_is_story',
+                                        'value' => '1',
+                                ),
+                        ),
+                )
+        );
+
+        if ( is_wp_error( $terms ) || empty( $terms ) ) {
+                // Fallback: first top-level terms, name-ordered (Uncategorized skipped below).
+                $terms = get_terms(
+                        array(
+                                'taxonomy'   => 'product_cat',
+                                'parent'     => 0,
+                                'hide_empty' => false,
+                                'number'     => 11,
+                        )
+                );
+        }
+        if ( is_wp_error( $terms ) || empty( $terms ) ) {
+                return null;
+        }
+
+        $out = array();
+        foreach ( $terms as $term ) {
+                if ( 'uncategorized' === $term->slug ) {
+                        continue;
+                }
+                $thumb_id = get_term_meta( $term->term_id, 'thumbnail_id', true );
+                /* v0.22.6: custom story link + new-tab toggle (admin-meta.php) */
+                $tka_custom_link = get_term_meta( $term->term_id, 'tka_story_link', true );
+                $tka_new_tab     = wp_validate_boolean( get_term_meta( $term->term_id, 'tka_story_new_tab', true ) );
+                $out[]           = array(
+                        'name'    => $term->name,
+                        'img'     => $thumb_id ? wp_get_attachment_image_url( $thumb_id, 'full' ) : '',
+                        'href'    => $tka_custom_link ? $tka_custom_link : get_term_link( $term ),
+                        'new_tab' => $tka_new_tab,
+                );
+        }
+
+        return $out ? $out : null;
+}
+
+/**
+ * Brands from the native product_brand taxonomy (fallback tka_brand).
+ *
+ * v0.19.0: cached (static per request + transient across requests, flushed
+ * by inc/cache.php on term changes) — same rationale as the stories cache.
+ *
+ * @return array|null
+ */
+function toykindangel_wc_brands() {
+        static $tka_local = null;
+        if ( null !== $tka_local ) {
+                return $tka_local;
+        }
+
+        $tka_local = toykindangel_cache_get( 'home_brands' );
+        if ( null === $tka_local ) {
+                $tka_local = toykindangel_wc_brands_uncached();
+                if ( null !== $tka_local ) {
+                        toykindangel_cache_set( 'home_brands', $tka_local, 12 * HOUR_IN_SECONDS );
+                }
+        }
+
+        return $tka_local;
+}
+
+/**
+ * Uncached brands builder (see toykindangel_wc_brands()).
+ *
+ * @return array|null
+ */
+function toykindangel_wc_brands_uncached() {
+        $tka_brand_tax = taxonomy_exists( 'product_brand' ) ? 'product_brand' : 'tka_brand';
+        if ( ! taxonomy_exists( $tka_brand_tax ) ) {
+                return null;
+        }
+
+        /* tka_brand_order is optional: brands without it must still show
+         * (sorted last, otherwise by name) — v0.7.0 robustness fix. */
+        $terms = get_terms(
+                array(
+                        'taxonomy'   => $tka_brand_tax,
+                        'hide_empty' => false,
+                        'number'     => 12,
+                        'orderby'    => 'name',
+                        'order'      => 'ASC',
+                )
+        );
+        if ( is_wp_error( $terms ) || empty( $terms ) ) {
+                return null;
+        }
+
+        usort(
+                $terms,
+                static function ( $tka_a, $tka_b ) {
+                        $tka_oa = (int) get_term_meta( $tka_a->term_id, 'tka_brand_order', true );
+                        $tka_ob = (int) get_term_meta( $tka_b->term_id, 'tka_brand_order', true );
+                        if ( $tka_oa && $tka_ob && $tka_oa !== $tka_ob ) {
+                                return $tka_oa <=> $tka_ob;
+                        }
+                        if ( $tka_oa && ! $tka_ob ) {
+                                return -1;
+                        }
+                        if ( ! $tka_oa && $tka_ob ) {
+                                return 1;
+                        }
+                        return strcasecmp( $tka_a->name, $tka_b->name );
+                }
+        );
+        $terms = array_slice( $terms, 0, 8 );
+
+        $out = array();
+        foreach ( $terms as $term ) {
+                $img_id = get_term_meta( $term->term_id, 'thumbnail_id', true );
+                $out[]  = array(
+                        'name' => $term->name,
+                        'img'  => $img_id ? wp_get_attachment_image_url( $img_id, 'full' ) : '',
+                        'href' => get_term_link( $term ),
+                );
+        }
+
+        return $out;
+}
+
+/**
+ * Front-page dataset default: demo fallback is OFF by default (v0.15.0).
+ * A standard WordPress theme never shows sample data on a real store —
+ * the Customizer toggle can re-enable it for previews.
+ *
+ * @return bool
+ */
+function toykindangel_front_fallback_enabled() {
+        return wp_validate_boolean( get_theme_mod( 'tka_fallback_demo', false ) );
+}
+
+/**
+ * Whether the homepage sections are allowed to render.
+ *
+ * Standard WordPress theme behaviour (v0.15.0): until the demo is imported
+ * the homepage shows nothing but a setup card — no sample products, no
+ * banners, no JS fallback.
+ *
+ * Unlocks when any of:
+ *  - the one-click demo import has run (tka_demo_imported option),
+ *  - the store has its own published products (self-built or WXR import),
+ *  - the Customizer toggle "tka_front_without_demo" is on.
+ *
+ * @return bool
+ */
+function toykindangel_front_unlocked() {
+        if ( get_option( 'tka_demo_imported' ) ) {
+                return true;
+        }
+        if ( wp_validate_boolean( get_theme_mod( 'tka_front_without_demo', false ) ) ) {
+                return true;
+        }
+        if ( post_type_exists( 'product' ) ) {
+                $tka_counts = wp_count_posts( 'product' );
+                if ( $tka_counts && (int) $tka_counts->publish > 0 ) {
+                        return true;
+                }
+        }
+        return false;
+}
+
+/*
+ * v0.21.0 — toykindangel_front_data() (the full TKA_WP dataset builder) was
+ * removed. All homepage sections are server-rendered by inc/front-ssr.php
+ * directly from Customizer + WooCommerce, so the JSON dataset that app.js
+ * used to paint is no longer needed. The tiny {fallback, catUrl, searchUrl}
+ * config that JS still needs is built inline in toykindangel_localize_front_data().
+ */
+
+/**
+ * Print a small window.TKA_WP config for the homepage.
+ *
+ * v0.21.0 refactor — all homepage sections (hero/grid/strip/stories/brands/
+ * products) are server-rendered by inc/front-ssr.php, so the bulky dataset
+ * that used to be shipped to JS for app.js to paint is no longer needed.
+ * Only two small keys remain:
+ *   - fallback: whether the demo-fallback mode is on (gates the setup card
+ *     and any future demo-only behaviour; main.js reads it).
+ *   - catUrl:   the real shop/categories URL, used by main.js to fix the
+ *     few remaining demo href="#" links inside SSR output.
+ */
+function toykindangel_localize_front_data() {
+        if ( ! is_front_page() ) {
+                return;
+        }
+
+        $tka_payload = array(
+                'fallback' => toykindangel_front_unlocked() && toykindangel_front_fallback_enabled(),
+                'catUrl'   => toykindangel_categories_url(),
+                'searchUrl' => home_url( '/' ),
+        );
+
+        wp_add_inline_script(
+                'toykindangel-main',
+                'window.TKA_WP=' . wp_json_encode( $tka_payload ) . ';',
+                'before'
+        );
+}
+add_action( 'wp_enqueue_scripts', 'toykindangel_localize_front_data', 20 );

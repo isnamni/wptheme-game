@@ -1,0 +1,2087 @@
+/*
+ * ToyKind Angel — سفارشی‌سازی‌های اختصاصی پروژه (TKA Custom Layer)
+ * ------------------------------------------------------------------
+ * این فایل «لایهٔ آخر» CSS قالب است و همیشه بعد از demo/main/responsive
+ * بارگذاری می‌شود (enqueue در functions.php با اولویت ۳۰).
+ * همهٔ قوانین با !important هستند تا روی لایه‌های پایین‌تر بچربند.
+ *
+ * فهرست:
+ *   ۱) سکشن «پیشنهادهای شگفت‌انگیز» — بازطراحی موبایل
+ *   ۲) اصلاحات عمومی — خدمات، فلش‌ها، تایمر، آیکن‌های هدر
+ *   ۳) منوی پایین موبایل (لینک + دکمهٔ دسته‌بندی‌ها)
+ *   ۴) صفحه محصول — موبایل (نوار بالا، گالری، قیمت، کارت‌ها، مشابه‌ها)
+ *   ۵) صفحه محصول — دسکتاپ (رفع سرریز + مطابق طرح)
+ *   ۶) محصول متغیر — چیپ‌های رنگ/سایز + فرم
+ *   ۷) صفحهٔ اول — دسکتاپ مطابق طرح
+ *   ۸) گرید دسته‌بندی‌های اصلی صفحهٔ اول
+ *   ۹) نوار زیردسته‌ها در صفحهٔ دسته‌بندی ووکامرس
+ */
+
+/* ==========================================================
+   ۱) سکشن «پیشنهادهای شگفت‌انگیز» — هم‌تراز با طرح موبایل
+   ========================================================== */
+
+/* ۱-۱) رفع باگ جهت قیمت در همهٔ عرض‌ها: «تومان» سمت چپِ مبلغ */
+section.offer .pcard__price, .plist__track .pcard__price, .tka-pgrid .pcard__price{
+  direction:rtl !important;
+}
+
+/* ۱-۲) بازطراحی مطابق طرح — فقط موبایل */
+@media (max-width:767.98px){
+
+  /* کانتینر سکشن */
+  section.offer{
+    position:relative !important;
+    margin:16px 12px 0 !important;
+    padding:12px 12px 36px !important;
+    border-radius:16px !important;
+    background:#4a0e4e !important;
+    box-shadow:0 2px 8px rgba(0,0,0,.18) !important;
+  }
+
+  /* هدر: عنوان + تایمر با خط جداکننده */
+  section.offer .offer__head{
+    padding:0 0 10px !important;
+    margin-bottom:12px !important;
+    border-bottom:1px solid rgba(255,255,255,.1) !important;
+  }
+  section.offer .offer__title{
+    font-size:12px !important;
+    font-weight:800 !important;
+    color:#fff !important;
+  }
+  section.offer .offer__title .ic{
+    font-size:16px !important;
+    color:#fde047 !important;
+  }
+  section.offer .timer{gap:4px !important;}
+  section.offer .timer__label{
+    font-size:9px !important;
+    color:rgba(255,255,255,.7) !important;
+    opacity:1 !important;
+  }
+  section.offer .timer__digits{
+    direction:rtl !important; /* ترتیب فارسی: ساعت سمت راست */
+    gap:2px !important;
+    font-size:11px !important;
+  }
+  section.offer .timer__digits b{
+    min-width:22px !important;
+    height:auto !important;
+    padding:2px 4px !important;
+    border-radius:4px !important;
+    background:rgba(0,0,0,.4) !important;
+    color:#fff !important;
+    font-size:11px !important;
+    font-weight:700 !important;
+  }
+  section.offer .timer__digits i{
+    color:rgba(255,255,255,.7) !important;
+  }
+
+  /* ریل کارت‌ها */
+  section.offer .offer__track{
+    gap:10px !important;
+    padding:0 !important;
+  }
+
+  /* کارت: کادر سفید ۱۵۰ پیکسلی */
+  section.offer .pcard-wrap, .plist__track .pcard-wrap, .tka-pgrid .pcard-wrap{
+    flex:0 0 150px !important;
+    width:150px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    padding:10px !important;
+    border-radius:12px !important;
+    box-shadow:0 1px 2px rgba(0,0,0,.08) !important;
+  }
+  section.offer .pcard-wrap:hover, .plist__track .pcard-wrap:hover, .tka-pgrid .pcard-wrap:hover{transform:none !important;}
+  section.offer .pcard, .plist__track .pcard, .tka-pgrid .pcard{
+    flex:1 1 auto !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:space-between !important;
+    padding:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+  }
+  section.offer .pcard:hover, .plist__track .pcard:hover, .tka-pgrid .pcard:hover{transform:none !important; box-shadow:none !important;}
+
+  /* بج تخفیف: قرص قرمز بالا-راست */
+  section.offer .pcard__off, .plist__track .pcard__off, .tka-pgrid .pcard__off{
+    top:8px !important;
+    right:8px !important;
+    left:auto !important;
+    background:#dc2626 !important;
+    font-size:10px !important;
+    padding:2px 6px !important;
+    border-radius:999px !important;
+    z-index:3 !important;
+  }
+  /* چیپ جشنواره: تنها در بالا، زیر بج اگر بج هست */
+  section.offer .pcard__festival, .plist__track .pcard__festival, .tka-pgrid .pcard__festival{
+    top:8px !important;
+    right:8px !important;
+    background:#a21caf !important;
+    font-size:8px !important;
+    font-weight:600 !important;
+    padding:2px 4px !important;
+    border-radius:4px !important;
+    box-shadow:none !important;
+  }
+  section.offer .pcard__off + .pcard__festival, .plist__track .pcard__off + .pcard__festival, .tka-pgrid .pcard__off + .pcard__festival{
+    top:30px !important;
+  }
+
+  /* تصویر مربع */
+  section.offer .pcard__media, .plist__track .pcard__media, .tka-pgrid .pcard__media{
+    border-radius:8px !important;
+    margin-bottom:8px !important;
+  }
+
+  /* نام محصول: دو خط ثابت برای تراز کارت‌ها */
+  section.offer .pcard__name, .plist__track .pcard__name, .tka-pgrid .pcard__name{
+    font-size:11px !important;
+    font-weight:700 !important;
+    color:#111827 !important;
+    line-height:1.45 !important;
+    height:32px !important;
+    min-height:0 !important;
+    margin:0 !important;
+  }
+
+  /* قیمت‌ها: مبلغ راست، «تومان» چپ */
+  section.offer .pcard__prices, .plist__track .pcard__prices, .tka-pgrid .pcard__prices{
+    padding:0 !important; /* حذف padding-left:44px */
+    margin-top:0 !important;
+  }
+  section.offer .pcard__old, .plist__track .pcard__old, .tka-pgrid .pcard__old{
+    font-size:10px !important;
+    color:#9ca3af !important;
+    min-height:13px !important;
+  }
+  section.offer .pcard__price, .plist__track .pcard__price, .tka-pgrid .pcard__price{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    direction:rtl !important;
+  }
+  section.offer .pcard__price span, .plist__track .pcard__price span, .tka-pgrid .pcard__price span{
+    font-size:12px !important;
+    font-weight:900 !important;
+    color:#111827 !important;
+  }
+  section.offer .pcard__price small, .plist__track .pcard__price small, .tka-pgrid .pcard__price small{
+    font-size:9px !important;
+    font-weight:400 !important;
+    color:#6b7280 !important;
+  }
+
+  /* دکمه: فول‌عرض داخل کارت */
+  section.offer .pcard__atc, .plist__track .pcard__atc, .tka-pgrid .pcard__atc{
+    position:static !important;
+    flex:0 0 auto !important;
+    width:100% !important;
+    height:auto !important;
+    min-height:0 !important;
+    min-width:0 !important;
+    margin-top:8px !important;
+    padding:6px 8px !important;
+    border-radius:8px !important;
+    background:#a21caf !important;
+    color:#fff !important;
+    font-size:11px !important;
+    font-weight:700 !important;
+    line-height:1.2 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:4px !important;
+    box-shadow:none !important;
+    white-space:nowrap !important;
+  }
+  section.offer .pcard__atc .ic, .plist__track .pcard__atc .ic, .tka-pgrid .pcard__atc .ic{width:16px !important; height:16px !important;}
+  section.offer .pcard__atc:hover, .plist__track .pcard__atc:hover, .tka-pgrid .pcard__atc:hover{background:#86198f !important; transform:none !important;}
+  section.offer .pcard__atc.added, .plist__track .pcard__atc.added, .tka-pgrid .pcard__atc.added{background:#22a06b !important;}
+  /* دکمهٔ آیکنی محصولات ساده: متن «خرید» مثل طرح */
+  section.offer .pcard__atc.add_to_cart_button::after, .plist__track .pcard__atc.add_to_cart_button::after, .tka-pgrid .pcard__atc.add_to_cart_button::after{
+    content:"خرید";
+    font-size:11px;
+    font-weight:700;
+  }
+
+  /* فلش‌های ناوبری: داخل سکشن، پایین-چپ، محو */
+  section.offer > .tka-rail{
+    position:absolute !important;
+    bottom:6px !important;
+    /* v0.26.0 (ممیزی): هدف لمسی ۳۲px — قبلاً ۱۶×۱۶ بود */
+    width:32px !important;
+    height:32px !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    color:rgba(255,255,255,.5) !important;
+    z-index:5 !important;
+  }
+  section.offer > .tka-rail .ic{
+    font-size:16px !important;
+    width:16px !important;
+    height:16px !important;
+  }
+  section.offer > .tka-rail--next{left:12px !important; right:auto !important;}
+  section.offer > .tka-rail--prev{left:34px !important; right:auto !important;}
+  section.offer > .tka-rail--prev .ic{transform:rotate(180deg) !important;}
+}
+
+/* ==========================================================
+   ۲) اصلاحات عمومی — خدمات، فلش‌ها، تایمر، آیکن‌های هدر
+   ========================================================== */
+
+/* ۲-۱) فاصله باکس‌های خدمات تا فوتر */
+main > .usps{
+  margin-bottom:16px !important;
+}
+
+/* ۲-۲) تایمر در «جدیدترین» و «پرفروش‌ترین‌ها» نباید باشد */
+section.tka-railsec:not(.offer) .timer{
+  display:none !important;
+}
+
+/* ۲-۳) چسبیدگی کارت اول سمت راست: اسکرول پدینگ را رعایت کند */
+section.tka-railsec:not(.offer) .plist__track{
+  scroll-padding-inline-start:16px !important;
+}
+
+/* ۲-۴) آیکن‌های هدر مثل طرح: دکمهٔ دایره صورتی + آیکن واضح + بج گوشه */
+header a.icon-btn[href*="wishlist"],
+header button.icon-btn[data-tka-drawer="minicart"]{
+  background:#fdf4ff !important;
+  border:1px solid #fae8ff !important;
+  border-radius:999px !important;
+  color:#a21caf !important;
+}
+header a.icon-btn[href*="wishlist"]:hover,
+header button.icon-btn[data-tka-drawer="minicart"]:hover{
+  background:#fae8ff !important;
+  color:#86198f !important;
+}
+header a.icon-btn[href*="wishlist"] .ic,
+header button.icon-btn[data-tka-drawer="minicart"] .ic{
+  width:20px !important;
+  height:20px !important;
+  color:#a21caf !important;
+}
+header .icon-btn .badge-count,
+header .icon-btn .tka-fav-badge{
+  top:-4px !important;
+  left:auto !important;
+  right:-4px !important;
+  min-width:16px !important;
+  height:16px !important;
+  padding:0 4px !important;
+  border-radius:999px !important;
+  background:#c026d3 !important;
+  color:#fff !important;
+  font-size:9px !important;
+  z-index:2 !important;
+}
+/* بج «۰» مخفی، واقعاً مخفی بماند */
+header .icon-btn .tka-fav-badge[hidden]{
+  display:none !important;
+}
+
+/* ۲-۵) فلش‌های اسلایدرها: بزرگ، قابل کلیک، جهت‌های مقابل (موبایل و تبلت) */
+@media (max-width:1023.98px){
+  section.tka-railsec:not(.offer) > .tka-rail{
+    width:34px !important;
+    height:34px !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    margin:10px 0 0 8px !important;
+    border-radius:50% !important;
+    background:#f4f4f5 !important;
+    color:#3f3f46 !important;
+  }
+  section.tka-railsec:not(.offer) > .tka-rail .ic{
+    width:18px !important;
+    height:18px !important;
+    font-size:18px !important;
+  }
+  section.tka-railsec:not(.offer) > .tka-rail--prev .ic{
+    transform:rotate(180deg) !important;
+  }
+}
+
+/* ==========================================================
+   ۳) منوی پایین موبایل — ارتفاع، فاصله از لبه، آیکن دسته‌بندی‌ها
+   (آیتم دسته‌بندی‌ها دو شکل دارد: لینک و دکمهٔ دراور — هر دو پوشش داده شده)
+   ========================================================== */
+.bottomnav{
+  height:73px !important;
+  padding-top:1px !important;
+  padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+}
+.bottomnav a[href$="/shop/"] .ic,
+.bottomnav a[href$="/categories/"] .ic,
+.bottomnav button[data-tka-drawer="cats"] .ic{display:none !important;}
+.bottomnav a[href$="/shop/"]::before,
+.bottomnav a[href$="/categories/"]::before,
+.bottomnav button[data-tka-drawer="cats"]::before{
+  content:"";
+  display:block;
+  width:20px;
+  height:20px;
+  background:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+/* ==========================================================
+   ۴) صفحهٔ محصول — باگ «تومان برعکس» + طرح موبایل
+   ========================================================== */
+
+/* ۴-۱) باگ جهت قیمت (همهٔ عرض‌ها) */
+.pricebox__now{
+  direction:rtl !important;
+}
+
+/* ۴-۲) طرح موبایل */
+@media (max-width:767.98px){
+
+  body.single-product{
+    padding-bottom:150px !important; /* جای نوار خرید ثابت + منو */
+  }
+
+  /* v0.25.0: pdp__bar از DOM حذف شد — قواعدش برداشته شد.
+     هدر چسبان سایت + بردکرامب جای آن را می‌گیرند. */
+
+  /* بردکرامب و عنوان */
+  .breadcrumb{font-size:10px !important; color:#6b7280 !important;}
+  .breadcrumb a{color:#6b7280 !important;}
+  .pdp__title{
+    font-size:18px !important;
+    font-weight:700 !important;
+    color:#111827 !important;
+    line-height:1.5 !important;
+  }
+
+  /* گالری: تصویر مربع + نوار بندانگشتی — v0.23.0: contain به‌جای cover (بدون زوم) */
+  .gallery__slide{aspect-ratio:1 / 1 !important;}
+  .gallery__slide img{
+    width:100% !important;
+    height:100% !important;
+    object-fit:contain !important;
+    background:#f9fafb;
+  }
+  .gallery__thumbs{
+    background:#fff !important;
+    padding:10px 12px !important;
+    border-bottom:1px solid #f3f4f6 !important;
+  }
+  .gallery__thumbs button{
+    width:56px !important;
+    height:56px !important;
+    border-radius:12px !important;
+    overflow:hidden;
+  }
+
+  /* قیمت + ردیف تعداد/دکمه (محصول ساده) */
+  .pricebox__now b{
+    font-size:16px !important;
+    font-weight:800 !important;
+    color:#111827 !important;
+  }
+  .pricebox__now small{
+    font-size:11px !important;
+    font-weight:400 !important;
+    color:#6b7280 !important;
+  }
+  form.cart{
+    display:flex !important;
+    align-items:center !important;
+    gap:12px !important;
+    padding:12px 16px !important;
+  }
+  .tka-qty-box{
+    height:44px !important;
+    border:1px solid #d1d5db !important;
+    border-radius:12px !important;
+    background:#fff !important;
+  }
+  form.cart .single_add_to_cart_button,
+  form.cart .button{
+    flex:1 1 auto !important;
+    height:44px !important;
+    border:none !important;
+    border-radius:12px !important;
+    background:#9e14a8 !important;
+    color:#fff !important;
+    font-size:13px !important;
+    font-weight:700 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:6px !important;
+  }
+
+  /* نوار خرید ثابت پایین (بالای منو) */
+  .pdp__cta{
+    bottom:calc(73px + env(safe-area-inset-bottom, 0px)) !important; /* بالای bottomnav */
+    background:rgba(255,255,255,.95) !important;
+    backdrop-filter:blur(8px);
+    border-top:1px solid #f3f4f6 !important;
+    box-shadow:0 -4px 16px rgba(0,0,0,.06) !important;
+  }
+  .pdp__cta .p b{
+    font-size:16px !important;
+    font-weight:800 !important;
+    color:#111827 !important;
+  }
+  .pdp__cta .btn-primary{
+    background:#a21caf !important;
+    color:#fff !important;
+    border-radius:12px !important;
+    font-weight:700 !important;
+    padding:10px 12px !important;
+    font-size:12.5px !important;
+    width:auto !important; /* btn-primary پایه width:100% دارد — در نوار باید اندازهٔ متن باشد */
+    white-space:nowrap !important;
+    flex:none !important;
+  }
+  .pdp__cta{gap:8px !important}
+  /* گوشی‌های باریک: قیمت جمع‌وجورتر تا دکمه جا شود */
+  @media (max-width:400px){
+    .pdp__cta .p small{display:none}
+    .pdp__cta .p b{font-size:14px !important}
+  }
+
+  /* کارت‌های محتوا: توضیحات / مشخصات / دیدگاه‌ها */
+  .pdp-sec__card{
+    background:#fff !important;
+    border:1px solid #f3f4f6 !important;
+    border-radius:16px !important;
+    padding:16px !important;
+    box-shadow:0 1px 2px rgba(0,0,0,.05) !important;
+  }
+  .pdp-sec__title{
+    font-size:12px !important;
+    font-weight:700 !important;
+    color:#111827 !important;
+  }
+  .pdp-sec__title .ic{
+    font-size:16px !important;
+    color:#86198f !important;
+  }
+  .pdp-specs tr{border-bottom:1px solid #f3f4f6 !important;}
+  .pdp-specs th{
+    color:#9ca3af !important;
+    font-weight:400 !important;
+    width:33% !important;
+  }
+  .pdp-specs td{
+    color:#111827 !important;
+    font-weight:500 !important;
+  }
+
+  /* فرم دیدگاه */
+  #review_form input[type="text"],
+  #review_form input[type="email"],
+  #review_form textarea{
+    border:1px solid #e5e7eb !important;
+    border-radius:12px !important;
+    font-size:12px !important;
+  }
+  #review_form input[type="submit"]{
+    width:100% !important;
+    background:#86198f !important;
+    color:#fff !important;
+    border:none !important;
+    border-radius:12px !important;
+    font-weight:700 !important;
+    padding:10px !important;
+  }
+  /* برای محصولات متغیر: سلکت‌ها قرصی شوند */
+  .variations select{
+    border:1px solid #d1d5db !important;
+    border-radius:999px !important;
+    padding:8px 14px !important;
+    background:#fff !important;
+    font-size:12px !important;
+  }
+
+  /* محصولات مشابه: هم‌سبک کارت‌های شگفت‌انگیز */
+  .tka-related .plist__track{
+    gap:10px !important;
+    scroll-padding-inline-start:16px !important;
+  }
+  .tka-related .pcard-wrap{
+    flex:0 0 150px !important;
+    width:150px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    padding:10px !important;
+    border-radius:12px !important;
+  }
+  .tka-related .pcard{
+    flex:1 1 auto !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:space-between !important;
+    padding:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+  }
+  .tka-related .pcard__off{
+    top:8px !important; right:8px !important; left:auto !important;
+    background:#dc2626 !important;
+    font-size:10px !important; padding:2px 6px !important;
+    border-radius:999px !important;
+  }
+  .tka-related .pcard__festival{
+    top:8px !important; right:8px !important;
+    background:#a21caf !important;
+    font-size:8px !important; padding:2px 4px !important;
+    border-radius:4px !important;
+  }
+  .tka-related .pcard__off + .pcard__festival{top:30px !important;}
+  .tka-related .pcard__media{border-radius:8px !important; margin-bottom:8px !important;}
+  .tka-related .pcard__name{
+    font-size:11px !important; font-weight:700 !important;
+    color:#111827 !important; height:32px !important; margin:0 !important;
+  }
+  .tka-related .pcard__prices{padding:0 !important; margin:0 !important;}
+  .tka-related .pcard__old{font-size:10px !important; color:#9ca3af !important;}
+  .tka-related .pcard__price{
+    display:flex !important; align-items:center !important;
+    justify-content:space-between !important; direction:rtl !important;
+  }
+  .tka-related .pcard__price span{font-size:12px !important; font-weight:900 !important; color:#111827 !important;}
+  .tka-related .pcard__price small{font-size:9px !important; color:#6b7280 !important;}
+  .tka-related .pcard__atc{
+    position:static !important; width:100% !important; margin-top:8px !important;
+    height:auto !important; min-height:0 !important; min-width:0 !important;
+    padding:6px 8px !important; border-radius:8px !important;
+    background:#a21caf !important; color:#fff !important;
+    font-size:11px !important; font-weight:700 !important;
+    display:flex !important; align-items:center !important; justify-content:center !important;
+  }
+  .tka-related > .tka-rail{
+    width:34px !important; height:34px !important;
+    display:inline-flex !important; align-items:center !important; justify-content:center !important;
+    margin:10px 0 0 8px !important; border-radius:50% !important;
+    background:#f4f4f5 !important; color:#3f3f46 !important;
+  }
+  .tka-related > .tka-rail .ic{width:18px !important; height:18px !important;}
+  .tka-related > .tka-rail--prev .ic{transform:rotate(180deg) !important;}
+
+  /* گالری: فول‌بلید (v0.25.0: pdp__bar حذف شد) */
+  .gallery{margin-inline:-16px !important;}
+}
+
+/* ==========================================================
+   ۵) صفحهٔ محصول — دسکتاپ (رفع سرریز + مطابق طرح)
+   ========================================================== */
+@media (min-width:768px){
+
+  /* کانتینر: حداکثر ۱۳۲۰ + وسط‌چین — رفع سرریز ۱۸۹۳px */
+  .tka-pdp-main{
+    max-width:1360px !important;
+    width:100% !important;
+    margin-inline:auto !important;
+    padding-inline:24px !important;
+    box-sizing:border-box !important;
+  }
+  .tka-pdp-cols{
+    grid-template-columns:minmax(0, 5fr) minmax(0, 7fr) !important;
+    gap:40px !important;
+    align-items:start !important;
+    max-width:100% !important;
+  }
+  .tka-pdp-cols > *{min-width:0 !important; max-width:100% !important;}
+
+  /* نوار تب‌ها: فول‌بلید با محتوای هم‌تراز کانتینر (v0.25.0: pdp__bar حذف شد) */
+  .pdp__tabs{
+    width:auto !important;
+    margin-inline:calc(50% - 50vw) !important;
+    padding-inline:max(24px, calc(50vw - 656px)) !important;
+    top:57px !important;
+    background:#fff !important;
+    border-bottom:1px solid #f3f4f6 !important;
+  }
+  .pdp__tabs a{
+    display:inline-block !important;
+    font-size:12px !important;
+    font-weight:600 !important;
+    color:#6b7280 !important;
+    padding:12px 2px !important;
+    border-bottom:2px solid transparent !important;
+  }
+  .pdp__tabs a:hover{color:#111827 !important;}
+  .pdp__tabs .on, .pdp__tabs [aria-current]{
+    color:#111827 !important;
+    border-color:#9333ea !important;
+  }
+
+  /* گالری: تصویر ۵۲۰px گردگوشه + بندانگشتی ۸۰px — چسبان زیر تب‌ها */
+  .gallery{top:104px !important;}
+  .gallery__slide{
+    height:520px !important;
+    border-radius:16px !important;
+    border:1px solid #e5e7eb !important;
+    background:#f9fafb !important;
+    overflow:hidden;
+  }
+  .gallery__slide img{width:100% !important; height:100% !important; object-fit:contain !important; background:#f9fafb;}
+  .gallery__thumbs{gap:12px !important;}
+  .gallery__thumbs button{
+    width:80px !important;
+    height:80px !important;
+    border-radius:12px !important;
+    overflow:hidden;
+  }
+
+  /* عنوان و قیمت: نوار با خط بالا/پایین */
+  .pdp__title{font-size:24px !important; font-weight:800 !important; color:#111827 !important;}
+  .pricebox{
+    background:transparent !important;
+    border-block:1px solid #f3f4f6 !important;
+    border-radius:0 !important;
+    padding:14px 0 !important;
+  }
+  .pricebox__now .woocommerce-Price-amount{font-size:18px !important;}
+
+  /* دکمهٔ افزودن به سبد */
+  form.cart .single_add_to_cart_button,
+  form.cart .button{
+    background:#b272cb !important;
+    color:#fff !important;
+    border:none !important;
+    border-radius:12px !important;
+    height:48px !important;
+    font-weight:700 !important;
+  }
+  form.cart .single_add_to_cart_button:hover{background:#a15ebc !important;}
+
+  /* جدول مشخصات: خط‌کشی + ردیف‌های یک‌درمیان */
+  .pdp-specs{
+    width:100% !important;
+    border:1px solid #e5e7eb !important;
+    border-radius:12px !important;
+    overflow:hidden;
+  }
+  .pdp-specs tr:nth-child(odd){background:#fafafa !important;}
+  .pdp-specs th, .pdp-specs td{padding:12px 16px !important;}
+
+  /* دیدگاه‌ها */
+  .pdp-sec--reviews .pdp-sec__card{background:#fafafa !important; border-color:#e5e7eb !important;}
+  #review_form input[type="text"],
+  #review_form input[type="email"],
+  #review_form textarea{
+    background:#fff !important;
+    border:1px solid #d1d5db !important;
+    border-radius:12px !important;
+    padding:10px 12px !important;
+  }
+  #review_form input[type="submit"]{
+    background:#af19af !important;
+    color:#fff !important;
+    border:none !important;
+    border-radius:12px !important;
+    font-weight:700 !important;
+  }
+
+  /* محصولات مشابه: از اسلایدر به گرید ۴ ستونه */
+  .tka-related .plist__track{
+    display:grid !important;
+    grid-template-columns:repeat(4, minmax(0,1fr)) !important;
+    gap:24px !important;
+    overflow:visible !important;
+    padding:8px 0 0 !important;
+  }
+  .tka-related > .tka-rail{display:none !important;}
+  .tka-related .pcard-wrap{
+    width:auto !important;
+    flex:none !important;
+    display:flex !important;
+    flex-direction:column !important;
+    padding:12px !important;
+    border-radius:16px !important;
+    border:1px solid #e5e7eb !important;
+    background:#fff !important;
+  }
+  .tka-related .pcard{
+    flex:1 1 auto !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:space-between !important;
+    padding:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+  }
+  .tka-related .pcard__media{
+    border-radius:12px !important;
+    aspect-ratio:1 / 1 !important;
+    margin-bottom:10px !important;
+  }
+  .tka-related .pcard__off{
+    top:10px !important; right:10px !important; left:auto !important;
+    background:#ef4444 !important;
+    border-radius:6px !important;
+    font-size:11px !important;
+  }
+  .tka-related .pcard__festival{
+    top:10px !important; right:10px !important;
+    background:#f59e0b !important;
+    border-radius:6px !important;
+    font-size:10px !important;
+  }
+  .tka-related .pcard__off + .pcard__festival{top:38px !important;}
+  .tka-related .pcard__prices{
+    display:flex !important;
+    flex-direction:row-reverse !important;
+    align-items:baseline !important;
+    gap:8px !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+  .tka-related .pcard__old{min-height:0 !important;}
+  .tka-related .pcard__price{
+    display:flex !important;
+    align-items:baseline !important;
+    gap:4px !important;
+    direction:rtl !important;
+  }
+  .tka-related .pcard__price span{font-size:14px !important; font-weight:800 !important; color:#111827 !important;}
+  .tka-related .pcard__price small{font-size:10px !important; color:#6b7280 !important;}
+  .tka-related .pcard__atc{
+    position:static !important;
+    width:100% !important;
+    margin-top:10px !important;
+    height:auto !important;
+    min-height:0 !important;
+    min-width:0 !important;
+    padding:8px !important;
+    border-radius:12px !important;
+    background:#af19af !important;
+    color:#fff !important;
+    font-size:12px !important;
+    font-weight:700 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+  }
+}
+
+/* ==========================================================
+   ۶) محصول متغیر — چیپ‌های رنگ/سایز + فرم
+   ========================================================== */
+
+/* ۶-۱) جدول واریشن‌ها: چیدمان عمودی ساده */
+.variations, .variations tbody, .variations tr,
+.variations th, .variations td{
+  display:block !important;
+  width:auto !important;
+  border:none !important;
+  background:none !important;
+  padding:0 !important;
+  margin:0 !important;
+}
+.variations th{margin-bottom:8px !important;}
+.variations .label label{
+  font-size:12px !important;
+  font-weight:600 !important;
+  color:#374151 !important;
+}
+.tka-chips{display:flex !important; flex-wrap:wrap !important; gap:8px !important;}
+.tka-chip{
+  border:1px solid #e5e7eb !important;
+  border-radius:8px !important;
+  background:#fff !important;
+  color:#374151 !important;
+  font-size:12px !important;
+  font-weight:500 !important;
+  padding:8px 18px !important;
+}
+.tka-chip[aria-selected="true"], .tka-chip.on{
+  border-color:#9333ea !important;
+  background:#faf5ff !important;
+  color:#7e22ce !important;
+  font-weight:700 !important;
+}
+.variations .reset_variations{
+  font-size:11px !important;
+  color:#9ca3af !important;
+  margin-inline-start:8px !important;
+}
+
+/* ۶-۲) قیمت رنج محصولات متغیر */
+.pricebox__now .woocommerce-Price-amount{
+  font-size:15px !important;
+  font-weight:800 !important;
+  color:#111827 !important;
+}
+.pricebox__now .woocommerce-Price-currencySymbol{
+  font-size:11px !important;
+  font-weight:400 !important;
+  color:#6b7280 !important;
+  margin-inline-start:3px;
+}
+
+/* ۶-۳) فرم متغیرها: عمودی — قانون form.cart{flex} قبلی را خنثی می‌کند */
+form.variations_form.cart{
+  display:block !important;
+  padding:12px 16px !important;
+}
+form.variations_form.cart .single_variation_wrap{margin-top:4px !important;}
+form.variations_form.cart .woocommerce-variation-add-to-cart{
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+  margin-top:14px !important;
+}
+form.variations_form.cart .tka-qty-box{flex:0 0 auto !important; height:44px !important;}
+form.variations_form.cart .single_add_to_cart_button{
+  flex:1 1 auto !important;
+  height:44px !important;
+  border:none !important;
+  border-radius:12px !important;
+  background:#9e14a8 !important;
+  color:#fff !important;
+  font-size:13px !important;
+  font-weight:700 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+form.variations_form.cart .single_add_to_cart_button.disabled,
+form.variations_form.cart .single_add_to_cart_button:disabled{opacity:.55 !important;}
+
+/* ==========================================================
+   ۷) صفحهٔ اول — دسکتاپ مطابق طرح (فقط body.home)
+   ========================================================== */
+@media (min-width:768px){
+
+  /* هیرو: داخل کانتینر و گردگوشه */
+  body.home .hero{
+    max-width:1360px !important;
+    margin:16px auto !important;
+    border-radius:16px !important;
+    overflow:visible !important;
+  }
+  /* v0.22.5: track overflow-x:auto (نه hidden) تا scrollTo کار کند */
+  body.home .hero .hero__track{
+    overflow-x:auto !important;
+    scroll-snap-type:x mandatory !important;
+    border-radius:16px !important;
+    scrollbar-width:none !important;
+  }
+  body.home .hero .hero__track::-webkit-scrollbar{display:none !important}
+
+  /* سرصفحهٔ سکشن‌ها: خط زیرین مثل طرح */
+  body.home .section__head{
+    border-bottom:1px solid #e5e7eb !important;
+    padding-bottom:12px !important;
+    margin-bottom:16px !important;
+  }
+  body.home .section__title{font-size:16px !important; font-weight:800 !important; color:#1f2937 !important;}
+  body.home .section__title .ic{color:#9c27b0 !important; font-size:18px !important;}
+  body.home .section__more{font-size:12px !important; font-weight:700 !important; color:#9c27b0 !important;}
+
+  /* دسته‌بندی‌ها: از اسلایدر به گرید */
+  body.home .stories{
+    display:grid !important;
+    grid-template-columns:repeat(auto-fit, minmax(104px, 1fr)) !important;
+    gap:12px !important;
+    overflow:visible !important;
+    padding:0 !important;
+    max-width:1360px !important;
+    margin-inline:auto !important;
+  }
+  body.home .story{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    gap:8px !important;
+    background:#fff !important;
+    border:1px solid #f3f4f6 !important;
+    border-radius:16px !important;
+    padding:10px 8px !important;
+    font-size:11px !important;
+    color:#374151 !important;
+    text-align:center;
+  }
+  body.home .story__img{width:56px !important; height:56px !important; border-radius:14px !important; overflow:hidden;}
+  body.home .story__img img{width:100% !important; height:100% !important; object-fit:cover !important;}
+
+  /* شگفت‌انگیز: کانتینر گرد + گرید ۵ ستونه */
+  body.home section.offer{
+    max-width:1360px !important;
+    margin:24px auto !important;
+    border-radius:24px !important;
+    padding:0 !important;
+  }
+  body.home .offer__head{
+    padding:16px 24px 12px !important;
+    border-bottom:1px solid rgba(255,255,255,.15) !important;
+  }
+  body.home .offer__title{font-size:18px !important; font-weight:900 !important;}
+  body.home .offer__title .ic{color:#fde047 !important; font-size:20px !important;}
+  body.home .offer__track{
+    display:grid !important;
+    grid-template-columns:repeat(5, minmax(0,1fr)) !important;
+    gap:16px !important;
+    padding:16px 24px 24px !important;
+    overflow:visible !important;
+  }
+
+  /* جدیدترین/پرفروش‌ترین: داخل کانتینر + گرید ۵ ستونه */
+  body.home .plist__track{
+    display:grid !important;
+    grid-template-columns:repeat(5, minmax(0,1fr)) !important;
+    gap:16px !important;
+    max-width:1360px !important;
+    margin-inline:auto !important;
+    padding:8px 24px !important;
+    overflow:visible !important;
+  }
+
+  /* کارت‌های هر سه سکشن: مثل طرح */
+  body.home .offer__track .pcard-wrap,
+  body.home .plist__track .pcard-wrap{
+    width:auto !important;
+    flex:none !important;
+    display:flex !important;
+    flex-direction:column !important;
+    padding:12px !important;
+    border-radius:16px !important;
+    box-shadow:0 1px 3px rgba(0,0,0,.07) !important;
+  }
+  body.home .offer__track .pcard,
+  body.home .plist__track .pcard{
+    flex:1 1 auto !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:space-between !important;
+    padding:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+  }
+  body.home .pcard__off{
+    top:10px !important; right:10px !important; left:auto !important;
+    background:#ef4444 !important;
+    font-size:11px !important; padding:2px 8px !important;
+    border-radius:999px !important;
+  }
+  body.home .pcard__festival{
+    top:10px !important; right:10px !important;
+    background:#f59e0b !important;
+    font-size:9px !important; padding:2px 6px !important;
+    border-radius:6px !important;
+  }
+  body.home .pcard__off + .pcard__festival{top:32px !important;}
+  body.home .pcard__media{border-radius:10px !important; margin-bottom:8px !important;}
+  body.home .pcard__name{
+    font-size:12px !important;
+    font-weight:700 !important;
+    color:#1f2937 !important;
+    line-height:1.6 !important;
+    height:40px !important;
+    min-height:0 !important;
+    margin:0 !important;
+  }
+  body.home .pcard__prices{
+    margin:8px 0 0 !important;
+    padding:0 !important;
+    align-items:flex-start !important;
+    text-align:left !important;
+  }
+  body.home .pcard__old{font-size:11px !important; color:#9ca3af !important; min-height:14px !important;}
+  body.home .pcard__price{
+    display:flex !important;
+    align-items:baseline !important;
+    gap:4px !important;
+    direction:rtl !important;
+    justify-content:flex-start !important;
+  }
+  body.home .pcard__price span{font-size:14px !important; font-weight:900 !important; color:#9c27b0 !important;}
+  body.home .pcard__price small{font-size:10px !important; font-weight:400 !important; color:#6b7280 !important;}
+  body.home .pcard__atc{
+    position:static !important;
+    width:100% !important;
+    margin-top:10px !important;
+    height:auto !important;
+    min-height:0 !important;
+    min-width:0 !important;
+    padding:8px !important;
+    border-radius:12px !important;
+    background:#9c27b0 !important;
+    color:#fff !important;
+    font-size:12px !important;
+    font-weight:700 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:4px !important;
+  }
+  body.home .pcard__atc:hover{background:#8e24aa !important; transform:none !important;}
+  body.home .pcard:hover, body.home .pcard-wrap:hover{transform:none !important;}
+  body.home .pcard__atc.add_to_cart_button::after{content:"خرید"; font-size:12px; font-weight:700;}
+
+  /* فلش‌های اسلایدر در حالت گرید بی‌معنا هستند */
+  body.home main section > .tka-rail{display:none !important;}
+  body.home .offer__track .morecard,
+  body.home .plist__track .morecard{display:none !important;}
+
+  /* برندها: گرید ۶ ستونه با رنگ‌های ثابت مثل طرح */
+  body.home .brands{
+    display:grid !important;
+    grid-template-columns:repeat(6, minmax(0,1fr)) !important;
+    gap:16px !important;
+    max-width:1360px !important;
+    margin:24px auto !important;
+    padding:0 24px !important;
+  }
+  body.home .brand{
+    width:auto !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    gap:8px !important;
+    background:#fff !important;
+    border:1px solid #f3f4f6 !important;
+    border-radius:16px !important;
+    padding:14px 8px !important;
+  }
+  body.home .brand__img{
+    width:64px !important;
+    height:64px !important;
+    border-radius:999px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    color:#fff !important;
+    font-size:13px !important;
+    font-weight:900 !important;
+  }
+  /* v0.24.0 (نیاز #۴): پس‌زمینهٔ تصادفیِ رنگی برندها حذف شد.
+   * مونوگرام‌ها رنگ برند قالب (primary) دارند و لوگوی واقعی
+   * بدون هیچ رنگ پس‌زمینه‌ای نمایش داده می‌شود. */
+  body.home .brand > span:last-child{font-size:12px !important; font-weight:600 !important; color:#374151 !important;}
+
+  /* سه کارت اعتماد */
+  body.home .usps{
+    max-width:1360px !important;
+    margin:24px auto !important;
+    padding:0 24px !important;
+  }
+  body.home .usp{
+    background:#fff !important;
+    border:1px solid #f3f4f6 !important;
+    border-radius:16px !important;
+    padding:18px 20px !important;
+    display:flex !important;
+    align-items:center !important;
+    gap:14px !important;
+  }
+  body.home .usp .ic{font-size:26px !important; color:#9c27b0 !important;}
+  body.home .usp b{display:block; font-size:13px !important; font-weight:800 !important; color:#111827 !important;}
+  body.home .usp small{display:block; margin-top:4px; font-size:11px !important; color:#6b7280 !important;}
+}
+
+/* ==========================================================
+   ۸) گرید دسته‌بندی‌های اصلی صفحهٔ اول
+   (فقط افزودن؛ در front-page.php زیر برندها رندر می‌شود)
+   ========================================================== */
+.tka-catgrid-sec{margin:24px 12px 0;}
+.tka-catgrid-sec .section__head{margin-bottom:12px !important;}
+.tka-catgrid{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0,1fr));
+  gap:10px;
+}
+.tka-catgrid__item{
+  background:#fff;
+  border:1px solid #f3f4f6;
+  border-radius:16px;
+  padding:12px 8px 10px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  text-align:center;
+}
+.tka-catgrid__item:hover{border-color:#e9d5ff;}
+.tka-catgrid__img{
+  width:76px;
+  height:76px;
+  border-radius:14px;
+  background:#fafafa;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+}
+.tka-catgrid__img img{width:100%; height:100%; object-fit:contain; padding:4px;}
+.tka-catgrid__img .ic{font-size:30px; color:#bdbdbd;}
+.tka-catgrid__label{font-size:12px; font-weight:600; color:#374151; line-height:1.6;}
+@media (min-width:768px){
+  .tka-catgrid-sec{max-width:1360px; margin:32px auto 0; padding:0 24px;}
+  .tka-catgrid{grid-template-columns:repeat(6, minmax(0,1fr)); gap:16px;}
+}
+
+/* ==========================================================
+   ۹) نوار زیردسته‌ها / دسته‌های هم‌سطح — بالای آرشیو دستهٔ ووکامرس
+   (اسکرول افقی، باکس دستهٔ فعلی با حاشیهٔ تیره)
+   ========================================================== */
+.tka-subcats{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:6px 0 10px;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+  scroll-snap-type:x proximity;
+}
+.tka-subcats::-webkit-scrollbar{display:none;}
+.tka-subcat{
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:8px 10px 6px;
+  min-width:78px;
+  text-align:center;
+  scroll-snap-align:start;
+}
+.tka-subcat:hover{border-color:#d1d5db;}
+.tka-subcat__img{
+  width:44px;
+  height:44px;
+  border-radius:10px;
+  background:#fafafa;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+}
+.tka-subcat__img img{width:100%; height:100%; object-fit:contain; padding:2px;}
+.tka-subcat__img .ic{font-size:22px; color:#bdbdbd;}
+.tka-subcat__label{font-size:10.5px; font-weight:500; color:#374151; line-height:1.5; white-space:nowrap;}
+.tka-subcat.on{
+  border-color:#111827;
+  box-shadow:inset 0 0 0 1px #111827;
+}
+.tka-subcat.on .tka-subcat__label{font-weight:700; color:#111827;}
+
+/* ==========================================================
+   ۱۰) استوری‌های اینستاگرامی — نوار دایره‌ای + نمایشگر تمام‌صفحه
+   (پست‌تایپ tka_story — منطق: assets/js/ig-stories.js)
+   ========================================================== */
+
+/* نوار دایره‌ای بالای صفحه */
+.tka-igbar{
+  display:flex;
+  gap:14px;
+  overflow-x:auto;
+  padding:12px 16px;
+  background:#fff;
+  border-bottom:1px solid #f3f4f6;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+.tka-igbar::-webkit-scrollbar{display:none;}
+.tka-igbar__item{
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  background:none;
+  border:none;
+  padding:0;
+  cursor:pointer;
+  font-family:inherit;
+}
+.tka-igbar__ring{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  padding:3px;
+  background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+  display:grid;
+  place-items:center;
+  transition:transform .15s;
+}
+.tka-igbar__item:hover .tka-igbar__ring{transform:scale(1.05);}
+.tka-igbar__item.seen .tka-igbar__ring{background:#dbdbdb;}
+.tka-igbar__ring img{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  object-fit:cover;
+  border:2.5px solid #fff;
+  display:block;
+}
+.tka-igbar__name{
+  font-size:11px;
+  color:#374151;
+  max-width:66px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+/* نمایشگر تمام‌صفحه */
+body.tka-ig-lock{overflow:hidden !important;}
+.tka-igview{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  background:rgba(0,0,0,.92);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.tka-igview[hidden]{display:none;}
+.tka-igview__backdrop{position:absolute; inset:0;}
+.tka-igview__card{
+  position:relative;
+  z-index:1;
+  width:100%;
+  height:100%;
+  max-width:420px;
+  background:#000;
+  overflow:hidden;
+}
+@media (min-width:481px){
+  .tka-igview__card{
+    height:min(92vh, 860px);
+    border-radius:12px;
+    box-shadow:0 12px 48px rgba(0,0,0,.5);
+  }
+}
+.tka-igview__img{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+}
+.tka-igview__img img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+  -webkit-user-select:none;
+  user-select:none;
+}
+/* پروگرس‌بار: یک سگمنت به ازای هر استوری */
+.tka-igview__progress{
+  position:absolute;
+  top:8px;
+  left:8px;
+  right:8px;
+  display:flex;
+  gap:3px;
+  z-index:3;
+  direction:rtl;
+}
+.tka-igview__seg{
+  flex:1 1 0;
+  height:3px;
+  border-radius:99px;
+  background:rgba(255,255,255,.35);
+  overflow:hidden;
+}
+.tka-igview__seg > i{
+  display:block;
+  height:100%;
+  width:100%;
+  background:#fff;
+  transform:scaleX(0);
+  transform-origin:right center;
+}
+.tka-igview__seg.done > i{transform:scaleX(1);}
+/* هدر: آواتار دایره‌ای + اسم + بستن */
+.tka-igview__head{
+  position:absolute;
+  top:18px;
+  left:8px;
+  right:8px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  z-index:3;
+}
+.tka-igview__ava{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  object-fit:cover;
+  border:1.5px solid rgba(255,255,255,.9);
+}
+.tka-igview__name{color:#fff; font-size:13px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.tka-igview__time{color:rgba(255,255,255,.75); font-size:11px; margin-inline-start:auto; flex:0 0 auto;}
+.tka-igview__close{
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:20px;
+  line-height:1;
+  cursor:pointer;
+  padding:4px 8px;
+  flex:0 0 auto;
+}
+/* نواحی ضربه: راست = قبلی، چپ = بعدی (آینهٔ اینستاگرام در RTL) */
+.tka-igview__zone{
+  position:absolute;
+  top:0;
+  bottom:0;
+  z-index:2;
+  background:none;
+  border:none;
+  cursor:pointer;
+}
+.tka-igview__zone--next{left:0; width:62%;}
+.tka-igview__zone--prev{right:0; width:38%;}
+
+/* v0.22.7: دکمهٔ «باز کردن لینک» در نمایشگر استوری */
+.tka-igview__link{
+  position:absolute;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:5;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:10px 24px;
+  border-radius:99px;
+  background:rgba(255,255,255,.95);
+  color:var(--primary);
+  font-size:13px;
+  font-weight:700;
+  text-decoration:none;
+  box-shadow:0 2px 12px rgba(0,0,0,.2);
+  transition:background .15s,color .15s;
+}
+.tka-igview__link:hover{
+  background:var(--primary);
+  color:#fff;
+}
+.tka-igview__link .ic{
+  font-size:16px;
+}
+
+/* ==========================================================
+   v0.22.0 — هم‌ترازی هدر/اسلایدر/بنرها + اصلاحات قیمت و فوتر
+   ========================================================== */
+
+/* ---------- ۱) هم‌تراز کردن هدر، منو، اسلایدر، بنرها در دسکتاپ ---------- */
+@media (min-width:768px){
+  .header{
+    padding-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    padding-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+  }
+  .promo-strip,
+  .topstrip{
+    padding-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    padding-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+  }
+  .hero{
+    margin-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    margin-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+  }
+  .banners{
+    margin-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    margin-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+  .stories{
+    margin-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    margin-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+  .brands{
+    margin-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    margin-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+}
+
+/* ---------- ۲) اسلایدر hero: رفع کشیدگی + crop از وسط ---------- */
+@media (min-width:768px){
+  .hero__slide{
+    aspect-ratio:4/1 !important;
+    height:auto !important;
+    max-height:420px;
+  }
+  .hero__slide img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center center !important;
+  }
+}
+.hero__slide img{
+  object-position:center center !important;
+}
+
+/* ---------- ۳) بنر بالای هدر (topstrip): تمام‌عرض در دسکتاپ ---------- */
+@media (min-width:768px){
+  .topstrip{
+    max-width:none !important;
+    margin-left:0 !important;
+    margin-right:0 !important;
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+  .topstrip img{
+    width:100%;
+    max-height:170px;
+    object-fit:cover;
+    object-position:center;
+  }
+}
+
+/* ---------- ۴) بنرهای ۴ تایی: ارتفاع کمتر در دسکتاپ ---------- */
+@media (min-width:768px){
+  .banner{
+    aspect-ratio:3/1 !important;
+    max-height:200px;
+  }
+  .banner img{
+    object-position:center center;
+  }
+}
+@media (min-width:1100px){
+  .banner{
+    aspect-ratio:4/1 !important;
+    max-height:160px;
+  }
+}
+
+/* ---------- ۵) اصلاح نمایش قیمت در کارت محصول ----------
+ * v0.22.3: استایل کارت جشنواره (section 2 بالا) اکنون برای همه
+ * کارت‌ها اعمال می‌شود. این بخش فقط nowrap + ellipsis اضافه می‌کند
+ * تا قیمت از کارت بیرون نزند. */
+.pcard__price,
+.pcard__price span,
+.pcard__old{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+.pcard__prices{
+  min-width:0 !important;
+  overflow:hidden !important;
+}
+.pcard,
+.pcard-wrap{
+  min-width:0 !important;
+  overflow:hidden !important;
+}
+.pcard__name{
+  -webkit-line-clamp:2 !important;
+  line-clamp:2 !important;
+  -webkit-box-orient:vertical !important;
+  overflow:hidden !important;
+  word-break:break-word !important;
+  overflow-wrap:break-word !important;
+}
+
+/* موبایل: همه کارت‌های ریل همان عرض ۱۵۰px کارت جشنواره را دارند */
+@media (max-width:767px){
+  .plist__track .pcard-wrap,
+  .tka-pgrid .pcard-wrap{
+    flex:0 0 150px !important;
+    width:150px !important;
+  }
+  .plist__track .pcard,
+  .tka-pgrid .pcard{
+    padding:8px !important;
+  }
+}
+
+/* ---------- ۶) فوتر موبایل: شبکه‌های اجتماعی (v0.26.0: فقط آیکون — استایل پایه main.css) ---------- */
+@media (max-width:767px){
+  .footer__social{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:12px;
+  }
+  .footer__col{
+    display:block !important;
+  }
+}
+
+/* ---------- ۷) فلش‌های اسلایدر hero (دسکتاپ) ---------- */
+.hero{
+  position:relative;
+  overflow:visible !important;
+}
+/* v0.22.5: track همیشه overflow-x:auto + scroll-snap (هم موبایل هم دسکتاپ).
+ * transform حذف شد چون در RTL جهت اشتباه داشت. */
+.hero__track{
+  overflow-x:auto !important;
+  scroll-snap-type:x mandatory !important;
+  scrollbar-width:none !important;
+}
+.hero__track::-webkit-scrollbar{display:none !important}
+.hero__arrow{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:10;
+  width:44px;
+  height:44px;
+  border:none;
+  border-radius:50%;
+  background:rgba(255,255,255,.9);
+  color:var(--gray-800);
+  display:none; /* در موبایل پنهان */
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  transition:background .15s,color .15s,opacity .15s;
+}
+.hero__arrow .ic{
+  font-size:22px;
+}
+.hero__arrow:hover{
+  background:var(--primary);
+  color:#fff;
+}
+.hero__arrow--prev{
+  right:12px; /* RTL: قبلی = راست */
+}
+.hero__arrow--next{
+  left:12px; /* RTL: بعدی = چپ */
+}
+@media (min-width:768px){
+  .hero__arrow{
+    display:flex;
+  }
+}
+
+/* ---------- ۸) بنرهای ۴ تایی: بدون فضای خالی ---------- */
+/* v0.22.2: ارتفاع بنر از aspect-rature به ارتفاع ثابت تغییر کرد
+ * تا فضای خالی زیر تصویر نباشد. تصویر ۱۰۰٪ ارتفاع را پر می‌کند. */
+@media (max-width:767px){
+  .banner{
+    aspect-ratio:auto !important;
+    height:90px !important;
+  }
+  .banner img{
+    width:100%;
+    height:100% !important;
+    object-fit:cover;
+    object-position:center;
+  }
+}
+@media (min-width:768px){
+  .banner{
+    aspect-ratio:auto !important;
+    height:160px !important;
+  }
+  .banner img{
+    width:100%;
+    height:100% !important;
+    object-fit:cover;
+    object-position:center;
+  }
+}
+
+/* ---------- ۹) استوری‌ها: تراز با هدر در مانیتورهای واید ---------- */
+@media (min-width:768px){
+  .tka-igbar{
+    padding-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    padding-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+  }
+  .stories{
+    padding-left:max(24px,calc((100vw - 1320px) / 2)) !important;
+    padding-right:max(24px,calc((100vw - 1320px) / 2)) !important;
+  }
+}
+
+/* ---------- ۱۰) بنر بالای هدر (topstrip): ارتفاع طبیعی تصویر ---------- */
+/* v0.24.0: height ثابت ۱۰۰px + cover بنر را قیچی می‌کرد؛ حالا نسبت واقعی */
+@media (min-width:768px){
+  .topstrip img{
+    width:100%;
+    height:auto !important;
+    max-height:140px !important;
+    object-fit:contain !important;
+    object-position:center;
+  }
+}
+
+/* ---------- ۱۱) صفحه محصول موبایل: bottomnav hidden + دکمه افزودن به سبد ثابت ---------- */
+/* v0.22.3: در موبایل، صفحه محصول bottomnav ندارد؛ به‌جای آن نوار چسبان
+ * پایین دکمهٔ «افزودن به سبد خرید» نشان می‌دهد. دکمهٔ افزودن به سبد
+ * درون صفحه هم hidden می‌شود تا فقط نوار چسبان استفاده شود. */
+@media (max-width:767px){
+  /* v0.24.0 (نیاز #۵ + بازخورد دوم): منوی پایین (bottomnav) در صفحهٔ محصول
+     هم مثل بقیهٔ صفحات نمایش داده می‌شود؛ فاصلهٔ پایین بدنه = منو + نوار خرید. */
+  body.single-product .app--padded{
+    padding-bottom:calc(73px + 84px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  body.single-product{
+    padding-bottom:0 !important;
+  }
+  body.single-product .gallery{margin-top:0 !important}
+  body.single-product .gallery__thumbs{
+    padding:8px 12px 10px !important;
+    border-bottom:0 !important;
+  }
+  /* v0.24.0 (نیاز #۸): در موبایل فرم خرید محصول سادهٔ داخل صفحه کلاً مخفی است؛
+     نوار چسبان پایین (قیمت + تعداد + دکمه) تنها نقطهٔ خرید است.
+     محصول متغیر: فرم انتخاب ویژگی‌ها با دکمهٔ خودش می‌ماند (تنها دکمهٔ واقعی). */
+  body.single-product form.cart:not(.variations_form){
+    display:none !important;
+  }
+}
+/* v0.25.0 — در دسکتاپ هم نوار چسبان خرید نمایش داده می‌شود.
+ * دلیل: از v0.25 دکمهٔ خرید داخل pricebox حذف شده (تک‌دکمه‌ای، نیاز #۸)،
+ * پس تنها کنترل خرید صفحه — موبایل و دسکتاپ — نوار چسبان است.
+ * استایل دسکتاپ: تمام‌عرض با محتوای هم‌تراز ظرف ۱۳۲۰. */
+@media (min-width:768px){
+  .pdp__cta{
+    display:flex !important;
+    max-width:none !important;
+    bottom:0 !important;
+    left:0;right:0;
+    padding:10px max(24px, calc(50vw - 656px)) !important;
+    background:rgba(255,255,255,.97) !important;
+    backdrop-filter:blur(8px);
+    border-top:1px solid #e9e9ef !important;
+    box-shadow:0 -6px 24px rgba(0,0,0,.07) !important;
+    gap:16px !important;
+  }
+  .pdp__cta .p{flex:none}
+  .pdp__cta .p b{font-size:18px !important}
+  .pdp__cta__qty{margin-inline-start:auto !important}
+  .pdp__cta .btn-primary{
+    background:var(--primary,#ae5399) !important;
+    color:#fff !important;
+    border-radius:12px !important;
+    font-weight:700 !important;
+    padding:10px 34px !important;
+    font-size:13.5px !important;
+    min-height:44px;
+    width:auto !important;
+    white-space:nowrap !important;
+    flex:none !important;
+    margin-inline-start:8px !important;
+  }
+  /* جای نوار چسبان در انتهای بدنهٔ PDP */
+  body.single-product{padding-bottom:96px !important}
+}
+
+/* ---------- ۱۲) اسلایدر: اطمینان از نمایش همه تصاویر ---------- */
+/* v0.22.3: تصاویر اسلایدر باید همیشه visible باشند، حتی وقتی با transform
+ * جابجا می‌شوند. */
+.hero__slide{
+  overflow:visible !important;
+}
+.hero__slide img{
+  opacity:1 !important;
+}
+
+/* ==========================================================
+   v0.23.0 — اصلاحات ۱۶‌گانه
+   ========================================================== */
+
+/* ---------- ۱۳) بستن سبد خرید در دسکتاپ ---------- */
+/* اطمینان از کار کردن close button و backdrop در دسکتاپ */
+.tka-drawer__close{
+  cursor:pointer !important;
+  z-index:20 !important;
+  position:relative !important;
+}
+.tka-drawer__backdrop{
+  cursor:pointer !important;
+}
+
+/* ---------- ۱۴) چک‌اوت: آیکون درگاه‌ها + تیک شرایط + مخفی کردن فیلدها ---------- */
+/* آیکون‌های درگاه پرداخت کوچک‌تر (هم‌قدِ ردیف درگاه) */
+.woocommerce-checkout .payment_methods li img,
+.wc_payment_method img{
+  max-width:56px !important;
+  max-height:22px !important;
+  width:auto !important;
+  height:auto !important;
+  display:inline-block !important;
+  vertical-align:middle !important;
+  margin:0 4px !important;
+}
+/* v0.24.0: قانون نامعتبر checked:expression() حذف شد — تیک خودکار شرایط
+   از JS (wc.js) مدیریت می‌شود: بار اول + بعد از هر refresh آجاکسی چک‌اوت
+   (رویداد updated_checkout) دوباره تیک می‌خورد.
+   فیلد ایمیل و کشور: مخفی — و سمت PHP هم اختیاری شده‌اند
+   (inc/wc-pages-fix.php) تا ووکامرس خطای required ندهد. */
+.woocommerce-checkout #billing_email_field,
+.woocommerce-checkout #billing_country_field,
+.tka-field-hidden{
+  display:none !important;
+}
+
+/* ---------- ۱۵) علامت منفی در سبد خرید ---------- */
+.tka-qty-btn .ic{
+  font-size:18px;
+}
+
+/* ---------- ۲) بهبود تایپوگرافی و خوانایی (الگو: فروشگاه‌های مطرح ایرانی) ---------- */
+body{
+  font-size:15px !important;
+  line-height:1.9 !important;
+}
+.tka-site-main p,
+.pdp-sec p,
+.tka-category-description p{
+  font-size:14.5px !important;
+  line-height:2 !important;
+  color:#374151 !important;
+}
+/* توضیحات محصول و محتوای صفحات: بزرگ‌تر و هوادارتر (مرجع: 15px/2.5) */
+.pdp-sec .desc,
+.tka-entry{
+  font-size:15px !important;
+  line-height:2.2 !important;
+  color:#303030 !important;
+}
+.pdp-sec .desc p{margin:0 0 10px}
+.pdp__summary{
+  font-size:13px !important;
+  line-height:2 !important;
+  color:#4b5563 !important;
+}
+.pdp__title{
+  font-size:20px !important;
+  line-height:1.6 !important;
+}
+.pdp-sec__title{
+  font-size:16px !important;
+}
+h1,h2,h3{
+  line-height:1.4 !important;
+}
+
+/* ---------- ۷+۸) کنترل تعداد در نوار چسبان پایین (+/− داخل نوار) ---------- */
+.pdp__cta__qty{
+  display:flex;
+  align-items:center;
+  flex:none;
+}
+.pdp__cta__qty .tka-qty-box{
+  display:inline-flex !important;
+  align-items:center !important;
+  border:1px solid #e5e7eb !important;
+  border-radius:10px !important;
+  background:#fff !important;
+  overflow:hidden;
+}
+.pdp__cta__qty .tka-qty-btn{
+  width:34px !important;
+  height:40px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:#f9fafb !important;
+  color:#374151 !important;
+  border:0 !important;
+  cursor:pointer !important;
+}
+.pdp__cta__qty .tka-qty-btn:first-child{border-inline-end:1px solid #e5e7eb !important}
+.pdp__cta__qty .tka-qty-btn:last-child{border-inline-start:1px solid #e5e7eb !important}
+.pdp__cta__qty .tka-qty-btn .ic{width:14px;height:14px;font-size:14px}
+.pdp__cta__qty input.qty{
+  width:40px !important;
+  height:40px !important;
+  border:0 !important;
+  text-align:center !important;
+  font-size:15px !important;
+  font-weight:700 !important;
+  color:#111827 !important;
+  background:#fff !important;
+  -moz-appearance:textfield;
+  appearance:textfield;
+}
+.pdp__cta__qty input.qty::-webkit-inner-spin-button,
+.pdp__cta__qty input.qty::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+/* ---------- ۱۲) بنرها/تصاویر: بدون بزرگ‌نمایی و بدون برش ---------- */
+/* v0.24.0: aspect-ratio ثابت + object-fit:cover باعث برش/زوم تصویر بود.
+   حالا هر بنر از نسبت واقعی تصویر خودش استفاده می‌کند (width:100% و
+   height:auto) — هیچ تصویری کشیده یا بریده نمی‌شود. */
+@media (max-width:767px){
+  .banner{
+    height:auto !important;
+    aspect-ratio:auto !important;
+  }
+  .banner img{
+    width:100% !important;
+    height:auto !important;
+    object-fit:fill !important;
+  }
+  .topstrip img{
+    height:auto !important;
+    max-height:140px !important;
+    object-fit:contain !important;
+  }
+}
+@media (min-width:768px){
+  .banner{
+    height:auto !important;
+    aspect-ratio:auto !important;
+    max-height:none !important;
+  }
+  .banner img{
+    width:100% !important;
+    height:auto !important;
+    object-fit:fill !important;
+  }
+  .topstrip img{
+    height:auto !important;
+    max-height:140px !important;
+    object-fit:contain !important;
+  }
+}
+
+/* ---------- ۹) گالری: بندانگشتی با اسکرول افقی ---------- */
+/* v0.24.0: justify-content:center در RTL وقتی ریل overflow می‌شد،
+   چند بندانگشتیِ اول از دسترس خارج می‌شد (قیچی دوطرفه) — flex-start */
+.gallery__thumbs{
+  overflow-x:auto !important;
+  flex-wrap:nowrap !important;
+  justify-content:flex-start !important;
+  scrollbar-width:thin !important;
+  -webkit-overflow-scrolling:touch !important;
+  scroll-padding-inline:4px;
+}
+.gallery__thumbs::-webkit-scrollbar{
+  height:4px !important;
+}
+.gallery__thumbs::-webkit-scrollbar-thumb{
+  background:var(--gray-300,#d4d4d8) !important;
+  border-radius:99px !important;
+}
+.gallery__thumbs button{
+  flex-shrink:0 !important;
+}
+
+/* ---------- ۱۱) بردکرامب در صفحه محصول ---------- */
+.pdp__breadcrumb{
+  font-size:12px;
+  color:var(--gray-500);
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  flex-wrap:wrap;
+}
+.pdp__breadcrumb a{
+  color:var(--gray-600);
+  text-decoration:none;
+}
+.pdp__breadcrumb a:hover{
+  color:var(--primary);
+}
+.pdp__breadcrumb span{
+  color:var(--gray-400);
+  margin:0 2px;
+}
+
+/* ---------- ۳) گالری: تصویر همیشه کامل داخل قاب (بدون برش/زوم) ---------- */
+/* v0.24.0: ریشهٔ باگ «تصویر بزرگ‌شده/بریده» — اسلاید grid با place-items:center
+   است و height:100% روی تصویر در برابر ردیف grid (auto) حل می‌شود ⇒ جعبهٔ
+   تصویر ۷۴۰px داخل اسلاید ۵۲۰px و برش با overflow:hidden.
+   تصویر را position:absolute می‌کنیم تا جعبه‌اش دقیقاً = اسلاید باشد و
+   object-fit:contain کل عکس را بدون برش جا می‌دهد (موبایل و دسکتاپ). */
+.gallery__slide{
+  overflow:hidden;
+}
+.gallery__slide img{
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  max-width:none !important;
+  object-fit:contain !important;
+}
+
+/* ---------- ۹) برند محصول در PDP ---------- */
+.pdp__brand-link{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:12px;
+  text-decoration:none;
+  color:var(--gray-700);
+  font-weight:600;
+  font-size:13px;
+}
+.pdp__brand-link:hover{
+  color:var(--primary);
+}
+.pdp__brand-logo{
+  width:32px;
+  height:32px;
+  object-fit:contain;
+  border-radius:6px;
+  border:1px solid var(--gray-200);
+}
+
+/* ==========================================================
+   v0.24.0 — تکمیلی
+   ========================================================== */
+
+/* دکمهٔ بستن دراورها = علامت × (آیکون plus چرخیده؛ همهٔ دراورها) */
+.tka-drawer__close .ic{
+  transform:rotate(45deg);
+}
+
+/* نشان «ناموجود» روی کارت محصول (نیاز #۱) */
+.pcard-wrap{position:relative}
+.pcard__oos{
+  position:absolute;top:8px;inset-inline-end:8px;z-index:3;
+  background:#6b7280;color:#fff;font-size:10px;font-weight:700;
+  padding:3px 8px;border-radius:99px;line-height:1.6;
+}
+
+/* تایم‌لاین مراحل خرید روی صفحهٔ سبد (هم‌سبک چیپ‌های چک‌اوت) */
+.tka-cart__steps{
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  margin:0 0 14px;
+}
+.tka-cart__steps .tka-co__step{font-size:11px}
+
+/* استپر تعداد در فرم خرید PDP — درست در موبایل و دسکتاپ (نیاز #۷) */
+form.cart .tka-qty-box,
+form.variations_form.cart .tka-qty-box{
+  display:inline-flex !important;
+  align-items:center !important;
+  border:1px solid #d1d5db !important;
+  border-radius:12px !important;
+  background:#fff !important;
+  overflow:hidden;
+  height:44px;
+}
+form.cart .tka-qty-btn{
+  width:38px !important;
+  height:42px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:#f9fafb !important;
+  color:#374151 !important;
+  border:0 !important;
+  cursor:pointer !important;
+}
+form.cart .tka-qty-btn:first-child{border-inline-end:1px solid #e5e7eb !important}
+form.cart .tka-qty-btn:last-child{border-inline-start:1px solid #e5e7eb !important}
+form.cart .tka-qty-btn .ic{width:14px;height:14px}
+form.cart input.qty{
+  width:44px !important;
+  height:42px !important;
+  border:0 !important;
+  text-align:center !important;
+  font-size:15px !important;
+  font-weight:700 !important;
+  color:#111827 !important;
+  background:#fff !important;
+  -moz-appearance:textfield;
+  appearance:textfield;
+}
+form.cart input.qty::-webkit-inner-spin-button,
+form.cart input.qty::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+/* =========================================================
+   v0.25.0 — هم‌رنگ‌سازی صفحهٔ ورود/ثبت‌نام OTP (افزونهٔ UMS)
+   با رنگ قالب. افزونه سبک inline با !important تزریق می‌کند
+   (#2ed4f5 آبی فیروزه‌ای)؛ با پیشوند body class و !important
+   برمی‌گردانیمش به بنفش قالب.
+   ========================================================= */
+.body-ums-login .ums-login-submit-button,
+.body-ums-login .ums-login-submit-otp-button,
+.body-ums-login #login-submit-otp,
+.body-ums-login #otp-submit{
+  background:var(--primary,#ae5399) !important;
+  color:#fff !important;
+  border-radius:12px !important;
+  font-weight:700 !important;
+}
+.body-ums-login .ums-login-submit-button:hover,
+.body-ums-login .ums-login-submit-otp-button:hover{filter:brightness(1.06)}
+.body-ums-login .ums-button-google-login{
+  background:rgba(174,83,153,.12) !important;
+  border:1px solid rgba(174,83,153,.25) !important;
+}
+.body-ums-login .ums-button-google-login a,
+.body-ums-login #register-btn,
+.body-ums-login .ums-footer-login-link,
+.body-ums-login .resend-otp{
+  color:var(--primary,#ae5399) !important;
+}
+.body-ums-login .umss-form-control{
+  border-radius:12px !important;
+  border:1.5px solid #e5e5ea !important;
+  background:#f7f7f9 !important;
+  transition:border-color .15s, box-shadow .15s;
+}
+.body-ums-login .umss-form-control:focus{
+  outline:none !important;
+  border-color:var(--primary,#ae5399) !important;
+  box-shadow:0 0 0 3px rgba(174,83,153,.14) !important;
+  background:#fff !important;
+}
+.body-ums-login .otp-input-ums-field{
+  border-radius:10px !important;
+  border:1.5px solid #e5e5ea !important;
+}
+.body-ums-login .otp-input-ums-field:focus{
+  outline:none !important;
+  border-color:var(--primary,#ae5399) !important;
+  box-shadow:0 0 0 3px rgba(174,83,153,.14) !important;
+}
+.body-ums-login .ums-content-login-form{border-radius:18px !important}
+
+/* ==========================================================
+   v0.25.1 — ریزبهینه‌سازی‌های ممیزی UI
+   ========================================================== */
+
+/* ۱) نشان ناموجود خواناتر (۱۰→۱۱px) */
+.pcard__oos{font-size:11px;padding:3px 10px}
+
+/* ۲) ویجت‌های خالی سایدبار فروشگاه (مثل block-12) کارت سفید خالی رندر
+   می‌کردند — مخفی می‌شوند تا ستون فیلترها تمیز بماند */
+.tka-filters .widget:empty,
+.tka-filters section.widget:empty{display:none !important}
+
+/* ۳) لینک‌های فوتر: هدف لمسی ۴۴px (ممیزی موبایل) */
+.footer__cols li a{
+  display:inline-block;
+  padding:6px 0;
+  min-height:32px;
+}
+@media (max-width:767px){
+  .footer__cols li a{min-height:36px}
+}
+.section__more{padding:8px 0;min-height:36px}
+
+/* ۴) شماره تماس فوتر: جهت LTR تا ارقام به‌هم نریزند (bidi) */
+.footer__cols a.num{
+  direction:ltr;
+  unicode-bidi:isolate;
+  display:inline-block;
+  letter-spacing:.5px;
+}

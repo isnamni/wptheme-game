@@ -1,0 +1,941 @@
+/**
+ * novak-ui-fixes.css
+ * استايل‌هاي اصلاحي جامع رابط کاربري - فروشگاه اسباب‌بازي فرشته مهربون
+ * وب‌سايت: https://toykindangel.com/newsite/
+ * نسخه: 2.2.0
+ * تاريخ: 2026-10-23
+ *
+ * محل استفاده: پيشخوان وردپرس ? نمايش ? سفارشي‌سازي ? CSS اضافي (Additional CSS)
+ */
+
+/* =====================================================================
+   ?. هدر (Header) — دقيقاً طبق کدهاي اختصاصي شما
+   ===================================================================== */
+
+/**
+ * FIX 1-A: Sticky header overlaps content on scroll
+ */
+.app > main,
+.tka-wc-page {
+  scroll-margin-top: var(--header-h, 60px);
+}
+
+/**
+ * FIX 1-B: Header z-index conflict with WooCommerce overlays
+ */
+.header {
+  z-index: 200;
+}
+
+/**
+ * FIX 1-C: Logo alt text visible when image fails to load
+ */
+.logo img {
+  font-size: 0;
+  color: transparent;
+}
+
+/**
+ * FIX 1-D: Search box placeholder text direction on RTL
+ */
+.searchbox input[type="search"],
+.searchbox input[type="text"] {
+  direction: rtl;
+  text-align: right;
+}
+
+/**
+ * FIX 1-E: Admin-bar offset for non-sticky header position
+ */
+body.admin-bar .skip-link {
+  top: -48px;
+}
+
+/* ?-?) دسکتاپ عريض: لوگو | منو | جستجو | علاقه‌مندي | حساب | سبد — يک رديف */
+@media (min-width: 1200px) {
+  body .header {
+    grid-template-columns: auto minmax(0, 1fr) minmax(200px, 300px) auto auto auto;
+    column-gap: var(--sp-s, .75rem);
+    padding-block: 8px;
+  }
+  body .header .header__nav {
+    grid-column: 2;
+    grid-row: 1;
+    margin-top: 0;
+    border-top: 0;
+    min-width: 0;
+  }
+  body .header .header__menu {
+    flex-wrap: nowrap;
+    padding: 0;
+    gap: 0;
+  }
+  body .header .header__menu > li > a {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  body .header .header__cats-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  body .header .header__search {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  body .header .header__search .searchbox {
+    height: 40px;
+  }
+  body .header .header__row .icon-btn:nth-last-child(3) { grid-column: 4; grid-row: 1; }
+  body .header .header__row .icon-btn:nth-last-child(2) { grid-column: 5; grid-row: 1; }
+  body .header .header__row .icon-btn:last-child { grid-column: 6; grid-row: 1; }
+}
+
+/* ?-?) تبلت و دسکتاپ کوچک: همان دو رديف، ولي کم‌ارتفاع‌تر */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+  body .header {
+    padding-block: 8px;
+  }
+  body .header .header__nav {
+    margin-top: 6px;
+  }
+  body .header .header__menu {
+    padding: 2px 0;
+  }
+  body .header .header__menu > li > a {
+    padding: 6px 12px;
+  }
+  body .header .header__search .searchbox {
+    height: 40px;
+  }
+}
+
+
+/* =====================================================================
+   ?. منوي اصلي و دراورها (Menu & Drawers)
+   ===================================================================== */
+
+@media (min-width: 768px) {
+  .header__menu > li:first-child > .sub-menu,
+  .header__menu > li:nth-child(2) > .sub-menu {
+    right: auto;
+    left: 0;
+  }
+  .header__menu .sub-menu a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.tka-drawer__close {
+  color: var(--gray-700);
+}
+
+.bottomnav a.active,
+.bottomnav a[aria-current="page"] {
+  color: var(--primary) !important;
+  position: relative;
+}
+.bottomnav a.active::after,
+.bottomnav a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  right: 50%;
+  transform: translateX(50%);
+  width: 24px;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 2px 2px 0 0;
+}
+
+.tka-drawer .cpanel {
+  padding-bottom: 40px;
+}
+
+
+/* =====================================================================
+   ?. کارت‌هاي محصول (Product Cards)
+   ===================================================================== */
+
+.woocommerce .price,
+.woocommerce-Price-amount,
+.amount {
+  direction: rtl;
+  unicode-bidi: embed;
+}
+
+.pcard__atc[disabled],
+.pcard__atc.disabled {
+  opacity: 0.45 !important;
+  pointer-events: none !important;
+  filter: grayscale(30%);
+}
+
+.pcard__name {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+@media (hover: none) {
+  .pcard:hover,
+  .pcard-wrap:hover {
+    transform: none !important;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06) !important;
+  }
+}
+
+.pcard__off {
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+.tka-pgrid {
+  gap: 10px 8px;
+}
+
+@media (max-width: 767.98px) {
+  body .tka-pgrid .pcard-wrap {
+    width: auto !important;
+    max-width: none !important;
+    flex: none !important;
+  }
+}
+
+.tka-pgrid .pcard-wrap .pcard:hover,
+.tka-wishlist__grid .pcard-wrap .pcard:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+@media (min-width: 768px) {
+  .tka-pgrid .pcard__name {
+    line-height: 1.6;
+    min-height: 3.2em;
+  }
+}
+
+html body .pcard-wrap .pcard__old {
+  color: #6b7280 !important;
+}
+
+.pcard-wrap a:focus-visible {
+  outline: 2px solid var(--primary, #ae5399);
+  outline-offset: -2px;
+  border-radius: inherit;
+}
+.pcard-wrap .pcard__atc:focus-visible {
+  outline: 2px solid var(--gray-900, #212121);
+  outline-offset: 2px;
+}
+
+
+/* =====================================================================
+   ?. صفحه جزئيات محصول (PDP)
+   ===================================================================== */
+
+.gallery__thumbs button.active,
+.gallery__thumbs button[aria-selected="true"] {
+  outline: 2px solid var(--primary) !important;
+  outline-offset: 2px;
+}
+
+.woocommerce-breadcrumb .sep {
+  display: none;
+}
+
+#review_form_wrapper label,
+.woocommerce-Reviews .comment-form label {
+  display: block;
+  text-align: right;
+}
+
+.woocommerce-product-rating .star-rating,
+#respond .stars a,
+.comment-form-rating .stars {
+  direction: rtl;
+  unicode-bidi: embed;
+}
+
+.tka-varform .variations select {
+  direction: rtl;
+  background-position: left 10px center !important;
+  padding-left: 30px;
+  padding-right: 10px;
+}
+
+.pdp__cta {
+  padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
+}
+
+.tka-entry-content ul,
+.tka-entry-content ol,
+.entry-content ul,
+.entry-content ol,
+.woocommerce-Tabs-panel ul,
+.woocommerce-Tabs-panel ol {
+  padding-right: 20px;
+  padding-left: 0;
+}
+
+.woocommerce-tabs .tabs {
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.woocommerce-tabs .tabs::-webkit-scrollbar {
+  display: none;
+}
+.woocommerce-tabs .tabs li {
+  display: inline-block;
+}
+
+@media (min-width: 768px) {
+  body.single-product form.cart:not(.variations_form) .single_add_to_cart_button {
+    background: var(--primary, #ae5399) !important;
+  }
+  body.single-product form.cart:not(.variations_form) .single_add_to_cart_button:hover {
+    background: var(--primary-dark, #a600a9) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .tka-pdp-main > .pdp__tabs {
+    position: static !important;
+    background: transparent !important;
+    border-bottom: none !important;
+    margin: 8px auto 14px !important;
+  }
+  .pdp__tabs-in {
+    padding: 4px 10px !important;
+    background: var(--gray-50, #f8f9fa) !important;
+    border-radius: 30px !important;
+    border: 1px solid var(--gray-200, #eaedf1) !important;
+    width: fit-content !important;
+  }
+}
+
+
+/* =====================================================================
+   ?. سبد خريد جامع و رفع قطعي مشکل تغيير روش ارسال (Cart & AJAX Fix)
+   ===================================================================== */
+
+/**
+ * ?-?. نوار مراحل سه‌مرحله‌اي خريد (Shopping Stepper)
+ */
+.tka-cart__steps,
+.tka-co__steps {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  margin: 0 auto 20px !important;
+  padding: 10px 18px !important;
+  background: #ffffff !important;
+  border: 1px solid var(--gray-200, #eaedf1) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+  max-width: 580px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.tka-cart__steps .tka-co__step,
+.tka-co__steps .tka-co__step {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 6px 14px !important;
+  border-radius: 20px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  color: var(--gray-500, #888899) !important;
+  background: var(--gray-100, #f2f3f7) !important;
+  white-space: nowrap !important;
+}
+
+.tka-cart__steps .tka-co__step.tka-co__step--on,
+.tka-co__steps .tka-co__step.tka-co__step--on {
+  background: var(--primary, #ae5399) !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 10px rgba(174, 83, 153, 0.3) !important;
+}
+
+.tka-cart__steps .tka-co__step:not(:last-child)::after,
+.tka-co__steps .tka-co__step:not(:last-child)::after {
+  content: "?" !important;
+  margin-right: 8px !important;
+  font-size: 12px !important;
+  color: var(--gray-400, #bbbbcc) !important;
+}
+.tka-cart__steps .tka-co__step.tka-co__step--on::after,
+.tka-co__steps .tka-co__step.tka-co__step--on::after {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/**
+ * ?-?. گريد پايدار دو ستونه سبد خريد (فقط روي خود .tka-cart)
+ */
+@media (min-width: 768px) {
+  .tka-cart {
+    display: grid !important;
+    grid-template-columns: 1.6fr 1fr !important;
+    gap: 20px !important;
+    align-items: start !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+  }
+
+  .tka-cart > .tka-cart__steps {
+    grid-column: 1 / -1 !important;
+    grid-row: 1 !important;
+  }
+
+  .tka-cart > .tka-cart__form {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  .tka-cart > .tka-coupon {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+    margin: 14px 0 0 !important;
+  }
+
+  /* تثبيت ستون جمع کل در هر دو حالت: قبل و بعد از AJAX */
+  .tka-cart > .tka-totals,
+  .tka-cart > .cart_totals,
+  .tka-cart > div.cart_totals,
+  .tka-cart > .cart-collaterals {
+    grid-column: 2 !important;
+    grid-row: 2 / span 2 !important;
+    position: sticky !important;
+    top: 75px !important;
+    margin: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/**
+ * ?-?. استايل کامل کارت فاکتور / جمع کل (هميشه با پدينگ و عرض استاندارد)
+ */
+.tka-totals__card,
+.tka-cart > .cart_totals,
+.tka-cart > div.cart_totals {
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--gray-200, #eaedf1) !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04) !important;
+  padding: 18px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+.tka-totals__title,
+.tka-cart .cart_totals h2 {
+  font-size: 15.5px !important;
+  font-weight: 800 !important;
+  color: var(--gray-900, #222) !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid var(--gray-100, #f0f0f5) !important;
+  margin: 0 0 12px 0 !important;
+}
+
+/* جدول جمع کل ووکامرس بعد از AJAX */
+.tka-cart .cart_totals table.shop_table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border: none !important;
+  margin: 0 0 12px 0 !important;
+  background: transparent !important;
+}
+.tka-cart .cart_totals table.shop_table tr {
+  border-bottom: 1px dashed var(--gray-200, #eaedf1) !important;
+  display: table-row !important;
+}
+.tka-cart .cart_totals table.shop_table tr.order-total {
+  border-top: 1px solid var(--gray-200, #eaedf1) !important;
+  border-bottom: none !important;
+}
+.tka-cart .cart_totals table.shop_table th {
+  padding: 8px 0 !important;
+  border: none !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: var(--gray-700, #555) !important;
+  text-align: right !important;
+}
+.tka-cart .cart_totals table.shop_table td {
+  padding: 8px 0 !important;
+  border: none !important;
+  font-size: 13px !important;
+  text-align: left !important;
+  color: var(--gray-900, #222) !important;
+}
+.tka-cart .cart_totals table.shop_table tr.order-total th {
+  padding-top: 12px !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+}
+.tka-cart .cart_totals table.shop_table tr.order-total td {
+  padding-top: 12px !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  color: var(--primary, #ae5399) !important;
+}
+
+/**
+ * ?-?. رديف مرسوله و گزينه‌هاي ارسال (Shipping Cards)
+ * بدون بيرون‌زدگي، با چيدمان کارتي تميز براي هر دو حالت
+ */
+.tka-cart tr.woocommerce-shipping-totals {
+  display: block !important;
+  width: 100% !important;
+  border-bottom: 1px dashed var(--gray-200, #eaedf1) !important;
+  padding: 6px 0 !important;
+}
+.tka-cart tr.woocommerce-shipping-totals th {
+  display: block !important;
+  width: 100% !important;
+  text-align: right !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  color: var(--gray-700, #666) !important;
+  padding: 0 0 6px 0 !important;
+}
+.tka-cart tr.woocommerce-shipping-totals td {
+  display: block !important;
+  width: 100% !important;
+  padding: 0 !important;
+  text-align: right !important;
+}
+
+.tka-cart ul#shipping_method {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 4px 0 8px 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.tka-cart ul#shipping_method li {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  padding: 10px 12px !important;
+  border: 1px solid var(--gray-200, #eaedf1) !important;
+  border-radius: 12px !important;
+  background: var(--gray-50, #f9fafc) !important;
+  margin: 0 !important;
+  transition: all 0.15s ease !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+.tka-cart ul#shipping_method li:hover {
+  border-color: var(--primary-medium, #cd63c6) !important;
+  background: #ffffff !important;
+}
+
+.tka-cart ul#shipping_method li:has(input:checked),
+.tka-cart ul#shipping_method li.is-selected {
+  border-color: var(--primary, #ae5399) !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 1px var(--primary, #ae5399), 0 2px 6px rgba(174, 83, 153, 0.1) !important;
+}
+
+.tka-cart ul#shipping_method li input[type="radio"] {
+  width: 16px !important;
+  height: 16px !important;
+  margin-top: 3px !important;
+  margin-left: 4px !important;
+  margin-right: 0 !important;
+  accent-color: var(--primary, #ae5399) !important;
+  flex-shrink: 0 !important;
+  cursor: pointer !important;
+}
+
+.tka-cart ul#shipping_method li label {
+  display: block !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--gray-800, #333) !important;
+  line-height: 1.6 !important;
+  text-align: right !important;
+  cursor: pointer !important;
+  flex: 1 1 auto !important;
+}
+
+.tka-cart .woocommerce-shipping-destination {
+  font-size: 11.5px !important;
+  color: var(--gray-600, #777) !important;
+  margin: 4px 0 !important;
+  text-align: right !important;
+}
+
+/* دکمه تسويه حساب سبد خريد */
+.tka-cart .tka-totals__cta,
+.tka-cart .wc-proceed-to-checkout .checkout-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  width: 100% !important;
+  height: 46px !important;
+  border-radius: 12px !important;
+  font-size: 14.5px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  background: var(--primary, #ae5399) !important;
+  box-shadow: 0 4px 14px rgba(174, 83, 153, 0.3) !important;
+  text-decoration: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  margin-top: 14px !important;
+  box-sizing: border-box !important;
+}
+.tka-cart .tka-totals__cta:hover,
+.tka-cart .wc-proceed-to-checkout .checkout-button:hover {
+  background: var(--primary-dark, #a600a9) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(174, 83, 153, 0.4) !important;
+  color: #ffffff !important;
+}
+
+/**
+ * ?-?. اصلاحات فيلدهاي سبد و دکمه به‌روزرساني
+ */
+.woocommerce-cart table.shop_table .product-name,
+.tka-cart__name {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 200px;
+}
+
+.woocommerce-cart .quantity input[type="number"]::-webkit-outer-spin-button,
+.woocommerce-cart .quantity input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+.woocommerce-cart .quantity input[type="number"] {
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
+
+.woocommerce-cart .woocommerce-error,
+.woocommerce-cart .woocommerce-message,
+.woocommerce-cart .woocommerce-info {
+  text-align: right;
+  direction: rtl;
+  border-right: 4px solid var(--primary);
+  border-left: none;
+  padding-right: 16px;
+  padding-left: 12px;
+}
+
+.woocommerce-cart table.shop_table .product-remove a,
+.tka-cart__remove {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.woocommerce-cart .return-to-shop {
+  text-align: center;
+}
+.woocommerce-cart .return-to-shop .wc-backward {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (min-width: 1024px) {
+  body.woocommerce-cart .woocommerce-cart-form table.shop_table .product-thumbnail {
+    width: 84px;
+  }
+  body.woocommerce-cart .woocommerce-cart-form table.shop_table .product-thumbnail img {
+    width: 64px;
+    height: 64px;
+  }
+  body.woocommerce-cart .woocommerce-cart-form table.shop_table .product-name a {
+    font-size: 13.5px;
+  }
+  body.woocommerce-cart .woocommerce-cart-form table.shop_table .product-quantity {
+    width: 128px;
+  }
+  body.woocommerce-cart .woocommerce-cart-form table.shop_table .product-quantity input.qty {
+    width: 36px;
+    min-height: 30px;
+  }
+  body.woocommerce-cart .woocommerce-cart-form table.shop_table .tka-step {
+    width: 30px;
+    height: 30px;
+  }
+  body.woocommerce-cart .woocommerce-cart-form table.shop_table .product-subtotal {
+    width: 130px;
+  }
+  body.woocommerce-cart .woocommerce-cart-form table.shop_table .product-subtotal .amount {
+    font-size: 13px;
+    letter-spacing: 0;
+  }
+  body.woocommerce-cart table.shop_table.cart_totals td .amount {
+    font-size: 13px;
+  }
+}
+
+
+/* =====================================================================
+   ?. مراحل تسويه حساب (Checkout)
+   ===================================================================== */
+
+.woocommerce-checkout label {
+  text-align: right;
+  display: block;
+}
+
+.select2-container .select2-selection,
+.select2-container .select2-dropdown,
+.select2-container .select2-results__option {
+  direction: rtl;
+  text-align: right;
+}
+
+.select2-search--dropdown .select2-search__field {
+  direction: rtl;
+  text-align: right;
+}
+
+.woocommerce-checkout #order_review .product-total,
+.woocommerce-checkout #order_review th,
+.woocommerce-checkout #order_review td {
+  text-align: right;
+}
+
+.woocommerce-checkout #payment ul.payment_methods li label {
+  padding-right: 28px;
+  padding-left: 0;
+  display: block;
+}
+.woocommerce-checkout #payment ul.payment_methods li input[type="radio"] {
+  position: absolute;
+  right: 0;
+  left: auto;
+  margin-right: 0;
+}
+.woocommerce-checkout #payment ul.payment_methods li {
+  position: relative;
+}
+
+.woocommerce-checkout .woocommerce-NoticeGroup .woocommerce-error,
+.woocommerce-checkout .woocommerce-NoticeGroup .woocommerce-message {
+  text-align: right;
+  direction: rtl;
+  border-right: 4px solid var(--primary);
+  border-left: none;
+  padding-right: 16px;
+  padding-left: 12px;
+}
+
+@media (max-width: 767.98px) {
+  .woocommerce-checkout #place_order {
+    width: 100% !important;
+  }
+}
+
+
+/* =====================================================================
+   ?. حساب کاربري (My Account)
+   ===================================================================== */
+
+.woocommerce-MyAccount-navigation ul {
+  flex-wrap: wrap !important;
+}
+.woocommerce-MyAccount-navigation ul li a {
+  white-space: nowrap;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.woocommerce-account .woocommerce-orders-table th,
+.woocommerce-account .woocommerce-orders-table td {
+  text-align: right;
+}
+
+.woocommerce-account .woocommerce-address-fields label,
+.woocommerce-account .woocommerce-EditAccountForm label {
+  text-align: right;
+  display: block;
+}
+
+.woocommerce-account:not(.body-ums-login-theme-8) .woocommerce-MyAccount-content {
+  padding: 16px;
+}
+
+.woocommerce-account .woocommerce-password-strength {
+  text-align: right;
+}
+
+
+/* =====================================================================
+   ?. واکنش‌گرايي — تبلت (max-width: 768px)
+   ===================================================================== */
+
+@media (max-width: 768px) {
+  .hero__slide .slide-title,
+  .hero__slide h2,
+  .hero__slide h1 {
+    font-size: clamp(14px, 4vw, 22px);
+    line-height: 1.5;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .usps {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: var(--sp-s) !important;
+  }
+
+  .woocommerce-ordering select {
+    max-width: 100%;
+    direction: rtl;
+    text-align: right;
+  }
+
+  .tka-drawer--minicart {
+    width: min(400px, 94vw) !important;
+  }
+
+  .tka-drawer {
+    width: min(92vw, 880px);
+  }
+
+  .woocommerce-checkout .form-row-first,
+  .woocommerce-checkout .form-row-last {
+    width: 100% !important;
+    float: none !important;
+    clear: both;
+  }
+
+  .woocommerce-cart table.shop_table .product-price {
+    font-size: 12px;
+  }
+
+  .footer__cols {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+
+/* =====================================================================
+   ?. واکنش‌گرايي — موبايل (max-width: 480px)
+   ===================================================================== */
+
+@media (max-width: 480px) {
+  .tka-breadcrumbs ol {
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .tka-pgrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .pcard__price,
+  .tka-pgrid .pcard__price {
+    font-size: 11px !important;
+  }
+  .pcard__price span {
+    font-size: 11px !important;
+  }
+
+  section.offer .timer__digits {
+    flex-wrap: nowrap !important;
+    overflow: hidden;
+  }
+
+  .footer__social {
+    justify-content: center;
+  }
+
+  .woocommerce-error,
+  .woocommerce-message,
+  .woocommerce-info {
+    list-style: none;
+    padding-right: 12px;
+    padding-left: 12px;
+    direction: rtl;
+    text-align: right;
+  }
+  .woocommerce-error li,
+  .woocommerce-message li,
+  .woocommerce-info li {
+    list-style: none;
+    margin: 0;
+  }
+
+  .woocommerce-MyAccount-navigation ul li {
+    width: 100%;
+  }
+  .woocommerce-MyAccount-navigation ul li a {
+    border-radius: var(--r-md) !important;
+    padding: 10px 14px !important;
+  }
+
+  .woocommerce-checkout .form-row {
+    width: 100% !important;
+    float: none !important;
+  }
+
+  .pdp__title {
+    font-size: 16px !important;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .tka-cart__name {
+    -webkit-line-clamp: 2;
+    max-width: 100%;
+  }
+
+  .tka-cart__steps,
+  .tka-co__steps {
+    padding: 6px 10px !important;
+    gap: 4px !important;
+  }
+  .tka-cart__steps .tka-co__step,
+  .tka-co__steps .tka-co__step {
+    padding: 4px 8px !important;
+    font-size: 10px !important;
+  }
+  .tka-cart__steps .tka-co__step:not(:last-child)::after,
+  .tka-co__steps .tka-co__step:not(:last-child)::after {
+    margin-right: 4px !important;
+    font-size: 10px !important;
+  }
+}
+
+
+/* =====================================================================
+   ??. ترميم‌هاي تکميلي (مونوگرام و بنر اختياري)
+   ===================================================================== */
+
+@media (min-width: 768px) {
+  .brand__img--mono {
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+  }
+}

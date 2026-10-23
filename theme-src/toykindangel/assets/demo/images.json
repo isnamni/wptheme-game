@@ -1,0 +1,214 @@
+{
+ "demo/products/p-doll-yellow.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-boxing.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-sofa-minion.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-sofa-husky.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-airhockey.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-sofa-rabbit.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-sofa-capybara.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-fruit-trio.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-racing.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-strawberry.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-doll-boy.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-sofa-green-monster.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-sofa-clown.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-sofa-monster.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-carrot.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-kitchen.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-sofa-dino.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "demo/products/p-banana.jpg": {
+  "w": 1024,
+  "h": 1024
+ },
+ "img/tiles/tile-6.jpg": {
+  "w": 576,
+  "h": 292
+ },
+ "img/tiles/tile-4.jpg": {
+  "w": 576,
+  "h": 292
+ },
+ "img/tiles/tile-0.jpg": {
+  "w": 576,
+  "h": 292
+ },
+ "img/tiles/tile-2.jpg": {
+  "w": 576,
+  "h": 292
+ },
+ "img/tiles/tile-1.jpg": {
+  "w": 576,
+  "h": 292
+ },
+ "img/tiles/tile-7.jpg": {
+  "w": 576,
+  "h": 292
+ },
+ "img/tiles/tile-5.jpg": {
+  "w": 576,
+  "h": 292
+ },
+ "img/tiles/tile-3.jpg": {
+  "w": 576,
+  "h": 292
+ },
+ "img/banners/banner-3.jpg": {
+  "w": 768,
+  "h": 101
+ },
+ "img/banners/banner-1.jpg": {
+  "w": 768,
+  "h": 101
+ },
+ "img/banners/banner-0.jpg": {
+  "w": 759,
+  "h": 100
+ },
+ "img/banners/banner-2.jpg": {
+  "w": 768,
+  "h": 101
+ },
+ "img/banners/banner-5.jpg": {
+  "w": 768,
+  "h": 101
+ },
+ "img/banners/banner-4.jpg": {
+  "w": 768,
+  "h": 101
+ },
+ "img/cats/cat-05.png": {
+  "w": 256,
+  "h": 209
+ },
+ "img/cats/cat-13.png": {
+  "w": 384,
+  "h": 384
+ },
+ "img/cats/cat-02.png": {
+  "w": 256,
+  "h": 209
+ },
+ "img/cats/cat-11.png": {
+  "w": 384,
+  "h": 384
+ },
+ "img/cats/cat-14.png": {
+  "w": 384,
+  "h": 384
+ },
+ "img/cats/cat-03.png": {
+  "w": 256,
+  "h": 209
+ },
+ "img/cats/cat-12.png": {
+  "w": 384,
+  "h": 384
+ },
+ "img/cats/cat-04.png": {
+  "w": 256,
+  "h": 209
+ },
+ "img/cats/cat-06.png": {
+  "w": 256,
+  "h": 209
+ },
+ "img/cats/cat-01.png": {
+  "w": 256,
+  "h": 209
+ },
+ "img/cc/s11.jpg": {
+  "w": 104,
+  "h": 104
+ },
+ "img/cc/s03.jpg": {
+  "w": 104,
+  "h": 104
+ },
+ "img/cc/s02.jpg": {
+  "w": 104,
+  "h": 104
+ },
+ "img/cc/s09.jpg": {
+  "w": 104,
+  "h": 104
+ },
+ "img/cc/s07.jpg": {
+  "w": 104,
+  "h": 104
+ },
+ "img/cc/s05.jpg": {
+  "w": 104,
+  "h": 104
+ },
+ "img/cc/s10.jpg": {
+  "w": 104,
+  "h": 104
+ },
+ "img/cc/s08.jpg": {
+  "w": 104,
+  "h": 104
+ },
+ "img/cc/s01.jpg": {
+  "w": 104,
+  "h": 104
+ },
+ "img/cc/s06.jpg": {
+  "w": 104,
+  "h": 104
+ },
+ "img/cc/s04.jpg": {
+  "w": 104,
+  "h": 104
+ }
+}
