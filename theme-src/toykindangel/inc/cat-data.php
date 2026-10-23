@@ -147,44 +147,43 @@ function toykindangel_cats_data_uncached() {
         }
 
         // Rail ordering: seeded demo order (meta) when available, else name.
-        $tka_has_order = get_terms(
+        // v0.27.1 (باگ «فقط یک دسته») — متای «ترتیب در ریل» فقط «راهنمای
+        // ترتیب» است، نه شرط نمایش. نگارش قبل وقتی حتی «یک» دسته این متا را
+        // داشت (فرم افزودن/ویرایش دسته، متا را با مقدار پیش‌فرض ۰ ذخیره
+        // می‌کند)، دسته‌های بدون متا را از دراور دسته‌بندی‌ها، صفحهٔ دسته‌ها
+        // و ... کامل حذف می‌کرد — دقیقاً باگ گزارش‌شده. حالا همهٔ دسته‌های
+        // اصلی همیشه فهرست می‌شوند؛ دسته‌های دارای متا فقط جلوتر می‌نشینند.
+        $tka_tops = get_terms(
                 array(
                         'taxonomy'   => $tka_tax,
                         'parent'     => 0,
                         'hide_empty' => false,
-                        'number'     => 1,
-                        'fields'     => 'ids',
-                        'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- indexed theme meta on product_cat; page-level cached query
-                                array(
-                                        'key' => 'tka_rail_order',
-                                ),
-                        ),
+                        'number'     => 100,
+                        'exclude'    => array( (int) get_option( 'default_product_cat', 0 ) ), // «دسته‌بندی‌نشده» را نشان نده.
                 )
         );
-        $tka_has_order = ! is_wp_error( $tka_has_order ) && ! empty( $tka_has_order );
-
-        $tka_top_args = array(
-                'taxonomy'   => $tka_tax,
-                'parent'     => 0,
-                'hide_empty' => false,
-                'number'     => 40,
-                'exclude'    => array( (int) get_option( 'default_product_cat', 0 ) ), // «دسته‌بندی‌نشده» را نشان نده.
-        );
-        if ( $tka_has_order ) {
-                // Ordered rail + skip story-flagged terms (front-page stories only).
-                $tka_top_args['meta_key']   = 'tka_rail_order'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- indexed theme meta, cached rails
-                $tka_top_args['orderby']    = 'meta_value_num';
-                $tka_top_args['order']      = 'ASC';
-                $tka_top_args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- indexed theme meta on product_cat; cached rails
-                        array(
-                                'key'     => 'tka_is_story',
-                                'compare' => 'NOT EXISTS',
-                        ),
-                );
-        }
-        $tka_tops = get_terms( $tka_top_args );
         if ( is_wp_error( $tka_tops ) || empty( $tka_tops ) ) {
                 return null;
+        }
+
+        /* get_terms کش متای ترم‌ها را یک‌جا پر می‌کند؛ این حلقه‌ها کوئری اضافه ندارند. */
+        $tka_orders    = array();
+        $tka_has_order = false;
+        foreach ( $tka_tops as $tka_top ) {
+                $tka_raw                       = get_term_meta( (int) $tka_top->term_id, 'tka_rail_order', true );
+                $tka_orders[ (int) $tka_top->term_id ] = ( '' === $tka_raw ) ? PHP_INT_MAX : (int) $tka_raw;
+                if ( '' !== $tka_raw ) {
+                        $tka_has_order = true;
+                }
+        }
+        if ( $tka_has_order ) {
+                usort(
+                        $tka_tops,
+                        static function ( $tka_a, $tka_b ) use ( $tka_orders ) {
+                                $tka_cmp = $tka_orders[ (int) $tka_a->term_id ] <=> $tka_orders[ (int) $tka_b->term_id ];
+                                return ( 0 !== $tka_cmp ) ? $tka_cmp : strcmp( $tka_a->name, $tka_b->name );
+                        }
+                );
         }
 
         $tka_categories = array();

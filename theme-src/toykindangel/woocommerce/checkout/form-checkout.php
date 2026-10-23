@@ -72,7 +72,25 @@ if ( ! is_user_logged_in() && ! WC()->checkout()->is_registration_enabled() && W
                                         <?php esc_html_e( 'سفارش شما', 'toykindangel' ); ?>
                                 </h2>
                                 <?php do_action( 'woocommerce_checkout_before_order_review' ); ?>
-                                <?php do_action( 'woocommerce_checkout_order_review' ); ?>
+
+                                <?php
+                                /*
+                                 * v0.27.1 (باگ «مرسوله»): غلاف #order_review برگشت.
+                                 * هستهٔ ووکامرس خروجی woocommerce_checkout_order_review را
+                                 * داخل <div id="order_review" class="woocommerce-checkout-review-order">
+                                 * می‌گذارد؛ نسخهٔ قبلی قالب این غلاف را نداشت، پس:
+                                 *  ۱) همهٔ قواعد CSS جدول «سفارش شما» (استایل پشته‌ای-فلکس و
+                                 *     کارت‌های نحوهٔ ارسال) که روی #order_review سواراند بی‌اثر
+                                 *     می‌شدند و ردیف مرسوله به‌صورت جدول خام با عرض ستون اول
+                                 *     فشرده رندر می‌شد؛
+                                 *  ۲) مقصد رفرش AJAX تسویه (فرگمنت woocommerce-checkout-review-order)
+                                 *     بدون این غلاف، ساختار استاندارد خود را از دست می‌داد.
+                                 */
+                                ?>
+                                <div id="order_review" class="woocommerce-checkout-review-order">
+                                        <?php do_action( 'woocommerce_checkout_order_review' ); ?>
+                                </div>
+
                                 <?php do_action( 'woocommerce_checkout_after_order_review' ); ?>
                         </section>
 

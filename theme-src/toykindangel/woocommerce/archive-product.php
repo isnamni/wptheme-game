@@ -186,7 +186,13 @@ if ( ! array_key_exists( $tka_sort, $tka_sorts ) ) {
                                                                 ),
                                                                 array(
                                                                         'widget_id'     => 'tka-pfilter-default',
-                                                                        'before_widget' => '<section id="%1$s" class="widget tka-card tka-pfilter-widget %2$s">',
+                                                                        /* v0.27.1 (باگ بحرانی): رشتهٔ before_widget باید «بدون
+                                                                         * placeholder» باشد. هستهٔ وردپرس در نسخه‌های جدید
+                                                                         * the_widget() آن را فقط با یک آرگومان (classname)
+                                                                         * sprintf می‌کند؛ داشتن %1$s/%2$s باعث خطای
+                                                                         * ArgumentCountError و «یک خطای مهم» روی همهٔ
+                                                                         * آرشیوهای محصول می‌شد. */
+                                                                        'before_widget' => '<section id="tka-pfilter-default" class="widget tka-card tka-pfilter-widget tka_product_filters">',
                                                                         'after_widget'  => '</section>',
                                                                         'before_title'  => '',
                                                                         'after_title'   => '',

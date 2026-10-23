@@ -3,7 +3,7 @@ Contributors: sina aminzadeh
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.27.0
+Stable tag: 0.27.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: e-commerce, rtl-language-support, custom-logo, custom-menu, featured-images, translation-ready
@@ -27,6 +27,11 @@ Tags: e-commerce, rtl-language-support, custom-logo, custom-menu, featured-image
 4. راهنمای کامل: README.fa.md در بسته
 
 == Changelog ==
+
+= 0.27.1 =
+* رفع «یک خطای مهم» روی همهٔ آرشیوهای محصول: متد the_widget() هستهٔ وردپرس در نسخه‌های جدید رشتهٔ before_widget را فقط با یک آرگومان sprintf می‌کند؛ رشتهٔ قبل از 0.27.0 دو placeholder داشت (ArgumentCountError). حالا رشتهٔ قبل/بعد ویجت فیلتر حرفه‌ای بدون placeholder است (سازگار با همهٔ نسخه‌های وردپرس).
+* رفع باگ «فقط یک دسته در منوی دسته‌بندی‌ها»: متای «ترتیب در ریل دسته‌بندی‌ها» دیگر شرطِ نمایش نیست — فقط راهنمای ترتیب. (فرم افزودن/ویرایش دسته، این متا را با مقدار پیش‌فرض ۰ ذخیره می‌کرد و یک ویرایش ساده، بقیهٔ دسته‌ها را از دراور/صفحهٔ دسته‌ها حذف می‌کرد.) همهٔ دسته‌های اصلی همیشه نمایش داده می‌شوند؛ دسته‌های دارای ترتیب فقط جلوتر می‌نشینند.
+* رفع باگ «مرسوله» در تسویه حساب: غلاف استاندارد <div id="order_review" class="woocommerce-checkout-review-order"> مثل هستهٔ ووکامرس برگشت. بدون این غلاف، همهٔ قواعد CSS جدول «سفارش شما» (پشته‌ای-فلکس و کارت‌های نحوهٔ ارسال) بی‌اثر بودند و ردیف مرسوله با عرض ستون اول جدول فشرده رندر می‌شد.
 
 = 0.21.1 =
 * افزودن آیکون حساب کاربری به هدر دسکتاپ (کنار سبد خرید) — وقتی کاربر لاگین نیست → صفحهٔ ورود/عضویت، وقتی لاگین هست → داشبورد حساب کاربری. در موبایل پنهان است چون bottomnav همان کار را می‌کند.
