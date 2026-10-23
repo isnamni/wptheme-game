@@ -1,0 +1,678 @@
+     1→<?php
+     2→/**
+     3→ * Single product (PDP) — 1:1 demo product.html markup fed by real
+     4→ * WooCommerce data.
+     5→ *
+     6→ * Demo parity notes:
+     7→ * - v0.25.0: pdp__bar (back / title / share / cart) is REMOVED — the site
+     8→ *   header + breadcrumb + pricebox share button cover it (client feedback:
+     9→ *   it read as a second header with a duplicate cart icon).
+    10→ * - gallery (#galleryTrack / #galleryThumbs) is auto-wired by the
+    11→ *   untouched demo app.js gallery() routine.
+    12→ * - The sticky purchase bar (.pdp__cta) sits above the bottomnav.
+    13→ *
+    14→ * Standardization notes (P0 review fix) — the real WooCommerce hooks
+    15→ * fire inside this layout (core callbacks that would duplicate the
+    16→ * demo markup are unhooked in inc/wc-hooks.php):
+    17→ * - woocommerce_before_single_product        → notices.
+    18→ * - woocommerce_before_single_product_summary → gallery area (plugins).
+    19→ * - woocommerce_single_product_summary        → v0.25.0: variation form
+    20→ *   only (variable products). Simple products render no buy block here —
+    21→ *   the sticky bar is the single add-to-cart control. Title/rating/price
+    22→ *   stay custom (demo markup).
+    23→ * - woocommerce_after_single_product_summary / _after_single_product.
+    24→ * - The product is wrapped in the standard #product-N div via post_class().
+    25→ *
+    26→ * 18-f (professional PDP): the sections خلاصه + چیپ‌های ویژگی، ردیف
+    27→ * اشتراک‌گذاری (واتساپ/تلگرام/کپی لینک)، و سه کارت تمام‌عرض
+    28→ * «توضیحات محصول» / «مشخصات محصول» (جدول کلید/مقدار از دیتای واقعی:
+    29→ * دسته‌بندی، برند، ویژگی‌ها، وزن، ابعاد، کد محصول، برچسب‌ها) /
+    30→ * «دیدگاه‌ها» (با شمارنده) + نوار انکر دسکتاپ .pdp__tabs.
+    31→ *
+    32→ * @version 1.7.0
+    33→ * @package ToyKindAngel
+    34→ */
+    35→
+    36→if ( ! defined( 'ABSPATH' ) ) {
+    37→        exit;
+    38→}
+    39→
+    40→get_header();
+    41→
+    42→the_post();
+    43→
+    44→global $product;
+    45→
+    46→if ( ! $product instanceof WC_Product ) {
+    47→        $product = wc_get_product( get_the_ID() );
+    48→}
+    49→
+    50→$tka_id        = $product ? $product->get_id() : get_the_ID();
+    51→$tka_name      = $product ? $product->get_name() : get_the_title();
+    52→$tka_price     = $product ? (float) $product->get_price() : 0;
+    53→$tka_regular   = $product ? (float) $product->get_regular_price() : 0;
+    54→$tka_off       = 0;
+    55→if ( $tka_regular > 0 && $tka_price > 0 && $tka_price < $tka_regular ) {
+    56→        $tka_off = (int) round( ( ( $tka_regular - $tka_price ) / $tka_regular ) * 100 );
+    57→}
+    58→$tka_is_simple = $product && $product->is_type( 'simple' );
+    59→$tka_purchasable = $product && $product->is_purchasable() && $product->is_in_stock();
+    60→$tka_cart_count = ( function_exists( 'WC' ) && WC()->cart ) ? WC()->cart->get_cart_contents_count() : 0;
+    61→
+    62→/* Short description (خلاصه) + share targets + review count (18-f). */
+    63→$tka_short     = $product ? (string) $product->get_short_description() : '';
+    64→$tka_link      = get_permalink( $tka_id );
+    65→$tka_wa        = 'https://wa.me/?text=' . rawurlencode( $tka_name . ' — ' . $tka_link );
+    66→$tka_tg        = 'https://t.me/share/url?url=' . rawurlencode( $tka_link ) . '&text=' . rawurlencode( $tka_name );
+    67→$tka_reviews_n = $product ? (int) $product->get_review_count() : 0;
+    68→
+    69→/* Gallery images: featured + product gallery. */
+    70→$tka_gallery_ids = array();
+    71→if ( $product ) {
+    72→        $tka_gallery_ids = array_merge( array( (int) $product->get_image_id() ), $product->get_gallery_image_ids() );
+    73→        $tka_gallery_ids = array_filter( array_unique( $tka_gallery_ids ) );
+    74→}
+    75→
+    76→/* Category chain for the breadcrumb (demo shows leaf first, root last). */
+    77→$tka_bc_terms = array();
+    78→if ( $product ) {
+    79→        $tka_cats = get_the_terms( $tka_id, 'product_cat' );
+    80→        if ( $tka_cats && ! is_wp_error( $tka_cats ) ) {
+    81→                $tka_main = null;
+    82→                foreach ( $tka_cats as $tka_cat ) {
+    83→                                if ( 'uncategorized' !== $tka_cat->slug ) {
+    84→                                $tka_main = $tka_cat;
+    85→                                break;
+    86→                                }
+    87→                        }
+    88→                if ( ! $tka_main && $tka_cats ) {
+    89→                                $tka_main = $tka_cats[0];
+    90→                        }
+    91→                if ( $tka_main ) {
+    92→                                $tka_chain     = array_reverse( get_ancestors( $tka_main->term_id, 'product_cat' ) );
+    93→                                $tka_bc_terms  = array();
+    94→                                foreach ( $tka_chain as $tka_anc_id ) {
+    95→                                $tka_anc = get_term( $tka_anc_id, 'product_cat' );
+    96→                                if ( $tka_anc && ! is_wp_error( $tka_anc ) ) {
+    97→                                        $tka_bc_terms[] = $tka_anc;
+    98→                                        }
+    99→                                        }
+   100→                                $tka_bc_terms[] = $tka_main;
+   101→                                /* Demo order: leaf → root (the root is rendered as text). */
+   102→                                $tka_bc_terms = array_reverse( $tka_bc_terms );
+   103→                        }
+   104→        }
+   105→}
+   106→
+   107→/* Rating data (demo shows filled stars = floor of the average). */
+   108→$tka_rating   = $product ? (float) $product->get_average_rating() : 0;
+   109→$tka_rcount   = $product ? (int) $product->get_rating_count() : 0;
+   110→$tka_rfilled  = (int) floor( $tka_rating );
+   111→
+   112→/* Low stock notice (demo shows «تنها N عدد باقی‌مانده در انبار»). */
+   113→$tka_stock_qty  = $product && $product->managing_stock() ? (int) $product->get_stock_quantity() : 0;
+   114→$tka_low_amount = function_exists( 'wc_get_low_stock_amount' ) ? (int) wc_get_low_stock_amount( $product ) : 0;
+   115→$tka_show_low   = $product && $product->managing_stock() && $tka_purchasable && $tka_low_amount > 0 && $tka_stock_qty <= $tka_low_amount;
+   116→
+   117→/* Shipping methods + warranty (Customizer with demo defaults). */
+   118→$tka_ships = array(
+   119→        array(
+   120→                'icon' => 'i-truck',
+   121→                't'    => get_theme_mod( 'tka_ship_1_title', __( 'عادی', 'toykindangel' ) ),
+   122→                'n'    => get_theme_mod( 'tka_ship_1_note', __( 'ارسال از انبار فروشگاه — ۲ تا ۴ روز کاری', 'toykindangel' ) ),
+   123→        ),
+   124→        array(
+   125→                'icon' => 'i-fire',
+   126→                't'    => get_theme_mod( 'tka_ship_2_title', __( 'اکسپرس', 'toykindangel' ) ),
+   127→                'n'    => get_theme_mod( 'tka_ship_2_note', __( 'ارسال در سریع‌ترین زمان — ویژه مشهد', 'toykindangel' ) ),
+   128→        ),
+   129→);
+   130→$tka_warranty = get_theme_mod( 'tka_warranty_text', __( 'گارانتی سلامت فیزیکی کالا', 'toykindangel' ) );
+   131→
+   132→/* Stock status row of the warranty box. */
+   133→$tka_stock_row = '';
+   134→if ( $product ) {
+   135→        if ( ! $product->is_in_stock() ) {
+   136→                $tka_stock_row = array( 'ok' => false, 'text' => __( 'فعلاً ناموجود', 'toykindangel' ) );
+   137→        } elseif ( $product->is_on_backorder( 1 ) ) {
+   138→                $tka_stock_row = array( 'ok' => true, 'text' => __( 'پیش‌خرید — به‌زودی شارژ می‌شود', 'toykindangel' ) );
+   139→        } else {
+   140→                $tka_stock_row = array( 'ok' => true, 'text' => __( 'موجود در انبار فروشگاه', 'toykindangel' ) );
+   141→        }
+   142→}
+   143→
+   144→/* Specs: دسته‌بندی/برند + ویژگی‌های قابل‌نمایش + وزن/ابعاد/کد محصول/برچسب‌ها
+   145→    (جدول «مشخصات محصول» — 18-f). */
+   146→$tka_specs = array();
+   147→if ( $product ) {
+   148→        /* دسته‌بندی: همان زنجیرهٔ بردکرامب، این‌بار ریشه → برگ. */
+   149→        if ( $tka_bc_terms ) {
+   150→                $tka_cat_names = array();
+   151→                foreach ( array_reverse( $tka_bc_terms ) as $tka_cat ) {
+   152→                                $tka_cat_names[] = $tka_cat->name;
+   153→                        }
+   154→                $tka_specs[] = array(
+   155→                'k' => __( 'دسته‌بندی', 'toykindangel' ),
+   156→                'v' => implode( ' › ', $tka_cat_names ),
+   157→                );
+   158→        }
+   159→
+   160→        /* برند (اولین تکسونومی برند موجود). */
+   161→        foreach ( array( 'product_brand', 'tka_brand' ) as $tka_brand_tax ) {
+   162→                $tka_brand_terms = get_the_terms( $tka_id, $tka_brand_tax );
+   163→                if ( $tka_brand_terms && ! is_wp_error( $tka_brand_terms ) ) {
+   164→                                $tka_specs[] = array(
+   165→                                                'k' => __( 'برند', 'toykindangel' ),
+   166→                                                'v' => $tka_brand_terms[0]->name,
+   167→                                );
+   168→                                break;
+   169→                }
+   170→        }
+   171→
+   172→        foreach ( $product->get_attributes() as $tka_attr ) {
+   173→                if ( ! $tka_attr instanceof WC_Product_Attribute || ! $tka_attr->get_visible() ) {
+   174→                                continue;
+   175→                        }
+   176→                if ( $tka_attr->is_taxonomy() ) {
+   177→                                $tka_vals = wc_get_product_terms( $tka_id, $tka_attr->get_name(), array( 'fields' => 'names' ) );
+   178→                        } else {
+   179→                        $tka_vals = $tka_attr->get_options();
+   180→                        }
+   181→                if ( empty( $tka_vals ) ) {
+   182→                                continue;
+   183→                        }
+   184→                $tka_specs[] = array(
+   185→                'k' => wc_attribute_label( $tka_attr->get_name() ),
+   186→                'v' => implode( '، ', (array) $tka_vals ),
+   187→                );
+   188→        }
+   189→        if ( $product->has_weight() ) {
+   190→                $tka_weight_v = wc_format_weight( $product->get_weight() );
+   191→                $tka_specs[] = array(
+   192→                'k' => __( 'وزن', 'toykindangel' ),
+   193→                'v' => function_exists( 'toykindangel_fa_num' ) ? toykindangel_fa_num( $tka_weight_v ) : $tka_weight_v,
+   194→                );
+   195→        }
+   196→        if ( $product->has_dimensions() ) {
+   197→                /* wc_format_dimensions «&times;» HTML-entity برمی‌گرداند؛ برای esc_html به نویسهٔ واقعی تبدیل می‌شود. */
+   198→                $tka_dims_v = str_replace( '&times;', '×', wc_format_dimensions( $product->get_dimensions( false ) ) );
+   199→                $tka_specs[] = array(
+   200→                'k' => __( 'ابعاد بسته‌بندی', 'toykindangel' ),
+   201→                'v' => function_exists( 'toykindangel_fa_num' ) ? toykindangel_fa_num( $tka_dims_v ) : $tka_dims_v,
+   202→                );
+   203→        }
+   204→        if ( $product->get_sku() ) {
+   205→                $tka_specs[] = array(
+   206→                'k' => __( 'کد محصول', 'toykindangel' ),
+   207→                'v' => $product->get_sku(),
+   208→                );
+   209→        }
+   210→
+   211→        /* برچسب‌ها. */
+   212→        $tka_tag_terms = get_the_terms( $tka_id, 'product_tag' );
+   213→        if ( $tka_tag_terms && ! is_wp_error( $tka_tag_terms ) ) {
+   214→                $tka_specs[] = array(
+   215→                'k' => __( 'برچسب‌ها', 'toykindangel' ),
+   216→                'v' => implode( '، ', wp_list_pluck( $tka_tag_terms, 'name' ) ),
+   217→                );
+   218→        }
+   219→}
+   220→
+   221→/* Related products rail (optional via Customizer). */
+   222→/*
+   223→ * v0.20.0 audit fix H3 — wc_get_related_products() returns IDs only (good),
+   224→ * but the render loop below used to hydrate each ID with a separate
+   225→ * wc_get_product() call. WC's object cache makes repeated calls on the same
+   226→ * ID cheap, but on a PDP every related ID is distinct, so each call is one
+   227→ * fresh hydration. Batch the hydration with wc_get_products(include=>IDs)
+   228→ * instead — same WC CRUD path, one query family, same downstream pcard_wrap
+   229→ * rendering. No change to the rendered markup or the related-IDs source.
+   230→ */
+   231→$tka_related_ids = ( $product && get_theme_mod( 'tka_pdp_related', true ) ) ? wc_get_related_products( $tka_id, 10 ) : array();
+   232→$tka_related     = array();
+   233→if ( ! empty( $tka_related_ids ) && function_exists( 'wc_get_products' ) ) {
+   234→        $tka_related = wc_get_products(
+   235→                array(
+   236→                        'include' => $tka_related_ids,
+   237→                        'limit'   => 10,
+   238→                        'orderby' => 'post__in',
+   239→                        'order'   => 'ASC',
+   240→                )
+   241→        );
+   242→}
+   243→
+   244→/* Anchor tabs (18-f) — only for the sections that actually render. */
+   245→$tka_has_desc = (bool) trim( get_the_content() );
+   246→$tka_tabs = array();
+   247→if ( $tka_has_desc ) {
+   248→        $tka_tabs[] = array( 'id' => 'tka-desc', 't' => __( 'توضیحات', 'toykindangel' ) );
+   249→}
+   250→if ( $tka_specs ) {
+   251→        $tka_tabs[] = array( 'id' => 'tka-specs', 't' => __( 'مشخصات', 'toykindangel' ) );
+   252→}
+   253→$tka_tabs[] = array( 'id' => 'reviews', 't' => __( 'دیدگاه‌ها', 'toykindangel' ) );
+   254→
+   255→/*
+   256→ * v0.24.0: این رپر دیگر <main> با id تکراری نیست — header.php خودش
+   257→ * <main id="content"> را باز می‌کند و یک <main> تو در تو + id تکراری
+   258→ * هم HTML نامعتبر بود و هم انتخابگرهای CSS را گیج می‌کرد. حالا یک
+   259→ * <div> ساده با کلاس tka-pdp-main است (همان استایل‌ها، ساختار سالم).
+   260→ */
+   261→?>
+   262→<div id="pdp-main" class="tka-pdp-main">
+   263→
+   264→        <?php
+   265→        /*
+   266→         * v0.25.0 — نوار بالای محصول (pdp__bar: برگشت/عنوان/اشتراک/سبد)
+   267→         * حذف شد. بازخورد مشتری: این نوار «مثل یک هدرِ دوم» با دکمهٔ
+   268→         * برگشت و یک آیکن سبد خریدِ تکراری دیده می‌شد. هدر اصلی سایت،
+   269→         * breadcrumb داخل pdp__body و دکمهٔ اشتراک‌گذاری pricebox همهٔ
+   270→         * کارکردهای این نوار را پوشش می‌دهند.
+   271→         */
+   272→
+   273→        /* اعلان‌های ووکامرس (کارت‌های main.css). */
+   274→        do_action( 'woocommerce_before_single_product' );
+   275→        ?>
+   276→
+   277→        <?php if ( $tka_tabs ) : ?>
+   278→        <!-- ============ ناوبری بخش‌های صفحه (انکر — دسکتاپ) ============ -->
+   279→        <nav class="pdp__tabs" aria-label="<?php esc_attr_e( 'بخش‌های صفحهٔ محصول', 'toykindangel' ); ?>">
+   280→                <div class="pdp__tabs-in">
+   281→                        <?php foreach ( $tka_tabs as $tka_tab ) : ?>
+   282→                                <a href="#<?php echo esc_attr( $tka_tab['id'] ); ?>"><?php echo esc_html( $tka_tab['t'] ); ?></a>
+   283→                        <?php endforeach; ?>
+   284→                </div>
+   285→        </nav>
+   286→        <?php endif; ?>
+   287→
+   288→        <?php if ( $product ) : ?>
+   289→
+   290→        <div id="product-<?php the_ID(); ?>" <?php post_class(); ?>>
+   291→
+   292→        <?php
+   293→        /* گالری — گالری/بج هسته غیرفعال شده؛ افزونه‌ها می‌توانند هوک کنند. */
+   294→        do_action( 'woocommerce_before_single_product_summary' );
+   295→        ?>
+   296→
+   297→        <!-- TKA fix (18-f/QA): قاب دوستونهٔ گالری+بدنه. قبلاً گالریِ چسبان به‌خاطر
+   298→            display:contents والد، محدودیتش کل #content می‌شد و روی سکشن‌های
+   299→            توضیحات/مشخصات/دیدگاه‌ها سُر می‌خورد؛ حالا محدودیت چسبانش همین قاب است. -->
+   300→        <div class="tka-pdp-cols">
+   301→
+   302→        <!-- ============ گالری تصاویر ============ -->
+   303→        <section class="gallery">
+   304→                <div class="gallery__track" id="galleryTrack">
+   305→                        <?php if ( $tka_gallery_ids ) : ?>
+   306→                                <?php foreach ( $tka_gallery_ids as $tka_gi => $tka_img_id ) : ?>
+   307→                                        <div class="gallery__slide">
+   308→                                                <img src="<?php echo esc_url( wp_get_attachment_image_url( $tka_img_id, 'large' ) ); ?>"
+   309→                                                        data-small="<?php echo esc_url( wp_get_attachment_image_url( $tka_img_id, 'medium' ) ); ?>"
+   310→                                                        alt="<?php echo esc_attr( sprintf( /* translators: %s: product name */ __( 'تصویر %s', 'toykindangel' ), $tka_name ) ); ?>"
+   311→                                                        <?php echo 0 === $tka_gi ? '' : 'loading="lazy"'; ?>
+   312→                                                        referrerpolicy="no-referrer"
+   313→                                                        onerror="if(!this.dataset.f){this.dataset.f=1;this.src=this.dataset.small}else{this.remove()}">
+   314→                                                <span class="ph"><svg class="ic" aria-hidden="true"><use href="#i-cat-camera"></use></svg></span>
+   315→                                                <?php if ( 0 === $tka_gi && $tka_off > 0 ) : ?>
+   316→                                                        <span class="gallery__off num"><?php echo esc_html( (string) $tka_off ); ?>%</span>
+   317→                                                <?php endif; ?>
+   318→                                        </div>
+   319→                                <?php endforeach; ?>
+   320→                        <?php else : ?>
+   321→                                <div class="gallery__slide">
+   322→                                        <span class="ph"><svg class="ic" aria-hidden="true"><use href="#i-cat-camera"></use></svg></span>
+   323→                                </div>
+   324→                        <?php endif; ?>
+   325→                </div>
+   326→                <div class="gallery__thumbs" id="galleryThumbs"></div>
+   327→        </section>
+   328→
+   329→        <!-- ============ بدنه ============ -->
+   330→        <div class="pdp__body">
+   331→
+   332→                <?php
+   333→                /* v0.23.0: بردکرامب کامل: خانه → فروشگاه → دسته‌ها → محصول */
+   334→                ?>
+   335→                <nav class="pdp__breadcrumb" aria-label="<?php esc_attr_e( 'مسیر صفحه', 'toykindangel' ); ?>">
+   336→                        <a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'خانه', 'toykindangel' ); ?></a>
+   337→                        <span>/</span>
+   338→                        <a href="<?php echo esc_url( toykindangel_categories_url() ); ?>"><?php esc_html_e( 'فروشگاه', 'toykindangel' ); ?></a>
+   339→                        <?php if ( $tka_bc_terms ) : ?>
+   340→                                <?php foreach ( $tka_bc_terms as $tka_bi => $tka_bt ) : ?>
+   341→                                        <span>/</span>
+   342→                                        <a href="<?php echo esc_url( get_term_link( $tka_bt ) ); ?>"><?php echo esc_html( $tka_bt->name ); ?></a>
+   343→                                <?php endforeach; ?>
+   344→                        <?php endif; ?>
+   345→                        <span>/</span>
+   346→                        <span style="color:var(--gray-700)"><?php echo esc_html( $tka_name ); ?></span>
+   347→                </nav>
+   348→
+   349→                <h1 class="pdp__title"><?php echo esc_html( $tka_name ); ?></h1>
+   350→
+   351→                <?php
+   352→                /* v0.23.0: نمایش برند محصول با لوگو و لینک */
+   353→                if ( $product ) {
+   354→                        $tka_brand_tax = taxonomy_exists( 'product_brand' ) ? 'product_brand' : ( taxonomy_exists( 'tka_brand' ) ? 'tka_brand' : '' );
+   355→                        if ( $tka_brand_tax ) {
+   356→                                $tka_brands = get_the_terms( $tka_id, $tka_brand_tax );
+   357→                                if ( $tka_brands && ! is_wp_error( $tka_brands ) ) {
+   358→                                        $tka_brand = $tka_brands[0];
+   359→                                        $tka_brand_thumb = get_term_meta( $tka_brand->term_id, 'thumbnail_id', true );
+   360→                                        $tka_brand_logo = $tka_brand_thumb ? wp_get_attachment_image_url( $tka_brand_thumb, 'thumbnail' ) : '';
+   361→                                        echo '<a class="pdp__brand-link" href="' . esc_url( get_term_link( $tka_brand ) ) . '">';
+   362→                                        if ( $tka_brand_logo ) {
+   363→                                                echo '<img class="pdp__brand-logo" src="' . esc_url( $tka_brand_logo ) . '" alt="' . esc_attr( $tka_brand->name ) . '">';
+   364→                                        }
+   365→                                        echo esc_html( $tka_brand->name );
+   366→                                        echo '</a>';
+   367→                                }
+   368→                        }
+   369→                }
+   370→                ?>
+   371→
+   372→                <div class="rating">
+   373→                        <?php if ( $tka_rcount > 0 ) : ?>
+   374→                                <span class="stars" aria-hidden="true">
+   375→                                        <?php for ( $tka_s = 1; $tka_s <= 5; $tka_s++ ) : ?>
+   376→                                                <svg class="ic <?php echo $tka_s <= $tka_rfilled ? 'ic-f' : ''; ?>" style="<?php echo $tka_s <= $tka_rfilled ? '' : 'color:#dcdce2'; ?>width:15px;height:15px" aria-hidden="true"><use href="#i-star"></use></svg>
+   377→                                        <?php endfor; ?>
+   378→                                </span>
+   379→                                <b class="num"><?php echo esc_html( number_format_i18n( $tka_rating, 1 ) ); ?></b>
+   380→                                <span class="num">(<?php echo esc_html( (string) $tka_rcount ); ?> <?php esc_html_e( 'امتیاز', 'toykindangel' ); ?>)</span>
+   381→                                <span>·</span>
+   382→                                <a class="tka-reviews-link num" href="#reviews"><?php echo esc_html( (string) $tka_rcount ); ?> <?php esc_html_e( 'نظر', 'toykindangel' ); ?></a>
+   383→                        <?php else : ?>
+   384→                                <a class="tka-reviews-link" href="#reviews"><?php esc_html_e( 'اولین دیدگاه را شما ثبت کنید', 'toykindangel' ); ?></a>
+   385→                        <?php endif; ?>
+   386→                </div>
+   387→
+   388→                <?php if ( $tka_short ) : ?>
+   389→                <!-- خلاصهٔ محصول + چیپ‌های ویژگی (18-f) -->
+   390→                <div class="pdp__summary"><?php echo wp_kses_post( wpautop( $tka_short ) ); ?></div>
+   391→                <ul class="pdp__chips">
+   392→                        <li><svg class="ic" aria-hidden="true"><use href="#i-shield"></use></svg><?php echo esc_html( $tka_warranty ); ?></li>
+   393→                        <li><svg class="ic" aria-hidden="true"><use href="#i-truck"></use></svg><?php esc_html_e( 'ارسال در کوتاه‌ترین زمان', 'toykindangel' ); ?></li>
+   394→                        <li><svg class="ic" aria-hidden="true"><use href="#i-return"></use></svg><?php esc_html_e( '۷ روز ضمانت بازگشت', 'toykindangel' ); ?></li>
+   395→                </ul>
+   396→                <?php endif; ?>
+   397→
+   398→                <!-- گارانتی و موجودی (فروشگاه تک‌فروشنده — بدون بخش فروشنده) -->
+   399→                <div class="sellerbox">
+   400→                        <?php if ( $tka_warranty ) : ?>
+   401→                        <div class="sellerbox__row">
+   402→                                <svg class="ic" aria-hidden="true"><use href="#i-shield"></use></svg>
+   403→                                <span><?php echo esc_html( $tka_warranty ); ?></span>
+   404→                        </div>
+   405→                        <?php endif; ?>
+   406→                        <div class="sellerbox__row <?php echo $tka_stock_row['ok'] ? 'ok' : 'tka-out'; ?>">
+   407→                                <svg class="ic" aria-hidden="true"><use href="#i-truck"></use></svg>
+   408→                                <span><?php echo esc_html( $tka_stock_row['text'] ); ?></span>
+   409→                        </div>
+   410→                </div>
+   411→
+   412→                <!-- روش‌های ارسال -->
+   413→                <div class="shipmethods">
+   414→                        <?php foreach ( $tka_ships as $tka_ship ) : ?>
+   415→                                <?php
+   416→                                if ( ! $tka_ship['t'] && ! $tka_ship['n'] ) {
+   417→continue; }
+   418→?>
+   419→                                <div class="shipmethod">
+   420→                                        <svg class="ic" aria-hidden="true"><use href="#<?php echo esc_attr( $tka_ship['icon'] ); ?>"></use></svg>
+   421→                                        <div><b><?php echo esc_html( $tka_ship['t'] ); ?></b><small><?php echo esc_html( $tka_ship['n'] ); ?></small></div>
+   422→                                </div>
+   423→                        <?php endforeach; ?>
+   424→                </div>
+   425→
+   426→                <!-- قیمت -->
+   427→                <div class="pricebox" id="pricebox-top">
+   428→                        <?php if ( $tka_off > 0 && $tka_regular > 0 ) : ?>
+   429→                        <div class="pricebox__row">
+   430→                                <span class="pricebox__off num"><?php echo esc_html( (string) $tka_off ); ?>%</span>
+   431→                                <span class="pricebox__old num"><?php echo esc_html( toykindangel_fmt( $tka_regular ) ); ?></span>
+   432→                        </div>
+   433→                        <?php endif; ?>
+   434→                        <?php if ( $tka_is_simple || $product->is_type( 'external' ) || $product->is_type( 'grouped' ) ) : ?>
+   435→                        <div class="pricebox__now"><b class="num"><?php echo esc_html( toykindangel_fmt( $tka_price > 0 ? $tka_price : 0 ) ); ?></b><small><?php esc_html_e( 'تومان', 'toykindangel' ); ?></small></div>
+   436→                        <?php else : ?>
+   437→                        <div class="pricebox__now tka-price-html"><?php echo wp_kses_post( $product->get_price_html() ); ?></div>
+   438→                        <?php endif; ?>
+   439→
+   440→                        <?php if ( $tka_is_simple ) : ?>
+   441→                                <?php if ( $tka_purchasable ) : ?>
+   442→                                        <?php
+   443→                                        /*
+   444→                                         * v0.25.0 — دیگر دکمهٔ خرید/تعداد اینجا چاپ نمی‌شود
+   445→                                         * (تنها کنترل خرید صفحه، نوار چسبان پایین است — نیاز #۸
+   446→                                         * و بازخورد «دو تا سبد خرید»). هوک برای سازگاری افزونه‌ها
+   447→                                         * fireable می‌ماند؛ خروجی خود قالب از دیسپچر جدید
+   448→                                         * (toykindangel_summary_buy_block) برای محصول ساده تهی است.
+   449→                                         */
+   450→                                        do_action( 'woocommerce_single_product_summary' );
+   451→                                        ?>
+   452→                                <?php else : ?>
+   453→                                        <?php
+   454→                                        /*
+   455→                                         * v0.25.0 — برای محصول ناموجود هم دیگر دکمهٔ خاکستریِ
+   456→                                         * تکراری در pricebox نیست؛ وضعیت «فعلاً ناموجود» هم در
+   457→                                         * sellerbox (بالای همین pricebox) و هم روی دکمهٔ نوار
+   458→                                         * چسبان نمایش داده می‌شود — یک دکمه کافی است.
+   459→                                         */
+   460→                                        ?>
+   461→                                <?php endif; ?>
+   462→                        <?php elseif ( $product->is_type( 'variable' ) ) : ?>
+   463→                                <div class="tka-varform"><?php do_action( 'woocommerce_single_product_summary' ); ?></div>
+   464→                        <?php endif; ?>
+   465→
+   466→                        <?php if ( $tka_show_low ) : ?>
+   467→                        <div class="stock">
+   468→                                <svg class="ic" style="width:16px;height:16px" aria-hidden="true"><use href="#i-clock"></use></svg>
+   469→                                <?php
+   470→                                printf(
+   471→                                        /* translators: %s: remaining stock quantity */
+   472→                                        esc_html__( 'تنها %s عدد باقی‌مانده در انبار', 'toykindangel' ),
+   473→                                        '<span class="num">' . esc_html( (string) $tka_stock_qty ) . '</span>'
+   474→                                );
+   475→                                ?>
+   476→                        </div>
+   477→                        <?php endif; ?>
+   478→
+   479→                        <div class="actions">
+   480→                                <button type="button" class="btn-ghost tka-fav" data-fav-id="<?php echo esc_attr( (string) $tka_id ); ?>">
+   481→                                        <svg class="ic" style="width:18px;height:18px" aria-hidden="true"><use href="#i-heart"></use></svg><?php esc_html_e( 'مورد علاقه', 'toykindangel' ); ?>
+   482→                                </button>
+   483→                                <button type="button" class="btn-ghost tka-share" data-share-url="<?php echo esc_url( get_permalink( $tka_id ) ); ?>" data-share-title="<?php echo esc_attr( $tka_name ); ?>">
+   484→                                        <svg class="ic" style="width:18px;height:18px" aria-hidden="true"><use href="#i-share"></use></svg><?php esc_html_e( 'اشتراک گذاری', 'toykindangel' ); ?>
+   485→                                </button>
+   486→                        </div>
+   487→                </div>
+   488→
+   489→                <!-- اشتراک‌گذاری محصول (18-f) -->
+   490→                <div class="pdp-share">
+   491→                        <span class="pdp-share__t"><?php esc_html_e( 'اشتراک‌گذاری:', 'toykindangel' ); ?></span>
+   492→                        <a class="pdp-share__btn pdp-share__btn--wa" href="<?php echo esc_url( $tka_wa ); ?>" target="_blank" rel="noopener nofollow" aria-label="<?php esc_attr_e( 'اشتراک‌گذاری در واتساپ', 'toykindangel' ); ?>" title="<?php esc_attr_e( 'واتساپ', 'toykindangel' ); ?>">
+   493→                                <svg viewBox="0 0 448 512" aria-hidden="true"><path fill="currentColor" d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
+   494→                        </a>
+   495→                        <a class="pdp-share__btn pdp-share__btn--tg" href="<?php echo esc_url( $tka_tg ); ?>" target="_blank" rel="noopener nofollow" aria-label="<?php esc_attr_e( 'اشتراک‌گذاری در تلگرام', 'toykindangel' ); ?>" title="<?php esc_attr_e( 'تلگرام', 'toykindangel' ); ?>">
+   496→                                <svg viewBox="0 0 496 512" aria-hidden="true"><path fill="currentColor" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm114.6 171.3l-39 183.9c-2.9 13-10.6 16.2-21.5 10.1l-59.4-43.8-28.7 27.6c-3.2 3.2-5.8 5.8-11.9 5.8l4.2-60.5 109.7-99.1c4.8-4.2-1-6.6-7.3-2.4L174.3 281.3l-58.6-18.3c-12.7-4-12.9-12.7 2.7-18.8l228.9-88.3c10.6-3.8 19.9 2.6 15.3 17.4z"/></svg>
+   497→                        </a>
+   498→                        <button type="button" class="pdp-share__btn pdp-share__btn--copy tka-share" data-share-url="<?php echo esc_url( $tka_link ); ?>" data-share-title="<?php echo esc_attr( $tka_name ); ?>" aria-label="<?php esc_attr_e( 'کپی لینک محصول', 'toykindangel' ); ?>" title="<?php esc_attr_e( 'کپی لینک', 'toykindangel' ); ?>">
+   499→                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+   500→                        </button>
+   501→                </div>
+   502→
+   503→                <!-- مزایا -->
+   504→                <div class="usps" style="margin-top:20px">
+   505→                        <div class="usp">
+   506→                                <svg class="ic" style="width:24px;height:24px" aria-hidden="true"><use href="#i-return"></use></svg>
+   507→                                <b><?php esc_html_e( 'بازگشت کالا تا ۷ روز', 'toykindangel' ); ?></b>
+   508→                        </div>
+   509→                        <div class="usp">
+   510→                                <svg class="ic" style="width:24px;height:24px" aria-hidden="true"><use href="#i-headset"></use></svg>
+   511→                                <b><?php esc_html_e( 'پشتیبانی ۷ روز هفته', 'toykindangel' ); ?></b>
+   512→                        </div>
+   513→                        <div class="usp">
+   514→                                <svg class="ic" style="width:24px;height:24px" aria-hidden="true"><use href="#i-truck"></use></svg>
+   515→                                <b><?php esc_html_e( 'ارسال در کوتاه‌ترین زمان', 'toykindangel' ); ?></b>
+   516→                        </div>
+   517→                </div>
+   518→
+   519→                <div style="height:18px"></div>
+   520→        </div><!-- /.pdp__body -->
+   521→
+   522→        <?php
+   523→        /* تب‌ها/مشابه‌های هسته غیرفعال‌اند (قالب خودش رندر می‌کند)؛ افزونه‌ها می‌توانند هوک کنند. */
+   524→        do_action( 'woocommerce_after_single_product_summary' );
+   525→        ?>
+   526→
+   527→        </div><!-- /.tka-pdp-cols -->
+   528→
+   529→        <?php if ( $tka_has_desc ) : ?>
+   530→        <!-- ============ توضیحات محصول (18-f) ============ -->
+   531→        <section id="tka-desc" class="pdp-sec pdp-sec--desc" aria-labelledby="tka-desc-title">
+   532→                <div class="pdp-sec__card">
+   533→                        <div class="pdp-sec__head">
+   534→                                <h2 class="pdp-sec__title" id="tka-desc-title">
+   535→                                        <svg class="ic" aria-hidden="true"><use href="#i-box"></use></svg>
+   536→                                        <?php esc_html_e( 'توضیحات محصول', 'toykindangel' ); ?>
+   537→                                </h2>
+   538→                        </div>
+   539→                        <div class="desc tka-entry"><?php the_content(); ?></div>
+   540→                </div>
+   541→        </section>
+   542→        <?php endif; ?>
+   543→
+   544→        <?php if ( $tka_specs ) : ?>
+   545→        <!-- ============ مشخصات محصول — جدول کلید/مقدار از دیتای واقعی (18-f) ============ -->
+   546→        <section id="tka-specs" class="pdp-sec pdp-sec--specs" aria-labelledby="tka-specs-title">
+   547→                <div class="pdp-sec__card">
+   548→                        <div class="pdp-sec__head">
+   549→                                <h2 class="pdp-sec__title" id="tka-specs-title">
+   550→                                        <svg class="ic" aria-hidden="true"><use href="#i-info"></use></svg>
+   551→                                        <?php esc_html_e( 'مشخصات محصول', 'toykindangel' ); ?>
+   552→                                </h2>
+   553→                        </div>
+   554→                        <table class="pdp-specs">
+   555→                                <tbody>
+   556→                                        <?php foreach ( $tka_specs as $tka_spec ) : ?>
+   557→                                        <tr>
+   558→                                                <th scope="row"><?php echo esc_html( $tka_spec['k'] ); ?></th>
+   559→                                                <td><?php echo esc_html( $tka_spec['v'] ); ?></td>
+   560→                                        </tr>
+   561→                                        <?php endforeach; ?>
+   562→                                </tbody>
+   563→                        </table>
+   564→                </div>
+   565→        </section>
+   566→        <?php endif; ?>
+   567→
+   568→        <!-- ============ دیدگاه‌ها (18-f: سکشن کارت‌شده با شمارنده) ============ -->
+   569→        <section id="reviews" class="pdp-sec pdp-sec--reviews" aria-labelledby="tka-reviews-title">
+   570→                <div class="pdp-sec__card">
+   571→                        <div class="pdp-sec__head">
+   572→                                <h2 class="pdp-sec__title" id="tka-reviews-title">
+   573→                                        <svg class="ic" aria-hidden="true"><use href="#i-star"></use></svg>
+   574→                                        <?php esc_html_e( 'دیدگاه‌ها', 'toykindangel' ); ?>
+   575→                                </h2>
+   576→                                <?php if ( $tka_reviews_n > 0 ) : ?>
+   577→                                <?php /* translators: %s: number of reviews */ ?>
+   578→                                <span class="pdp-sec__count num"><?php echo esc_html( sprintf( _n( '%s دیدگاه', '%s دیدگاه', $tka_reviews_n, 'toykindangel' ), number_format_i18n( $tka_reviews_n ) ) ); ?></span>
+   579→                                <?php else : ?>
+   580→                                <span class="pdp-sec__count pdp-sec__count--empty"><?php esc_html_e( 'اولین دیدگاه را شما ثبت کنید', 'toykindangel' ); ?></span>
+   581→                                <?php endif; ?>
+   582→                        </div>
+   583→                        <div class="tka-reviews">
+   584→                                <?php comments_template(); ?>
+   585→                        </div>
+   586→                </div>
+   587→        </section>
+   588→
+   589→        <?php if ( $tka_related ) : ?>
+   590→        <!-- محصولات مشابه — بیرون از pdp__body تا در دسکتاپ تمام‌عرض شود (v0.7.0) -->
+   591→        <section class="section tka-related">
+   592→                <div class="section__head">
+   593→                        <span class="section__title">
+   594→                                <svg class="ic" aria-hidden="true"><use href="#i-cat-stars"></use></svg>
+   595→                                <?php esc_html_e( 'محصولات مشابه', 'toykindangel' ); ?>
+   596→                        </span>
+   597→                </div>
+   598→                <div class="plist__track">
+   599→                        <?php
+   600→                        /*
+   601→                         * v0.20.0 audit fix H3 — $tka_related now holds hydrated
+   602→                         * WC_Product objects (batched via wc_get_products above),
+   603→                         * so the per-item wc_get_product() call is gone. pcard_wrap
+   604→                         * output is identical.
+   605→                         */
+   606→                        foreach ( $tka_related as $tka_rel ) {
+   607→                                if ( $tka_rel instanceof WC_Product ) {
+   608→                                                                echo toykindangel_pcard_wrap( $tka_rel ); // phpcs:ignore WordPress.Security.EscapeOutput -- theme-generated markup contains inline SVG (wp_kses_post would strip it).
+   609→                                }
+   610→                        }
+   611→                        ?>
+   612→                </div>
+   613→        </section>
+   614→        <?php endif; ?>
+   615→
+   616→        <!-- ============ نوار چسبان خرید ============ -->
+   617→        <div class="pdp__cta">
+   618→                <div class="p">
+   619→                        <b class="num"><?php echo esc_html( toykindangel_fmt( $tka_price > 0 ? $tka_price : 0 ) ); ?></b>
+   620→                        <?php if ( $tka_off > 0 && $tka_regular > 0 ) : ?>
+   621→                        <small class="num"><?php echo esc_html( toykindangel_fmt( $tka_regular ) ); ?></small>
+   622→                        <?php endif; ?>
+   623→                </div>
+   624→                <?php
+   625→                /*
+   626→                 * v0.24.0 — نوار چسبان تنها دکمهٔ خرید صفحه در موبایل است
+   627→                 * (نیاز #۸: فقط یک دکمهٔ افزودن به سبد):
+   628→                 *  - محصول سادهٔ موجود: کنترل تعداد (+/−) داخل نوار + دکمهٔ
+   629→                 *    AJAX «افزودن به سبد خرید» (data-quantity با تغییر تعداد
+   630→                 *    همگام می‌شود — assets/js/wc.js).
+   631→                 *  - محصول متغیر: دکمه «انتخاب و خرید» فقط به فرم بالای صفحه
+   632→                 *    اسکرول می‌کند؛ دکمهٔ واقعی افزودن، همان دکمهٔ داخل فرم است.
+   633→                 *  - ناموجود: دکمهٔ غیرفعال «فعلاً ناموجود».
+   634→                 */
+   635→                ?>
+   636→                <?php if ( $tka_is_simple && $tka_purchasable ) : ?>
+   637→                <div class="pdp__cta__qty" id="tka-cta-qty">
+   638→                        <input type="number" class="qty num" inputmode="numeric" value="1" min="1" step="1" aria-label="<?php esc_attr_e( 'تعداد', 'toykindangel' ); ?>">
+   639→                </div>
+   640→                <a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>"
+   641→                        data-quantity="1"
+   642→                        data-product_id="<?php echo esc_attr( (string) $tka_id ); ?>"
+   643→                        data-product_sku="<?php echo esc_attr( $product->get_sku() ); ?>"
+   644→                        rel="nofollow"
+   645→                        class="btn-primary tka-atc add_to_cart_button ajax_add_to_cart">
+   646→                        <svg class="ic" style="width:20px;height:20px" aria-hidden="true"><use href="#i-cart"></use></svg>
+   647→                        <?php esc_html_e( 'افزودن به سبد خرید', 'toykindangel' ); ?>
+   648→                </a>
+   649→                <?php elseif ( $product && $product->is_type( 'variable' ) ) : ?>
+   650→                <a class="btn-primary tka-atc tka-atc--choose" href="#pricebox-top">
+   651→                        <svg class="ic" style="width:20px;height:20px" aria-hidden="true"><use href="#i-cart"></use></svg>
+   652→                        <?php esc_html_e( 'انتخاب و خرید', 'toykindangel' ); ?>
+   653→                </a>
+   654→                <?php else : ?>
+   655→                <button type="button" class="btn-primary tka-atc" disabled>
+   656→                        <svg class="ic" style="width:20px;height:20px" aria-hidden="true"><use href="#i-cart"></use></svg>
+   657→                        <?php esc_html_e( 'فعلاً ناموجود', 'toykindangel' ); ?>
+   658→                </button>
+   659→                <?php endif; ?>
+   660→        </div>
+   661→
+   662→        </div><!-- /#product-<?php the_ID(); ?> -->
+   663→        <?php do_action( 'woocommerce_after_single_product' ); ?>
+   664→
+   665→        <?php else : ?>
+   666→
+   667→        <div class="pdp__body">
+   668→                <h1 class="pdp__title"><?php esc_html_e( 'محصول یافت نشد', 'toykindangel' ); ?></h1>
+   669→                <div class="desc"><p><?php esc_html_e( 'این محصول در دسترس نیست.', 'toykindangel' ); ?></p></div>
+   670→        </div>
+   671→
+   672→        <?php endif; ?>
+   673→
+   674→</div><!-- /.tka-pdp-main -->
+   675→<?php
+   676→
+   677→get_footer();
+   678→
