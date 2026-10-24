@@ -3,7 +3,7 @@ Contributors: sina aminzadeh
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.27.1
+Stable tag: 0.28.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: e-commerce, rtl-language-support, custom-logo, custom-menu, featured-images, translation-ready
@@ -27,6 +27,10 @@ Tags: e-commerce, rtl-language-support, custom-logo, custom-menu, featured-image
 4. راهنمای کامل: README.fa.md در بسته
 
 == Changelog ==
+
+= 0.28.0 =
+* ریشه‌یابی و رفع بازگشت باگ «فقط یک دسته در منوی دسته‌بندی‌ها»: کدِ رفع‌شده در 0.27.1 درست بود، اما دادهٔ درخت دسته‌بندی‌ها در transient کش می‌شود (TTL تا ۱۲ ساعت) و جایگزینی فایل‌های قالب با ZIP هیچ کشی را پاک نمی‌کرد — درختِ معیوبِ ساخته‌شده با نسخهٔ 0.27.0 (فقط «آب بازی») ادامه داشت. از این نسخه یک «نگهبان نسخه» در لایهٔ کش اضافه شد: با هر تغییر نسخهٔ قالب، همهٔ کش‌های tka_cache_* (شامل درخت دسته‌ها) یک‌بار خودکار پاک می‌شوند و داده از نو و با کدِ جدید ساخته می‌شود. (فایل: inc/cache.php)
+* تنظیم دوبارهٔ ارتفاع تب‌های عمودی دسته‌بندی‌ها (بازخورد: «کاهش قبلی بیش از حد بود») — موبایل: 92→80px و آیکن 40→34px؛ دراور دسکتاپ: 60→54px و آیکن 36→30px؛ صفحهٔ دسته‌بندی‌ها هم‌ارتفاع موبایل. فونت به اندازهٔ اصلی 12px برگشت. (فایل: assets/css/custom.css — بخش FIX B)
 
 = 0.27.1 =
 * رفع «یک خطای مهم» روی همهٔ آرشیوهای محصول: متد the_widget() هستهٔ وردپرس در نسخه‌های جدید رشتهٔ before_widget را فقط با یک آرگومان sprintf می‌کند؛ رشتهٔ قبل از 0.27.0 دو placeholder داشت (ArgumentCountError). حالا رشتهٔ قبل/بعد ویجت فیلتر حرفه‌ای بدون placeholder است (سازگار با همهٔ نسخه‌های وردپرس).

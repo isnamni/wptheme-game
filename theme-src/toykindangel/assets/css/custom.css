@@ -3098,42 +3098,44 @@ html body .pcard-wrap .pcard__old {
 /* ---------------------------------------------------------------------
    FIX B — تب‌هاي عمودي دسته‌بندي (ريال آيکن‌ها)
    شامل: دراور دسته‌بندي‌ها (دکمه «دسته‌بندي» هدر) + صفحه دسته‌بندي‌ها.
-   ارتفاع هر آيتم از 92px به 64px و آيکن از 40px به 24px کاهش مي‌يابد
-   تا تعداد بيشتري دسته در همان ارتفاع ديده شود (موبايل + دسکتاپ).
+   v0.28.0 (بازخورد مشتری) — کاهش قبلی بيش از حد بود: ارتفاع 64px و
+   آيکن 24px فاصله تب‌ها را خيلی کم کرده بود. حالا «فقط کمی کمتر از
+   حالت اوليه»: موبایل 92→80px و آيکن 40→34px، دراور دسکتاپ
+   60→54px و آيکن 36→30px. فونت به اندازه اصلی (12px) برگشت.
    --------------------------------------------------------------------- */
 
 /* موبايل و حالت پايه (ريال عمودي با آيکن بالاي متن) */
 .crail__item {
-  height: 64px !important;
-  padding: 4px 4px !important;
-  gap: 3px !important;
-  font-size: 11px !important;
-  line-height: 13px !important;
+  height: 80px !important;
+  padding: 6px 5px !important;
+  gap: 6px !important;
+  font-size: 12px !important;
+  line-height: 16px !important;
 }
 
 .crail__ico {
-  width: 24px !important;
-  height: 24px !important;
+  width: 34px !important;
+  height: 34px !important;
 }
 
 .crail__item.on::after {
-  top: 8px;
-  bottom: 8px;
+  top: 10px;
+  bottom: 10px;
 }
 
-/* دسکتاپ: دراور دسته‌بندي‌ها (ردیف‌هاي افقي) — کوتاه‌تر شدن ردیف‌ها */
+/* دسکتاپ: دراور دسته‌بندي‌ها (ردیف‌هاي افقي) — کمی کوتاه‌تر از 60px */
 @media (min-width: 768px) {
   .tka-drawer .crail__item {
-    min-height: 44px !important;
+    min-height: 54px !important;
     height: auto !important;
-    padding: 5px 12px !important;
-    gap: 8px !important;
-    font-size: 11.5px !important;
+    padding: 7px 12px !important;
+    gap: 10px !important;
+    font-size: 12px !important;
     line-height: 16px !important;
   }
   .tka-drawer .crail__item .crail__ico {
-    width: 24px !important;
-    height: 24px !important;
+    width: 30px !important;
+    height: 30px !important;
   }
   .tka-drawer .crail__item.on::after {
     top: 7px;
@@ -3141,15 +3143,15 @@ html body .pcard-wrap .pcard__old {
   }
 }
 
-/* دسکتاپ: صفحه دسته‌بندي‌ها (ريال عمودي پهن‌تر) — همان ارتفاع کم */
+/* دسکتاپ: صفحه دسته‌بندي‌ها (ريال عمودي پهن‌تر) — هم‌ارتفاع موبايل */
 @media (min-width: 1024px) {
   .cpage .crail__item {
-    height: 64px !important;
-    padding: 4px 6px !important;
+    height: 80px !important;
+    padding: 6px 6px !important;
   }
   .cpage .crail__ico {
-    width: 26px !important;
-    height: 26px !important;
+    width: 34px !important;
+    height: 34px !important;
   }
 }
 

@@ -22,7 +22,7 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+        exit;
 }
 
 /**
@@ -35,19 +35,19 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return mixed|null
  */
 function toykindangel_cache_get( $key ) {
-	$tka_key = 'tka_cache_' . $key;
-	if ( ! isset( $GLOBALS['tka_cache_local'] ) ) {
-		$GLOBALS['tka_cache_local'] = array();
-	}
-	if ( array_key_exists( $tka_key, $GLOBALS['tka_cache_local'] ) ) {
-		return $GLOBALS['tka_cache_local'][ $tka_key ];
-	}
+        $tka_key = 'tka_cache_' . $key;
+        if ( ! isset( $GLOBALS['tka_cache_local'] ) ) {
+                $GLOBALS['tka_cache_local'] = array();
+        }
+        if ( array_key_exists( $tka_key, $GLOBALS['tka_cache_local'] ) ) {
+                return $GLOBALS['tka_cache_local'][ $tka_key ];
+        }
 
-	$tka_value = get_transient( $tka_key );
-	$tka_value = ( false === $tka_value ) ? null : $tka_value;
+        $tka_value = get_transient( $tka_key );
+        $tka_value = ( false === $tka_value ) ? null : $tka_value;
 
-	$GLOBALS['tka_cache_local'][ $tka_key ] = $tka_value;
-	return $tka_value;
+        $GLOBALS['tka_cache_local'][ $tka_key ] = $tka_value;
+        return $tka_value;
 }
 
 /**
@@ -60,11 +60,11 @@ function toykindangel_cache_get( $key ) {
  * @return void
  */
 function toykindangel_cache_set( $key, $value, $ttl ) {
-	if ( ! isset( $GLOBALS['tka_cache_local'] ) ) {
-		$GLOBALS['tka_cache_local'] = array();
-	}
-	$GLOBALS['tka_cache_local'][ 'tka_cache_' . $key ] = $value;
-	set_transient( 'tka_cache_' . $key, $value, (int) $ttl );
+        if ( ! isset( $GLOBALS['tka_cache_local'] ) ) {
+                $GLOBALS['tka_cache_local'] = array();
+        }
+        $GLOBALS['tka_cache_local'][ 'tka_cache_' . $key ] = $value;
+        set_transient( 'tka_cache_' . $key, $value, (int) $ttl );
 }
 
 /**
@@ -73,26 +73,26 @@ function toykindangel_cache_set( $key, $value, $ttl ) {
  * @return void
  */
 function toykindangel_cache_flush_term_data() {
-	delete_transient( 'tka_cache_cats_tree' );
-	delete_transient( 'tka_cache_home_stories' );
-	delete_transient( 'tka_cache_home_brands' );
-	delete_transient( 'tka_cache_home_catgrid' );
-	delete_transient( 'tka_cache_home_trending' ); /* v0.27.0: ریل ترند بر اساس دسته است */
-	delete_transient( 'tka_cache_home_agegrid' );  /* v0.27.0: سکشن خرید بر اساس سن */
-	delete_transient( 'tka_cache_customizer_cat_choices' ); /* v0.27.0: دراپ‌داون سفارشی‌سازی */
-	delete_transient( 'tka_cache_cats_page_grid' );
-	delete_transient( 'tka_cache_cats_page_popular' );
-	delete_transient( 'tka_cache_drawer_menu' );
-	unset( $GLOBALS['tka_cache_local']['tka_cache_cats_tree'] );
-	unset( $GLOBALS['tka_cache_local']['tka_cache_home_stories'] );
-	unset( $GLOBALS['tka_cache_local']['tka_cache_home_brands'] );
-	unset( $GLOBALS['tka_cache_local']['tka_cache_home_catgrid'] );
-	unset( $GLOBALS['tka_cache_local']['tka_cache_home_trending'] );
-	unset( $GLOBALS['tka_cache_local']['tka_cache_home_agegrid'] );
-	unset( $GLOBALS['tka_cache_local']['tka_cache_customizer_cat_choices'] );
-	unset( $GLOBALS['tka_cache_local']['tka_cache_cats_page_grid'] );
-	unset( $GLOBALS['tka_cache_local']['tka_cache_cats_page_popular'] );
-	unset( $GLOBALS['tka_cache_local']['tka_cache_drawer_menu'] );
+        delete_transient( 'tka_cache_cats_tree' );
+        delete_transient( 'tka_cache_home_stories' );
+        delete_transient( 'tka_cache_home_brands' );
+        delete_transient( 'tka_cache_home_catgrid' );
+        delete_transient( 'tka_cache_home_trending' ); /* v0.27.0: ریل ترند بر اساس دسته است */
+        delete_transient( 'tka_cache_home_agegrid' );  /* v0.27.0: سکشن خرید بر اساس سن */
+        delete_transient( 'tka_cache_customizer_cat_choices' ); /* v0.27.0: دراپ‌داون سفارشی‌سازی */
+        delete_transient( 'tka_cache_cats_page_grid' );
+        delete_transient( 'tka_cache_cats_page_popular' );
+        delete_transient( 'tka_cache_drawer_menu' );
+        unset( $GLOBALS['tka_cache_local']['tka_cache_cats_tree'] );
+        unset( $GLOBALS['tka_cache_local']['tka_cache_home_stories'] );
+        unset( $GLOBALS['tka_cache_local']['tka_cache_home_brands'] );
+        unset( $GLOBALS['tka_cache_local']['tka_cache_home_catgrid'] );
+        unset( $GLOBALS['tka_cache_local']['tka_cache_home_trending'] );
+        unset( $GLOBALS['tka_cache_local']['tka_cache_home_agegrid'] );
+        unset( $GLOBALS['tka_cache_local']['tka_cache_customizer_cat_choices'] );
+        unset( $GLOBALS['tka_cache_local']['tka_cache_cats_page_grid'] );
+        unset( $GLOBALS['tka_cache_local']['tka_cache_cats_page_popular'] );
+        unset( $GLOBALS['tka_cache_local']['tka_cache_drawer_menu'] );
 }
 
 /**
@@ -101,10 +101,10 @@ function toykindangel_cache_flush_term_data() {
  * @return void
  */
 function toykindangel_cache_flush_product_data() {
-	delete_transient( 'tka_cache_price_diff_ids' );
-	delete_transient( 'tka_cache_home_trending' ); /* v0.27.0: موجودی/حذف محصول در ریل ترند */
-	unset( $GLOBALS['tka_cache_local']['tka_cache_price_diff_ids'] );
-	unset( $GLOBALS['tka_cache_local']['tka_cache_home_trending'] );
+        delete_transient( 'tka_cache_price_diff_ids' );
+        delete_transient( 'tka_cache_home_trending' ); /* v0.27.0: موجودی/حذف محصول در ریل ترند */
+        unset( $GLOBALS['tka_cache_local']['tka_cache_price_diff_ids'] );
+        unset( $GLOBALS['tka_cache_local']['tka_cache_home_trending'] );
 }
 
 /**
@@ -117,9 +117,9 @@ function toykindangel_cache_flush_product_data() {
  * @return void
  */
 function toykindangel_cache_on_term_change( $term_id, $tt_id, $taxonomy ) {
-	if ( in_array( $taxonomy, array( 'product_cat', 'product_brand', 'tka_brand', 'tka_store_cat' ), true ) ) {
-		toykindangel_cache_flush_term_data();
-	}
+        if ( in_array( $taxonomy, array( 'product_cat', 'product_brand', 'tka_brand', 'tka_store_cat' ), true ) ) {
+                toykindangel_cache_flush_term_data();
+        }
 }
 add_action( 'created_term', 'toykindangel_cache_on_term_change', 10, 3 );
 add_action( 'edited_term', 'toykindangel_cache_on_term_change', 10, 3 );
@@ -137,3 +137,53 @@ add_action( 'woocommerce_delete_product', 'toykindangel_cache_flush_product_data
 
 /* Theme switch = fresh settings state. */
 add_action( 'after_switch_theme', 'toykindangel_cache_flush_term_data' );
+
+/**
+ * v0.28.0 — پاک‌سازی نسخه‌محورِ کش‌های قالب هنگام به‌روزرسانی.
+ *
+ * کش‌های ترم (درخت دسته‌بندی‌ها و…) در transient بین درخواست‌ها زندگی
+ * می‌کنند (TTL تا ۱۲ ساعت). جایگزینی فایل‌های قالب با بارگذاری ZIPِ همان
+ * قالبِ فعال هیچ هوکی مثل after_switch_theme اجرا نمی‌کند و معمولاً هیچ
+ * ترمی هم ویرایش نمی‌شود؛ نتیجه: دادهٔ ساخته‌شده با کدِ نسخهٔ قبلی تا
+ * انقضای TTL سرو می‌شد — دقیقاً علت بازگشت باگ «فقط یک دسته در دراور»
+ * بعد از نصب 0.27.1 (کشِ ساخته‌شده با فیلتر معیوب نسخهٔ 0.27.0 زنده
+ * ماند). حالا اولین init هر درخواست، نسخهٔ قالب را با نسخهٔ ذخیره‌شده
+ * مقایسه می‌کند؛ با هر تغییر نسخه همهٔ کش‌های قالب یک‌بار پاک می‌شوند.
+ *
+ * @return void
+ */
+function toykindangel_cache_version_guard() {
+        if ( ! defined( 'TOYKINDANGEL_VERSION' ) ) {
+                return;
+        }
+
+        $tka_stored = get_option( 'tka_cache_version', '' );
+        if ( TOYKINDANGEL_VERSION === $tka_stored ) {
+                return;
+        }
+
+        /* مقدارهای درون-Request هم از صفر ساخته شوند. */
+        $GLOBALS['tka_cache_local'] = array();
+
+        /* ۱) پاک‌سازی اسمی همهٔ کلیدهای شناخته‌شده (سازگار با Object Cache). */
+        toykindangel_cache_flush_term_data();
+        toykindangel_cache_flush_product_data();
+
+        /*
+         * ۲) پاک‌سازی باقی‌ماندهٔ هر کلید tka_cache_* در جدول options تا هیچ
+         * کلید یتیمی از نگارش‌های قبل (حتی کلیدهایی که در فهرست بالا نیستند)
+         * زنده نماند. فقط یک‌بار در هر تغییر نسخه اجرا می‌شود.
+         */
+        global $wpdb;
+        if ( isset( $wpdb ) ) {
+                $wpdb->query(
+                        "DELETE FROM {$wpdb->options}
+                         WHERE option_name LIKE '\_transient\_tka\_cache\_%'
+                                OR option_name LIKE '\_transient\_timeout\_tka\_cache\_%'"
+                );
+        }
+
+        /* autoload = بله: خواندن در هر درخواست بدون کوئری اضافه انجام می‌شود. */
+        update_option( 'tka_cache_version', TOYKINDANGEL_VERSION, true );
+}
+add_action( 'init', 'toykindangel_cache_version_guard', 5 );
