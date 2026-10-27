@@ -146,6 +146,20 @@
                         };
                         window.addEventListener('scroll', toggleTopstrip, { passive: true });
                         toggleTopstrip();
+
+                        /* v0.29.0: اگر فایل تصویر بنر لود نشد (۵۰۲/۴۰۴ سرور)،
+                         * خودِ نوار را حذف کن تا به‌جای بنر، یک نوار باریکِ
+                         * «alt» شکسته با ارتفاع چند پیکسلی نمایش داده نشود. */
+                        var stripImg = topstrip.querySelector('img');
+                        if (stripImg) {
+                                var killStrip = function () {
+                                        if (stripImg.complete && 0 === stripImg.naturalWidth) {
+                                                topstrip.parentNode.removeChild(topstrip);
+                                        }
+                                };
+                                stripImg.addEventListener('error', killStrip);
+                                if (stripImg.complete) { killStrip(); }
+                        }
                 }
 
                 /* ---------- 6) PDP glue (Step 5) ----------
@@ -439,48 +453,17 @@
                         q.appendChild(plus);
                 });
 
-                /* ---------- 9) Desktop rail arrows (v0.7.0) ----------
-                 * On desktop (≥1024px) the demo rails (amazing / newest /
-                 * best / brands / related) become wide scrollers; injected
-                 * prev/next buttons page them like a real desktop shop.
-                 * Pure glue: demo markup untouched, buttons are additive. */
+                /* ---------- 9) Rail sections — hook class only (v0.29.0) ----------
+                 * v0.7.0 این بلاک دکمه‌های prev/next را به ریل‌ها تزریق می‌کرد.
+                 * v0.29.0 (بازخورد کاربر): فلش‌ها حذف شدند — هم موبایل (اسکرول
+                 * لمسی کافی است) هم دسکتاپ. فقط کلاسِ tka-railsec روی سکشن
+                 * می‌ماند چون CSSهای قالب به آن تکیه دارند (مثلاً مخفی‌کردن
+                 * تایمرِ ریل «جدیدترین‌ها»). خودِ ریل‌ها با اسکرول/لمس/چرخ
+                 * موس به‌راحتی پیمایش می‌شوند. */
                 [].forEach.call(document.querySelectorAll('.offer, .section, .brands-section'), function (sec) {
                         var track = sec.querySelector('.offer__track, .plist__track, .brands');
-                        if (!track || sec.querySelector('.tka-rail')) { return; }
-                        /* Only for horizontally scrollable rails. */
-                        if (track.scrollWidth <= track.clientWidth + 48) { return; }
-
-                        var mk = function (dir) {
-                                var b = document.createElement('button');
-                                b.type = 'button';
-                                b.className = 'tka-rail tka-rail--' + dir;
-                                b.setAttribute('aria-label', dir === 'next' ? 'مشاهده موارد بعدی' : 'مشاهده موارد قبلی');
-                                b.innerHTML = '<svg class="ic" aria-hidden="true"><use href="#i-chev-left"></use></svg>';
-                                b.addEventListener('click', function () {
-                                        var amount = Math.max(280, track.clientWidth * 0.75);
-                                        /* RTL: scrolling forward = negative scrollLeft. */
-                                        var sign = dir === 'next' ? -1 : 1;
-                                        track.scrollBy({ left: sign * amount, behavior: 'smooth' });
-                                });
-                                return b;
-                        };
-
-                        var sync = function () {
-                                var max = track.scrollWidth - track.clientWidth;
-                                /* RTL scrollLeft runs 0 → -max in modern browsers. */
-                                var sl = Math.abs(track.scrollLeft);
-                                prevBtn.disabled = sl <= 4;
-                                nextBtn.disabled = sl >= max - 4;
-                        };
-
+                        if (!track) { return; }
                         sec.classList.add('tka-railsec');
-                        var nextBtn = mk('next');
-                        var prevBtn = mk('prev');
-                        sec.appendChild(nextBtn);
-                        sec.appendChild(prevBtn);
-                        track.addEventListener('scroll', sync, { passive: true });
-                        window.addEventListener('resize', sync);
-                        sync();
                 });
 
                 /* ---------- 10) Drawers — primary menu + categories browser (v0.9) ----------
